@@ -244,13 +244,14 @@ export default function Sidebar() {
   // Map group ID to access level for compatibility
   const mapGroupIdToAccessLevel = (groupId: number | null) => {
     const mapping: Record<number, string> = {
-      1: 'basic',        // Basic Group
-      2: 'aluno',        // Aluno Group  
-      3: 'aluno_pro',    // Aluno Pro Group
-      4: 'suporte',      // Suporte Group
-      5: 'admin'         // Admin Group
+      1: 'admin',        // Super Admin Group
+      2: 'admin',        // Admin Group  
+      3: 'suporte',      // Coordenador Group
+      4: 'suporte',      // Professor Group
+      5: 'aluno'         // Aluno Group
     };
-    return groupId ? mapping[groupId] || 'basic' : 'basic';
+    // Default to admin access if groupId is null (for existing users without groups)
+    return groupId ? mapping[groupId] || 'admin' : 'admin';
   };
 
   const userAccessLevel = mapGroupIdToAccessLevel(user.groupId);
