@@ -20,7 +20,8 @@ import {
   Menu,
   Settings,
   Shield,
-  UserCheck
+  UserCheck,
+  Database
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -167,6 +168,12 @@ const adminMenuGroups = [
         href: "/admin/materials", 
         icon: BookOpen,
         accessLevels: ["admin", "suporte"]
+      },
+      { 
+        label: "Cadastros", 
+        href: "/admin/cadastros", 
+        icon: Database,
+        accessLevels: ["admin"]
       },
       { 
         label: "Cursos", 

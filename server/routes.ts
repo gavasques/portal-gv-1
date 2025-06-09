@@ -357,6 +357,221 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cadastros - Material Types routes
+  app.get("/api/material-types", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const materialTypes = await storage.getMaterialTypes(limit, offset);
+      res.json(materialTypes);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch material types' });
+    }
+  });
+
+  app.post("/api/material-types", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const validatedData = insertMaterialTypeSchema.parse(req.body);
+      const materialType = await storage.createMaterialType(validatedData);
+      res.status(201).json(materialType);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid material type data' });
+    }
+  });
+
+  app.put("/api/material-types/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertMaterialTypeSchema.partial().parse(req.body);
+      const materialType = await storage.updateMaterialType(id, validatedData);
+      res.json(materialType);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update material type' });
+    }
+  });
+
+  app.delete("/api/material-types/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteMaterialType(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete material type' });
+    }
+  });
+
+  // Cadastros - Software Types routes
+  app.get("/api/software-types", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const softwareTypes = await storage.getSoftwareTypes(limit, offset);
+      res.json(softwareTypes);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch software types' });
+    }
+  });
+
+  app.post("/api/software-types", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const validatedData = insertSoftwareTypeSchema.parse(req.body);
+      const softwareType = await storage.createSoftwareType(validatedData);
+      res.status(201).json(softwareType);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid software type data' });
+    }
+  });
+
+  app.put("/api/software-types/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertSoftwareTypeSchema.partial().parse(req.body);
+      const softwareType = await storage.updateSoftwareType(id, validatedData);
+      res.json(softwareType);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update software type' });
+    }
+  });
+
+  app.delete("/api/software-types/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteSoftwareType(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete software type' });
+    }
+  });
+
+  // Cadastros - Supplier Types routes
+  app.get("/api/supplier-types", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const supplierTypes = await storage.getSupplierTypes(limit, offset);
+      res.json(supplierTypes);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch supplier types' });
+    }
+  });
+
+  app.post("/api/supplier-types", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const validatedData = insertSupplierTypeSchema.parse(req.body);
+      const supplierType = await storage.createSupplierType(validatedData);
+      res.status(201).json(supplierType);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid supplier type data' });
+    }
+  });
+
+  app.put("/api/supplier-types/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertSupplierTypeSchema.partial().parse(req.body);
+      const supplierType = await storage.updateSupplierType(id, validatedData);
+      res.json(supplierType);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update supplier type' });
+    }
+  });
+
+  app.delete("/api/supplier-types/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteSupplierType(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete supplier type' });
+    }
+  });
+
+  // Cadastros - Product Categories routes
+  app.get("/api/product-categories", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const productCategories = await storage.getProductCategories(limit, offset);
+      res.json(productCategories);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch product categories' });
+    }
+  });
+
+  app.post("/api/product-categories", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const validatedData = insertProductCategorySchema.parse(req.body);
+      const productCategory = await storage.createProductCategory(validatedData);
+      res.status(201).json(productCategory);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid product category data' });
+    }
+  });
+
+  app.put("/api/product-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertProductCategorySchema.partial().parse(req.body);
+      const productCategory = await storage.updateProductCategory(id, validatedData);
+      res.json(productCategory);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update product category' });
+    }
+  });
+
+  app.delete("/api/product-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProductCategory(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete product category' });
+    }
+  });
+
+  // Cadastros - Partner Categories routes
+  app.get("/api/partner-categories", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const partnerCategories = await storage.getPartnerCategories(limit, offset);
+      res.json(partnerCategories);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch partner categories' });
+    }
+  });
+
+  app.post("/api/partner-categories", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const validatedData = insertPartnerCategorySchema.parse(req.body);
+      const partnerCategory = await storage.createPartnerCategory(validatedData);
+      res.status(201).json(partnerCategory);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid partner category data' });
+    }
+  });
+
+  app.put("/api/partner-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertPartnerCategorySchema.partial().parse(req.body);
+      const partnerCategory = await storage.updatePartnerCategory(id, validatedData);
+      res.json(partnerCategory);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update partner category' });
+    }
+  });
+
+  app.delete("/api/partner-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePartnerCategory(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete partner category' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

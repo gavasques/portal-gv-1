@@ -19,6 +19,7 @@ import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
 import MaterialView from "@/pages/material-view";
 import AdminMaterials from "@/pages/admin-materials";
+import AdminCadastros from "@/pages/admin-cadastros";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
@@ -86,6 +87,7 @@ function Router() {
         <Route path="/settings" component={Settings} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/materials" component={AdminMaterials} />
+        <Route path="/admin/cadastros" component={AdminCadastros} />
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
         <Route path="/admin/courses" component={() => <div>Admin Courses - Em desenvolvimento</div>} />
