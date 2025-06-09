@@ -359,11 +359,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMaterials(accessLevel?: string, limit = 50, offset = 0): Promise<Material[]> {
-    let query = db.select().from(materials).where(eq(materials.isActive, true));
     if (accessLevel) {
-      query = query.where(and(eq(materials.isActive, true), eq(materials.accessLevel, accessLevel)));
+      return await db.select().from(materials)
+        .where(and(eq(materials.isActive, true), eq(materials.accessLevel, accessLevel)))
+        .limit(limit)
+        .offset(offset)
+        .orderBy(desc(materials.createdAt));
     }
-    return await query.limit(limit).offset(offset).orderBy(desc(materials.createdAt));
+    return await db.select().from(materials)
+      .where(eq(materials.isActive, true))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(materials.createdAt));
   }
 
   async getMaterial(id: number): Promise<Material | undefined> {
