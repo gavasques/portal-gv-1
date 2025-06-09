@@ -18,7 +18,10 @@ export default function Login() {
   const { login, register, isLoginPending, isRegisterPending, loginError, registerError, user } = useAuth();
   const [, navigate] = useLocation();
   const { theme } = useTheme();
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginForm, setLoginForm] = useState({ 
+    email: "gavasques@gmail.com", 
+    password: "Estrela10@" 
+  });
   const [registerForm, setRegisterForm] = useState({
     email: "",
     password: "",

@@ -1,11 +1,12 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, 
-  tickets, materials, news, reviews, type User, type InsertUser,
+  tickets, materials, news, reviews, authTokens, type User, type InsertUser,
   type Partner, type InsertPartner, type Supplier, type InsertSupplier,
   type Tool, type InsertTool, type MySupplier, type InsertMySupplier,
   type Product, type InsertProduct, type Template, type InsertTemplate,
   type Ticket, type InsertTicket, type Material, type InsertMaterial,
-  type News, type InsertNews, type Review, type InsertReview
+  type News, type InsertNews, type Review, type InsertReview,
+  type AuthToken, type InsertAuthToken
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -94,6 +95,12 @@ export interface IStorage {
     aiCredits: number;
     openTickets: number;
   }>;
+
+  // Auth tokens for password reset and magic links
+  createAuthToken(token: InsertAuthToken): Promise<AuthToken>;
+  getAuthToken(token: string): Promise<AuthToken | undefined>;
+  markTokenAsUsed(token: string): Promise<void>;
+  cleanupExpiredTokens(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -484,6 +491,37 @@ export class DatabaseStorage implements IStorage {
       aiCredits: user?.aiCredits || 0,
       openTickets: ticketsResult?.count || 0,
     };
+  }
+
+  // Auth tokens implementation
+  async createAuthToken(token: InsertAuthToken): Promise<AuthToken> {
+    const [authToken] = await db.insert(authTokens).values(token).returning();
+    return authToken;
+  }
+
+  async getAuthToken(token: string): Promise<AuthToken | undefined> {
+    const [authToken] = await db
+      .select()
+      .from(authTokens)
+      .where(and(
+        eq(authTokens.token, token),
+        eq(authTokens.used, false),
+        sql`${authTokens.expiresAt} > NOW()`
+      ));
+    return authToken || undefined;
+  }
+
+  async markTokenAsUsed(token: string): Promise<void> {
+    await db
+      .update(authTokens)
+      .set({ used: true })
+      .where(eq(authTokens.token, token));
+  }
+
+  async cleanupExpiredTokens(): Promise<void> {
+    await db
+      .delete(authTokens)
+      .where(sql`${authTokens.expiresAt} < NOW() OR ${authTokens.used} = true`);
   }
 }
 
