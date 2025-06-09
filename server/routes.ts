@@ -64,12 +64,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         }
       }
 
-      // Create new user
+      // Create new user with default group (basic users)
       const newUser = await storage.createUser({
         email: email || '',
         fullName: profile.displayName || '',
         googleId: profile.id,
-        accessLevel: 'Basic'
+        groupId: 1 // Basic group
       });
 
       return done(null, newUser);
@@ -149,7 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         password: hashedPassword,
         fullName,
-        accessLevel: 'Basic'
+        groupId: 1 // Basic group
       });
 
       req.login(user, (err) => {
@@ -317,17 +317,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/stats', requireAuth, async (req, res) => {
     try {
       const user = req.user as any;
-      if (user.accessLevel !== 'Administradores' && user.accessLevel !== 'Suporte') {
+      // Check if user has admin access using group-based permissions
+      if (!user.groupId || (user.groupId !== 5 && user.groupId !== 4)) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
-      // Get admin statistics
+      // Get admin statistics using group-based system
       const totalUsers = await db.select({ count: sql<number>`count(*)` }).from(users);
-      const basicUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accessLevel, 'Basic'));
-      const alunoUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accessLevel, 'Aluno'));
-      const alunoProUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accessLevel, 'Aluno Pro'));
-      const supportUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accessLevel, 'Suporte'));
-      const adminUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.accessLevel, 'Administradores'));
+      const basicUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.groupId, 1));
+      const alunoUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.groupId, 2));
+      const alunoProUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.groupId, 3));
+      const supportUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.groupId, 4));
+      const adminUsers = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.groupId, 5));
 
       const totalTickets = await db.select({ count: sql<number>`count(*)` }).from(tickets);
       const openTickets = await db.select({ count: sql<number>`count(*)` }).from(tickets).where(eq(tickets.status, 'open'));
