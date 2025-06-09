@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema } from "@shared/schema";
@@ -14,7 +15,7 @@ passport.use(new LocalStrategy(
   async (email, password, done) => {
     try {
       const user = await storage.getUserByEmail(email);
-      if (!user) {
+      if (!user || !user.password) {
         return done(null, false, { message: 'Invalid credentials' });
       }
 
@@ -29,6 +30,55 @@ passport.use(new LocalStrategy(
     }
   }
 ));
+
+// Configure Google OAuth
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      // Check if user already exists with this Google ID
+      let user = await storage.getUserByGoogleId(profile.id);
+      
+      if (user) {
+        return done(null, user);
+      }
+      
+      // Check if user exists with this email
+      const email = profile.emails?.[0]?.value;
+      if (email) {
+        user = await storage.getUserByEmail(email);
+        if (user) {
+          // Link Google account to existing user
+          await storage.updateUser(user.id, { 
+            googleId: profile.id,
+            profileImage: profile.photos?.[0]?.value || user.profileImage
+          });
+          return done(null, user);
+        }
+      }
+      
+      // Create new user
+      if (email) {
+        const newUser = await storage.createUser({
+          email,
+          fullName: profile.displayName || email.split('@')[0],
+          googleId: profile.id,
+          profileImage: profile.photos?.[0]?.value,
+          accessLevel: 'Basic'
+        });
+        return done(null, newUser);
+      }
+      
+      return done(new Error('No email found in Google profile'));
+    } catch (error) {
+      return done(error);
+    }
+  }));
+}
 
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
@@ -106,6 +156,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(401).json({ message: 'Login failed' });
     }
   });
+
+  // Google OAuth routes
+  app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+  app.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+      res.redirect('/dashboard');
+    }
+  );
 
   app.post('/api/auth/logout', (req, res) => {
     req.logout((err) => {

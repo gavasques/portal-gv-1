@@ -5,13 +5,14 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password"),
   fullName: text("full_name").notNull(),
   accessLevel: text("access_level").notNull().default("Basic"), // Basic, Aluno, Aluno Pro, Suporte, Administradores
   aiCredits: integer("ai_credits").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
+  googleId: text("google_id"),
+  profileImage: text("profile_image"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

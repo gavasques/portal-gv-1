@@ -117,7 +117,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         {open && (
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Portal do Aluno
+            Portal Guilherme Vasques
           </h1>
         )}
         <Button
