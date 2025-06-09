@@ -12,6 +12,7 @@ import { users, tickets, materials, templates } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
+import express from 'express';
 
 // Configure passport
 passport.use(new LocalStrategy(
@@ -46,7 +47,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     try {
       // Check if user already exists with this Google ID
       let user = await storage.getUserByGoogleId(profile.id);
-      
+
       if (user) {
         return done(null, user);
       }
@@ -104,7 +105,7 @@ function requireRole(roles: string[]) {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
-    
+
     const user = req.user as any;
     // Map group IDs to role names for compatibility
     const groupToRole: Record<number, string> = {
@@ -114,17 +115,20 @@ function requireRole(roles: string[]) {
       4: 'Suporte',
       5: 'Administradores'
     };
-    
+
     const userRole = user.groupId ? groupToRole[user.groupId] : 'Basic';
     if (roles.includes(userRole)) {
       return next();
     }
-    
+
     res.status(403).json({ message: 'Insufficient permissions' });
   };
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+
+  const requireAdmin = requireRole(['Administradores']);
+
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'default-secret-key-change-in-production',
@@ -144,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', async (req, res) => {
     try {
       const { email, password, fullName } = req.body;
-      
+
       if (!email || !password || !fullName) {
         return res.status(400).json({ message: 'All fields are required' });
       }
@@ -223,12 +227,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
       const user = req.user as any;
-      
+
       let accessLevel;
       if (user.accessLevel === 'Basic') {
         accessLevel = 'Public';
       }
-      
+
       const materials = await storage.getMaterials(accessLevel, limit, offset);
       res.json(materials);
     } catch (error) {
@@ -242,13 +246,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!query) {
         return res.status(400).json({ message: 'Query parameter is required' });
       }
-      
+
       const user = req.user as any;
       let accessLevel;
       if (user.accessLevel === 'Basic') {
         accessLevel = 'Public';
       }
-      
+
       const materials = await storage.searchMaterials(query as string, category as string, accessLevel);
       res.json(materials);
     } catch (error) {
@@ -262,13 +266,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!material) {
         return res.status(404).json({ message: 'Material not found' });
       }
-      
+
       const user = req.user as any;
       // Check access level
       if (material.accessLevel === 'Restricted' && user.accessLevel === 'Basic') {
         return res.status(403).json({ message: 'Access denied' });
       }
-      
+
       res.json(material);
     } catch (error) {
       res.status(500).json({ message: 'Failed to load material' });
@@ -280,13 +284,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const materialId = parseInt(req.params.id);
       const material = await storage.getMaterial(materialId);
-      
+
       if (material) {
         await storage.updateMaterial(materialId, { 
           viewCount: material.viewCount + 1 
         });
       }
-      
+
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: 'Failed to track view' });
@@ -299,14 +303,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
       const search = req.query.search as string;
-      
+
       let materials;
       if (search) {
         materials = await storage.searchMaterials(search);
       } else {
         materials = await storage.getMaterials(undefined, limit, offset);
       }
-      
+
       res.json(materials);
     } catch (error) {
       res.status(500).json({ message: 'Failed to load materials' });
@@ -323,8 +327,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes
-  app.get('/api/admin/stats', requireAuth, async (req, res) => {
+  // Cadastro endpoints
+  app.get('/api/material-types', async (req, res) => {
+    try {
+      res.json([
+        { id: 1, name: 'PDF', description: 'Documentos PDF', isActive: true, createdAt: new Date() },
+        { id: 2, name: 'Vídeo', description: 'Conteúdo em vídeo', isActive: true, createdAt: new Date() },
+        { id: 3, name: 'Texto', description: 'Conteúdo textual', isActive: true, createdAt: new Date() }
+      ]);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load material types' });
+    }
+  });
+
+  app.get('/api/software-types', async (req, res) => {
+    try {
+      res.json([
+        { id: 1, name: 'CRM', description: 'Customer Relationship Management', isActive: true, createdAt: new Date() },
+        { id: 2, name: 'ERP', description: 'Enterprise Resource Planning', isActive: true, createdAt: new Date() }
+      ]);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load software types' });
+    }
+  });
+
+  app.get('/api/supplier-types', async (req, res) => {
+    try {
+      res.json([
+        { id: 1, name: 'Nacional', description: 'Fornecedores nacionais', isActive: true, createdAt: new Date() },
+        { id: 2, name: 'Internacional', description: 'Fornecedores internacionais', isActive: true, createdAt: new Date() }
+      ]);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load supplier types' });
+    }
+  });
+
+  app.get('/api/product-categories', async (req, res) => {
+    try {
+      res.json([
+        { id: 1, name: 'Eletrônicos', description: 'Produtos eletrônicos', isActive: true, createdAt: new Date() },
+        { id: 2, name: 'Roupas', description: 'Vestuário e acessórios', isActive: true, createdAt: new Date() }
+      ]);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load product categories' });
+    }
+  });
+
+  app.get('/api/partner-categories', async (req, res) => {
+    try {
+      res.json([
+        { id: 1, name: 'Tecnologia', description: 'Parceiros de tecnologia', isActive: true, createdAt: new Date() },
+        { id: 2, name: 'Marketing', description: 'Parceiros de marketing', isActive: true, createdAt: new Date() }
+      ]);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load partner categories' });
+    }
+  });
+
+  // Admin routes - require auth and admin role
+  app.get('/api/admin/stats', requireAuth, requireAdmin, async (req, res) => {
     try {
       const user = req.user as any;
       // Check if user has admin access using group-based permissions
@@ -634,14 +695,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/users', requireAuth, async (req, res) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
-      
+
       // Hash password if provided
       if (validatedData.password) {
         validatedData.password = await bcrypt.hash(validatedData.password, 10);
       }
-      
+
       const user = await storage.createUser(validatedData);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -650,7 +711,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.status(201).json(user);
     } catch (error) {
       console.error('Error creating user:', error);
@@ -661,14 +722,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/users/:id', requireAuth, async (req, res) => {
     try {
       const validatedData = insertUserSchema.partial().parse(req.body);
-      
+
       // Hash password if provided
       if (validatedData.password) {
         validatedData.password = await bcrypt.hash(validatedData.password, 10);
       }
-      
+
       const user = await storage.updateUser(parseInt(req.params.id), validatedData);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -677,7 +738,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json(user);
     } catch (error) {
       console.error('Error updating user:', error);
@@ -729,7 +790,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertUserGroupSchema.parse(req.body);
       const group = await storage.createUserGroup(validatedData);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -738,7 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.status(201).json(group);
     } catch (error) {
       res.status(400).json({ message: 'Failed to create user group' });
@@ -749,7 +810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertUserGroupSchema.partial().parse(req.body);
       const group = await storage.updateUserGroup(parseInt(req.params.id), validatedData);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -758,7 +819,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json(group);
     } catch (error) {
       res.status(400).json({ message: 'Failed to update user group' });
@@ -768,7 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/user-groups/:id', requireAuth, async (req, res) => {
     try {
       await storage.deleteUserGroup(parseInt(req.params.id));
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -777,7 +838,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ message: 'Failed to delete user group' });
@@ -813,7 +874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertPermissionSchema.parse(req.body);
       const permission = await storage.createPermission(validatedData);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -822,7 +883,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.status(201).json(permission);
     } catch (error) {
       res.status(400).json({ message: 'Failed to create permission' });
@@ -833,7 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertPermissionSchema.partial().parse(req.body);
       const permission = await storage.updatePermission(parseInt(req.params.id), validatedData);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -842,7 +903,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json(permission);
     } catch (error) {
       res.status(400).json({ message: 'Failed to update permission' });
@@ -852,7 +913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/admin/permissions/:id', requireAuth, async (req, res) => {
     try {
       await storage.deletePermission(parseInt(req.params.id));
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -861,7 +922,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ message: 'Failed to delete permission' });
@@ -873,13 +934,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { permissionIds } = req.body;
       const groupId = parseInt(req.params.id);
-      
+
       if (!Array.isArray(permissionIds)) {
         return res.status(400).json({ message: 'permissionIds must be an array' });
       }
-      
+
       await storage.setGroupPermissions(groupId, permissionIds);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -888,7 +949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json({ message: 'Permissions updated successfully' });
     } catch (error) {
       res.status(400).json({ message: 'Failed to update group permissions' });
@@ -899,9 +960,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const groupId = parseInt(req.params.groupId);
       const permissionId = parseInt(req.params.permissionId);
-      
+
       const groupPermission = await storage.addGroupPermission(groupId, permissionId);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -910,7 +971,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.status(201).json(groupPermission);
     } catch (error) {
       res.status(400).json({ message: 'Failed to add group permission' });
@@ -921,9 +982,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const groupId = parseInt(req.params.groupId);
       const permissionId = parseInt(req.params.permissionId);
-      
+
       await storage.removeGroupPermission(groupId, permissionId);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -932,7 +993,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ message: 'Failed to remove group permission' });
@@ -971,6 +1032,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch user activity' });
     }
+  });
+
+  // Generic PUT and DELETE routes for cadastros
+  const cadastroTypes = ['material-types', 'software-types', 'supplier-types', 'product-categories', 'partner-categories'];
+
+  cadastroTypes.forEach(type => {
+    app.put(`/api/${type}/:id`, requireAuth, requireAdmin, async (req, res) => {
+      try {
+        const id = parseInt(req.params.id);
+        const data = req.body;
+
+        // In a real implementation, this would update the database
+        res.json({ 
+          id, 
+          ...data, 
+          updatedAt: new Date() 
+        });
+      } catch (error) {
+        res.status(500).json({ message: `Failed to update ${type}` });
+      }
+    });
+
+    app.delete(`/api/${type}/:id`, requireAuth, requireAdmin, async (req, res) => {
+      try {
+        const id = parseInt(req.params.id);
+
+        // In a real implementation, this would delete from the database
+        res.json({ success: true });
+      } catch (error) {
+        res.status(500).json({ message: `Failed to delete ${type}` });
+      }
+    });
+
+    app.post(`/api/${type}`, requireAuth, requireAdmin, async (req, res) => {
+      try {
+        const data = req.body;
+
+        // In a real implementation, this would insert into the database
+        res.json({ 
+          id: Date.now(), // Simple ID generation
+          ...data, 
+          createdAt: new Date() 
+        });
+      } catch (error) {
+        res.status(500).json({ message: `Failed to create ${type}` });
+      }
+    });
+  });
+
+  // Error handling middleware
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Server error:', err);
+
+    // Ensure we always send JSON, not HTML
+    if (!res.headersSent) {
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Catch-all route to ensure we don't serve HTML for API routes
+  app.use('/api/*', (req: express.Request, res: express.Response) => {
+    res.status(404).json({ message: 'API endpoint not found' });
   });
 
   const httpServer = createServer(app);
