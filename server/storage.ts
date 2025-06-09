@@ -1,7 +1,8 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, 
   tickets, materials, news, reviews, authTokens, materialTypes, softwareTypes,
-  supplierTypes, productCategories, partnerCategories,
+  supplierTypes, productCategories, partnerCategories, userGroups, permissions,
+  groupPermissions, userActivityLog,
   type User, type InsertUser, type Partner, type InsertPartner, 
   type Supplier, type InsertSupplier, type Tool, type InsertTool, 
   type MySupplier, type InsertMySupplier, type Product, type InsertProduct, 
@@ -10,7 +11,9 @@ import {
   type Review, type InsertReview, type AuthToken, type InsertAuthToken,
   type MaterialType, type InsertMaterialType, type SoftwareType, type InsertSoftwareType,
   type SupplierType, type InsertSupplierType, type ProductCategory, type InsertProductCategory,
-  type PartnerCategory, type InsertPartnerCategory
+  type PartnerCategory, type InsertPartnerCategory, type UserGroup, type InsertUserGroup,
+  type Permission, type InsertPermission, type GroupPermission, type InsertGroupPermission,
+  type UserActivityLog, type InsertUserActivityLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -23,6 +26,35 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User>;
   updateUserAiCredits(id: number, credits: number): Promise<User>;
+  getUsers(limit?: number, offset?: number, groupId?: number, isActive?: boolean, search?: string): Promise<User[]>;
+  getUsersWithGroups(limit?: number, offset?: number, groupId?: number, isActive?: boolean, search?: string): Promise<(User & { group: UserGroup | null })[]>;
+  getUserPermissions(userId: number): Promise<Permission[]>;
+
+  // User Groups management
+  getUserGroups(): Promise<UserGroup[]>;
+  getUserGroup(id: number): Promise<UserGroup | undefined>;
+  createUserGroup(group: InsertUserGroup): Promise<UserGroup>;
+  updateUserGroup(id: number, updates: Partial<UserGroup>): Promise<UserGroup>;
+  deleteUserGroup(id: number): Promise<void>;
+
+  // Permissions management
+  getPermissions(): Promise<Permission[]>;
+  getPermission(id: number): Promise<Permission | undefined>;
+  getPermissionsByModule(module: string): Promise<Permission[]>;
+  createPermission(permission: InsertPermission): Promise<Permission>;
+  updatePermission(id: number, updates: Partial<Permission>): Promise<Permission>;
+  deletePermission(id: number): Promise<void>;
+
+  // Group Permissions management
+  getGroupPermissions(groupId: number): Promise<Permission[]>;
+  setGroupPermissions(groupId: number, permissionIds: number[]): Promise<void>;
+  addGroupPermission(groupId: number, permissionId: number): Promise<GroupPermission>;
+  removeGroupPermission(groupId: number, permissionId: number): Promise<void>;
+
+  // User Activity Log
+  logUserActivity(log: InsertUserActivityLog): Promise<UserActivityLog>;
+  getUserActivity(userId: number, limit?: number, offset?: number): Promise<UserActivityLog[]>;
+  getAllUserActivity(limit?: number, offset?: number): Promise<UserActivityLog[]>;
 
   // Partners
   getPartners(limit?: number, offset?: number): Promise<Partner[]>;
@@ -175,6 +207,194 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async getUsers(limit = 50, offset = 0, groupId?: number, isActive?: boolean, search?: string): Promise<User[]> {
+    let query = db.select().from(users);
+    
+    const conditions = [];
+    if (groupId !== undefined) conditions.push(eq(users.groupId, groupId));
+    if (isActive !== undefined) conditions.push(eq(users.isActive, isActive));
+    if (search) {
+      conditions.push(
+        or(
+          like(users.fullName, `%${search}%`),
+          like(users.email, `%${search}%`)
+        )
+      );
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query.limit(limit).offset(offset).orderBy(desc(users.createdAt));
+  }
+
+  async getUsersWithGroups(limit = 50, offset = 0, groupId?: number, isActive?: boolean, search?: string): Promise<(User & { group: UserGroup | null })[]> {
+    let query = db.select({
+      ...users,
+      group: userGroups
+    }).from(users).leftJoin(userGroups, eq(users.groupId, userGroups.id));
+    
+    const conditions = [];
+    if (groupId !== undefined) conditions.push(eq(users.groupId, groupId));
+    if (isActive !== undefined) conditions.push(eq(users.isActive, isActive));
+    if (search) {
+      conditions.push(
+        or(
+          like(users.fullName, `%${search}%`),
+          like(users.email, `%${search}%`)
+        )
+      );
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query.limit(limit).offset(offset).orderBy(desc(users.createdAt));
+  }
+
+  async getUserPermissions(userId: number): Promise<Permission[]> {
+    const user = await this.getUser(userId);
+    if (!user || !user.groupId) return [];
+    
+    return await db.select({
+      id: permissions.id,
+      key: permissions.key,
+      name: permissions.name,
+      description: permissions.description,
+      module: permissions.module,
+      category: permissions.category,
+      isActive: permissions.isActive,
+      createdAt: permissions.createdAt
+    })
+    .from(permissions)
+    .innerJoin(groupPermissions, eq(permissions.id, groupPermissions.permissionId))
+    .where(eq(groupPermissions.groupId, user.groupId));
+  }
+
+  // User Groups management
+  async getUserGroups(): Promise<UserGroup[]> {
+    return await db.select().from(userGroups).orderBy(userGroups.name);
+  }
+
+  async getUserGroup(id: number): Promise<UserGroup | undefined> {
+    const [group] = await db.select().from(userGroups).where(eq(userGroups.id, id));
+    return group || undefined;
+  }
+
+  async createUserGroup(group: InsertUserGroup): Promise<UserGroup> {
+    const [created] = await db.insert(userGroups).values(group).returning();
+    return created;
+  }
+
+  async updateUserGroup(id: number, updates: Partial<UserGroup>): Promise<UserGroup> {
+    const [group] = await db.update(userGroups).set(updates).where(eq(userGroups.id, id)).returning();
+    return group;
+  }
+
+  async deleteUserGroup(id: number): Promise<void> {
+    await db.delete(userGroups).where(eq(userGroups.id, id));
+  }
+
+  // Permissions management
+  async getPermissions(): Promise<Permission[]> {
+    return await db.select().from(permissions).orderBy(permissions.module, permissions.name);
+  }
+
+  async getPermission(id: number): Promise<Permission | undefined> {
+    const [permission] = await db.select().from(permissions).where(eq(permissions.id, id));
+    return permission || undefined;
+  }
+
+  async getPermissionsByModule(module: string): Promise<Permission[]> {
+    return await db.select().from(permissions).where(eq(permissions.module, module)).orderBy(permissions.name);
+  }
+
+  async createPermission(permission: InsertPermission): Promise<Permission> {
+    const [created] = await db.insert(permissions).values(permission).returning();
+    return created;
+  }
+
+  async updatePermission(id: number, updates: Partial<Permission>): Promise<Permission> {
+    const [permission] = await db.update(permissions).set(updates).where(eq(permissions.id, id)).returning();
+    return permission;
+  }
+
+  async deletePermission(id: number): Promise<void> {
+    await db.delete(permissions).where(eq(permissions.id, id));
+  }
+
+  // Group Permissions management
+  async getGroupPermissions(groupId: number): Promise<Permission[]> {
+    return await db.select({
+      id: permissions.id,
+      key: permissions.key,
+      name: permissions.name,
+      description: permissions.description,
+      module: permissions.module,
+      category: permissions.category,
+      isActive: permissions.isActive,
+      createdAt: permissions.createdAt
+    })
+    .from(permissions)
+    .innerJoin(groupPermissions, eq(permissions.id, groupPermissions.permissionId))
+    .where(eq(groupPermissions.groupId, groupId))
+    .orderBy(permissions.module, permissions.name);
+  }
+
+  async setGroupPermissions(groupId: number, permissionIds: number[]): Promise<void> {
+    // Remove existing permissions
+    await db.delete(groupPermissions).where(eq(groupPermissions.groupId, groupId));
+    
+    // Add new permissions
+    if (permissionIds.length > 0) {
+      const values = permissionIds.map(permissionId => ({
+        groupId,
+        permissionId
+      }));
+      await db.insert(groupPermissions).values(values);
+    }
+  }
+
+  async addGroupPermission(groupId: number, permissionId: number): Promise<GroupPermission> {
+    const [created] = await db.insert(groupPermissions).values({
+      groupId,
+      permissionId
+    }).returning();
+    return created;
+  }
+
+  async removeGroupPermission(groupId: number, permissionId: number): Promise<void> {
+    await db.delete(groupPermissions).where(
+      and(
+        eq(groupPermissions.groupId, groupId),
+        eq(groupPermissions.permissionId, permissionId)
+      )
+    );
+  }
+
+  // User Activity Log
+  async logUserActivity(log: InsertUserActivityLog): Promise<UserActivityLog> {
+    const [created] = await db.insert(userActivityLog).values(log).returning();
+    return created;
+  }
+
+  async getUserActivity(userId: number, limit = 50, offset = 0): Promise<UserActivityLog[]> {
+    return await db.select().from(userActivityLog)
+      .where(eq(userActivityLog.userId, userId))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(userActivityLog.createdAt));
+  }
+
+  async getAllUserActivity(limit = 50, offset = 0): Promise<UserActivityLog[]> {
+    return await db.select().from(userActivityLog)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(userActivityLog.createdAt));
   }
 
   async getPartners(limit = 50, offset = 0): Promise<Partner[]> {
