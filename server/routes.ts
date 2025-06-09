@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema } from "@shared/schema";
 import { z } from "zod";

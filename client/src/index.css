@@ -89,7 +89,7 @@
   }
   
   .sidebar-link.active {
-    @apply bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary;
+    @apply bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400;
   }
 
   .card-hover {
@@ -97,7 +97,7 @@
   }
 
   .gradient-bg {
-    @apply bg-gradient-to-r from-primary to-primary/80;
+    @apply bg-gradient-to-r from-blue-600 to-blue-500;
   }
 }
 
