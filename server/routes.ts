@@ -8,6 +8,7 @@ import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema } from "@shared/schema";
 import { z } from "zod";
+import { getCachedVideos } from "./youtube";
 
 // Configure passport
 passport.use(new LocalStrategy(
