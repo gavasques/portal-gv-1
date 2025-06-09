@@ -1,0 +1,86 @@
+Módulo: Gestão de Usuários e Permissões (Visão do Admin)
+Parte 1: Gestão de Usuários
+Esta área é para gerenciar cada pessoa cadastrada na plataforma.
+
+Tela 1.1: Listagem de Todos os Usuários
+
+Objetivo: Permitir que o administrador encontre, visualize e gerencie rapidamente qualquer usuário do sistema.
+Componentes Visuais:
+Cabeçalho: Título "Usuários do Sistema" e um botão + Adicionar Novo Usuário (para criar um usuário manualmente).
+Barra de Ferramentas (Filtros): Essencial para a gestão.
+Busca: Campo para buscar por nome ou e-mail.
+Filtro por Grupo: Menu suspenso com os grupos: Basic, Aluno, Aluno Pro, Suporte, Administrador.
+Filtro por Status: Menu suspenso com as opções: Ativo, Inativo.
+Tabela de Usuários: A visualização principal, com as colunas:
+Nome (com o avatar/foto do usuário)
+E-mail
+Grupo (Exibido como uma "tag" colorida para fácil identificação, ex: Aluno Pro em roxo, Suporte em laranja).
+Data de Cadastro
+Status (Um botão de alternância (toggle) para ativar ou inativar o usuário rapidamente).
+Ações (Ícones para "Editar Perfil", "Ver Atividade" e "Excluir").
+Paginação: Na base da tabela.
+Tela 1.2: Perfil do Usuário (Edição Individual)
+
+Objetivo: Ver e editar todas as informações e configurações de um único usuário.
+Componentes Visuais: Layout de formulário, organizado em abas.
+Aba "Dados Pessoais":
+Campos para editar Nome, E-mail.
+Botão para Enviar link de redefinição de senha.
+Aba "Acesso e Permissões":
+Grupo do Usuário: Um menu suspenso para alterar o grupo do usuário (ex: promover um Aluno para Aluno Pro). Esta é a principal conexão com o sistema de permissões.
+Status da Conta: Botões de opção (Ativo / Inativo).
+Aba "Histórico" (Opcional, para uma visão 360º):
+Um registro de atividades importantes, como: Créditos de IA comprados, Chamados abertos, Data do último login.
+Parte 2: Gestão de Grupos e Permissões (O Coração do Sistema Modular)
+Esta área define as "regras do jogo". Em vez de dar permissões para cada pessoa, você dá permissões para os grupos.
+
+Tela 2.1: Listagem dos Grupos
+
+Objetivo: Visualizar os grupos de usuários existentes no sistema e acessar suas configurações de permissão.
+Componentes Visuais:
+Cabeçalho: Título "Grupos e Permissões".
+Lista de Grupos: Uma lista simples mostrando os grupos que já definimos:
+Basic
+Aluno
+Aluno Pro
+Suporte
+Administrador
+Ao lado de cada nome de grupo, um botão Editar Permissões.
+Tela 2.2: Edição de Permissões de um Grupo
+
+Objetivo: A tela mais importante. Aqui o administrador define, usando checkboxes, exatamente o que um grupo de usuários pode ou não fazer.
+Componentes Visuais:
+Cabeçalho: Editando permissões para o grupo: [Nome do Grupo].
+
+Lista de Permissões Granulares (Agrupadas por Módulo):
+
+Módulo - Materiais:
+
+[ ] Acessar materiais públicos
+[ ] Acessar materiais exclusivos para alunos
+[ ] Publicar comentários nos materiais
+Módulo - Ferramentas (Parceiros/Fornecedores):
+
+[ ] Visualizar diretórios
+[ ] Deixar avaliações (estrelas + texto)
+[ ] Deixar comentários (com like/reply)
+Módulo - Agentes de IA:
+
+[ ] Acessar e usar agentes de IA
+[ ] Comprar créditos de IA
+Módulo - Chamados:
+
+[ ] Abrir e gerenciar os próprios chamados
+(Permissão de Suporte/Admin):
+[ ] Visualizar TODOS os chamados de todos os usuários
+[ ] Responder e fechar chamados
+Módulo - Administração (Permissões de Admin):
+
+[ ] Acessar o painel de administração
+[ ] Gerenciar todos os usuários
+[ ] Gerenciar grupos e permissões
+[ ] Gerenciar todos os conteúdos (materiais, parceiros, etc.)
+[ ] Ver painel de comentários unificado
+Botões de Ação: Salvar Permissões e Cancelar.
+
+Este design garante um sistema seguro, onde você pode facilmente criar novos tipos de usuários ou alterar o que um grupo inteiro pode fazer com apenas alguns cliques, sem precisar editar usuário por usuário.

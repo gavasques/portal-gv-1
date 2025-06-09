@@ -3,18 +3,62 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// User Groups/Roles table
+export const userGroups = pgTable("user_groups", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  color: text("color").notNull().default("#6b7280"), // For UI tags
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Permissions table - defines what actions can be performed
+export const permissions = pgTable("permissions", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(), // e.g., "materials.view_public", "admin.manage_users"
+  name: text("name").notNull(),
+  description: text("description"),
+  module: text("module").notNull(), // e.g., "materials", "admin", "ai_agents"
+  category: text("category"), // For grouping related permissions
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Group permissions - many-to-many relationship
+export const groupPermissions = pgTable("group_permissions", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").notNull().references(() => userGroups.id),
+  permissionId: integer("permission_id").notNull().references(() => permissions.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password"),
   fullName: text("full_name").notNull(),
-  accessLevel: text("access_level").notNull().default("Basic"), // Basic, Aluno, Aluno Pro, Suporte, Administradores
+  groupId: integer("group_id").references(() => userGroups.id).default(1), // Default to "Basic" group
   aiCredits: integer("ai_credits").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   googleId: text("google_id"),
   profileImage: text("profile_image"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// User activity log for tracking important actions
+export const userActivityLog = pgTable("user_activity_log", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  action: text("action").notNull(), // e.g., "login", "ai_credits_purchased", "ticket_created"
+  details: jsonb("details"), // Additional context about the action
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -510,6 +554,27 @@ export const insertAuthTokenSchema = createInsertSchema(authTokens).omit({
   createdAt: true,
 });
 
+// User Management insert schemas
+export const insertUserGroupSchema = createInsertSchema(userGroups).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPermissionSchema = createInsertSchema(permissions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGroupPermissionSchema = createInsertSchema(groupPermissions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserActivityLogSchema = createInsertSchema(userActivityLog).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Cadastros insert schemas
 export const insertMaterialTypeSchema = createInsertSchema(materialTypes).omit({
   id: true,
@@ -561,6 +626,16 @@ export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type AuthToken = typeof authTokens.$inferSelect;
 export type InsertAuthToken = z.infer<typeof insertAuthTokenSchema>;
+
+// User Management types
+export type UserGroup = typeof userGroups.$inferSelect;
+export type InsertUserGroup = z.infer<typeof insertUserGroupSchema>;
+export type Permission = typeof permissions.$inferSelect;
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+export type GroupPermission = typeof groupPermissions.$inferSelect;
+export type InsertGroupPermission = z.infer<typeof insertGroupPermissionSchema>;
+export type UserActivityLog = typeof userActivityLog.$inferSelect;
+export type InsertUserActivityLog = z.infer<typeof insertUserActivityLogSchema>;
 
 // Cadastros types
 export type MaterialType = typeof materialTypes.$inferSelect;
