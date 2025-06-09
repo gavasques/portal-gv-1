@@ -8,6 +8,9 @@ import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
 import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema } from "@shared/schema";
+import { users, tickets, materials, templates } from "@shared/schema";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 // Configure passport
@@ -887,6 +890,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error: any) {
       res.status(500).json({ message: "Error confirming payment: " + error.message });
+    }
+  });
+
+  // User settings routes
+  app.patch('/api/user/update-name', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { fullName } = req.body;
+      
+      if (!fullName || fullName.trim().length < 2) {
+        return res.status(400).json({ message: 'Nome deve ter pelo menos 2 caracteres' });
+      }
+
+      const updatedUser = await storage.updateUser(user.id, { fullName: fullName.trim() });
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update name' });
+    }
+  });
+
+  app.patch('/api/user/update-password', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { password } = req.body;
+      
+      if (!password || password.length < 6) {
+        return res.status(400).json({ message: 'Senha deve ter pelo menos 6 caracteres' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await storage.updateUser(user.id, { password: hashedPassword });
+      res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update password' });
+    }
+  });
+
+  // Admin routes
+  app.get('/api/admin/stats', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      if (user.accessLevel !== 'Administradores' && user.accessLevel !== 'Suporte') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      // Get admin statistics
+      const totalUsers = await db.select({ count: sql`count(*)` }).from(users);
+      const basicUsers = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.accessLevel, 'Basic'));
+      const alunoUsers = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.accessLevel, 'Aluno'));
+      const alunoProUsers = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.accessLevel, 'Aluno Pro'));
+      const supportUsers = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.accessLevel, 'Suporte'));
+      const adminUsers = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.accessLevel, 'Administradores'));
+
+      const totalTickets = await db.select({ count: sql`count(*)` }).from(tickets);
+      const openTickets = await db.select({ count: sql`count(*)` }).from(tickets).where(eq(tickets.status, 'open'));
+      const totalMaterials = await db.select({ count: sql`count(*)` }).from(materials);
+      const totalTemplates = await db.select({ count: sql`count(*)` }).from(templates);
+
+      res.json({
+        users: {
+          total: totalUsers[0].count,
+          basic: basicUsers[0].count,
+          aluno: alunoUsers[0].count,
+          alunoPro: alunoProUsers[0].count,
+          support: supportUsers[0].count,
+          admin: adminUsers[0].count
+        },
+        tickets: {
+          total: totalTickets[0].count,
+          open: openTickets[0].count
+        },
+        content: {
+          materials: totalMaterials[0].count,
+          templates: totalTemplates[0].count
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load admin stats' });
     }
   });
 

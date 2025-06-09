@@ -49,10 +49,7 @@ export default function Settings() {
 
   const updateNameMutation = useMutation({
     mutationFn: (data: z.infer<typeof updateNameSchema>) =>
-      apiRequest("/api/user/update-name", {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      }),
+      apiRequest("/api/user/update-name", "PATCH", data),
     onSuccess: () => {
       toast({
         title: "Nome atualizado",
@@ -71,10 +68,7 @@ export default function Settings() {
 
   const updatePasswordMutation = useMutation({
     mutationFn: (data: z.infer<typeof updatePasswordSchema>) =>
-      apiRequest("/api/user/update-password", {
-        method: "PATCH",
-        body: JSON.stringify({ password: data.newPassword }),
-      }),
+      apiRequest("/api/user/update-password", "PATCH", { password: data.newPassword }),
     onSuccess: () => {
       toast({
         title: "Senha atualizada",
