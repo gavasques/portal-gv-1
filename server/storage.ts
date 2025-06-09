@@ -1,6 +1,6 @@
 import { 
-  users, replitUsers, partners, suppliers, tools, mySuppliers, products, templates, 
-  tickets, materials, news, reviews, type User, type InsertUser, type ReplitUser, type UpsertUser,
+  users, partners, suppliers, tools, mySuppliers, products, templates, 
+  tickets, materials, news, reviews, type User, type InsertUser,
   type Partner, type InsertPartner, type Supplier, type InsertSupplier,
   type Tool, type InsertTool, type MySupplier, type InsertMySupplier,
   type Product, type InsertProduct, type Template, type InsertTemplate,
@@ -18,9 +18,6 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User>;
   updateUserAiCredits(id: number, credits: number): Promise<User>;
-  
-  // Replit Auth support
-  upsertUser(userData: UpsertUser): Promise<ReplitUser>;
 
   // Partners
   getPartners(limit?: number, offset?: number): Promise<Partner[]>;
@@ -129,21 +126,6 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.update(users)
       .set({ aiCredits: sql`${users.aiCredits} + ${credits}` })
       .where(eq(users.id, id))
-      .returning();
-    return user;
-  }
-
-  async upsertUser(userData: UpsertUser): Promise<ReplitUser> {
-    const [user] = await db
-      .insert(replitUsers)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: replitUsers.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
       .returning();
     return user;
   }

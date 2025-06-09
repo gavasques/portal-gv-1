@@ -6,7 +6,6 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated as replitIsAuthenticated } from "./replitAuth";
 import { getCachedVideos } from "./youtube";
 import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema } from "@shared/schema";
 import { z } from "zod";
@@ -96,10 +95,7 @@ passport.deserializeUser(async (id: number, done) => {
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup Replit Auth middleware
-  await setupAuth(app);
-  
-  // Session configuration for legacy auth
+  // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
@@ -136,11 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'User already exists' });
       }
 
-      // Hash password if provided
-      let hashedPassword: string | undefined = undefined;
-      if (userData.password) {
-        hashedPassword = await bcrypt.hash(userData.password, 10);
-      }
+      // Hash password
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
       
       const user = await storage.createUser({
         ...userData,
@@ -184,19 +177,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Replit Auth route
-  app.get('/api/auth/user', replitIsAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(parseInt(userId));
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
-  // Legacy auth route
   app.get('/api/auth/me', (req, res) => {
     if (req.user) {
       const { password: _, ...userWithoutPassword } = req.user as any;

@@ -19,7 +19,7 @@ import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth } from "./hooks/use-auth";
 import Sidebar from "./components/layout/sidebar";
 import Topbar from "./components/layout/topbar";
 
