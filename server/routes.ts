@@ -784,13 +784,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/materials', requireAuth, requireRole(['Administradores']), async (req, res) => {
+  // Material view tracking
+  app.post('/api/materials/:id/view', requireAuth, async (req, res) => {
+    try {
+      const materialId = parseInt(req.params.id);
+      const material = await storage.getMaterial(materialId);
+      
+      if (material) {
+        await storage.updateMaterial(materialId, { 
+          viewCount: material.viewCount + 1 
+        });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to track view' });
+    }
+  });
+
+  // Material comments
+  app.get('/api/materials/:id/comments', requireAuth, async (req, res) => {
+    try {
+      const materialId = parseInt(req.params.id);
+      // For now, return empty array - would implement comments table
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load comments' });
+    }
+  });
+
+  app.post('/api/materials/:id/comments', requireAuth, async (req, res) => {
+    try {
+      const materialId = parseInt(req.params.id);
+      const { content } = req.body;
+      const user = req.user as any;
+      
+      // For now, return success - would implement comments table
+      res.json({ 
+        id: Date.now(),
+        content,
+        createdAt: new Date().toISOString(),
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName
+        }
+      });
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to add comment' });
+    }
+  });
+
+  // Admin materials routes
+  app.get('/api/admin/materials', requireAuth, requireRole(['Administradores', 'Suporte']), async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const search = req.query.search as string;
+      
+      let materials;
+      if (search) {
+        materials = await storage.searchMaterials(search);
+      } else {
+        materials = await storage.getMaterials(undefined, limit, offset);
+      }
+      
+      res.json(materials);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load materials' });
+    }
+  });
+
+  app.post('/api/admin/materials', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
       const materialData = insertMaterialSchema.parse(req.body);
       const material = await storage.createMaterial(materialData);
       res.json(material);
     } catch (error) {
       res.status(400).json({ message: 'Failed to create material' });
+    }
+  });
+
+  app.put('/api/admin/materials/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const materialId = parseInt(req.params.id);
+      const updates = insertMaterialSchema.partial().parse(req.body);
+      const material = await storage.updateMaterial(materialId, updates);
+      res.json(material);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update material' });
+    }
+  });
+
+  app.patch('/api/admin/materials/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const materialId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const material = await storage.updateMaterial(materialId, { isActive });
+      res.json(material);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update material status' });
+    }
+  });
+
+  app.delete('/api/admin/materials/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const materialId = parseInt(req.params.id);
+      await storage.updateMaterial(materialId, { isActive: false });
+      res.json({ message: 'Material deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete material' });
     }
   });
 

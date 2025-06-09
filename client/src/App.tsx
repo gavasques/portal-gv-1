@@ -17,6 +17,8 @@ import Templates from "@/pages/templates";
 import AiAgents from "@/pages/ai-agents";
 import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
+import MaterialView from "@/pages/material-view";
+import AdminMaterials from "@/pages/admin-materials";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
@@ -77,10 +79,12 @@ function Router() {
         <Route path="/ai-agents" component={AiAgents} />
         <Route path="/tickets" component={Tickets} />
         <Route path="/materials" component={Materials} />
+        <Route path="/materials/:id" component={MaterialView} />
         <Route path="/simulators" component={Simulators} />
         <Route path="/courses" component={Courses} />
         <Route path="/settings" component={Settings} />
         <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/materials" component={AdminMaterials} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>
