@@ -21,18 +21,40 @@ export const queryClient = new QueryClient({
 });
 
 // Helper function for API requests
-export const apiRequest = async (url: string, options: RequestInit = {}) => {
-  const response = await fetch(url, {
+export async function apiRequest(method: string, url: string, data?: any) {
+  const config: RequestInit = {
+    method,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...options.headers,
     },
-    ...options,
-  });
+  };
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  if (data) {
+    config.body = JSON.stringify(data);
   }
 
-  return response.json();
-};
+  const response = await fetch(url, config);
+
+  if (!response.ok) {
+    let errorMessage = 'Request failed';
+
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } else {
+        // If response is not JSON (like HTML error page), use status text
+        errorMessage = response.statusText || `HTTP ${response.status}`;
+      }
+    } catch (parseError) {
+      // If we can't parse the response, use status info
+      errorMessage = response.statusText || `HTTP ${response.status}`;
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  return response;
+}
