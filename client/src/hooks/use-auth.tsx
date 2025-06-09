@@ -36,7 +36,6 @@ export function useAuth() {
 
   const registerMutation = useMutation({
     mutationFn: async (userData: { 
-      username: string; 
       email: string; 
       password: string; 
       fullName: string;
