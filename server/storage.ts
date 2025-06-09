@@ -18,6 +18,9 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User>;
   updateUserAiCredits(id: number, credits: number): Promise<User>;
+  
+  // Replit Auth support
+  upsertUser(userData: UpsertUser): Promise<ReplitUser>;
 
   // Partners
   getPartners(limit?: number, offset?: number): Promise<Partner[]>;
