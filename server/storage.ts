@@ -321,11 +321,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTickets(userId?: number, limit = 50, offset = 0): Promise<Ticket[]> {
-    let query = db.select().from(tickets);
     if (userId) {
-      query = query.where(eq(tickets.userId, userId));
+      return await db.select().from(tickets)
+        .where(eq(tickets.userId, userId))
+        .limit(limit)
+        .offset(offset)
+        .orderBy(desc(tickets.createdAt));
     }
-    return await query.limit(limit).offset(offset).orderBy(desc(tickets.createdAt));
+    return await db.select().from(tickets)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(tickets.createdAt));
   }
 
   async getTicket(id: number): Promise<Ticket | undefined> {
