@@ -97,12 +97,14 @@ function requireAuth(req: any, res: any, next: any) {
   if (req.isAuthenticated()) {
     return next();
   }
+  res.setHeader('Content-Type', 'application/json');
   res.status(401).json({ message: 'Not authenticated' });
 }
 
 function requireRole(roles: string[]) {
   return (req: any, res: any, next: any) => {
     if (!req.isAuthenticated()) {
+      res.setHeader('Content-Type', 'application/json');
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
@@ -121,6 +123,7 @@ function requireRole(roles: string[]) {
       return next();
     }
 
+    res.setHeader('Content-Type', 'application/json');
     res.status(403).json({ message: 'Insufficient permissions' });
   };
 }
@@ -759,8 +762,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/user-groups', requireAuth, async (req, res) => {
     try {
       const groups = await storage.getUserGroups();
-      res.json(groups);
+      // Ensure we always return an array
+      res.json(Array.isArray(groups) ? groups : []);
     } catch (error) {
+      console.error('Error fetching user groups:', error);
       res.status(500).json({ message: 'Failed to fetch user groups' });
     }
   });
@@ -1081,6 +1086,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Middleware to ensure all API routes return JSON
+  app.use('/api/*', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  });
+
   // Error handling middleware
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('Server error:', err);
@@ -1094,6 +1105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Catch-all route to ensure we don't serve HTML for API routes
   app.use('/api/*', (req: express.Request, res: express.Response) => {
+    res.setHeader('Content-Type', 'application/json');
     res.status(404).json({ message: 'API endpoint not found' });
   });
 
