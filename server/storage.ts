@@ -1,6 +1,6 @@
 import { 
-  users, partners, suppliers, tools, mySuppliers, products, templates, 
-  tickets, materials, news, reviews, type User, type InsertUser,
+  users, replitUsers, partners, suppliers, tools, mySuppliers, products, templates, 
+  tickets, materials, news, reviews, type User, type InsertUser, type ReplitUser, type UpsertUser,
   type Partner, type InsertPartner, type Supplier, type InsertSupplier,
   type Tool, type InsertTool, type MySupplier, type InsertMySupplier,
   type Product, type InsertProduct, type Template, type InsertTemplate,
@@ -129,6 +129,21 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.update(users)
       .set({ aiCredits: sql`${users.aiCredits} + ${credits}` })
       .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<ReplitUser> {
+    const [user] = await db
+      .insert(replitUsers)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: replitUsers.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
       .returning();
     return user;
   }
