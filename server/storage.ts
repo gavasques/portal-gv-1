@@ -232,11 +232,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUsersWithGroups(limit = 50, offset = 0, groupId?: number, isActive?: boolean, search?: string): Promise<(User & { group: UserGroup | null })[]> {
-    let query = db.select({
-      ...users,
-      group: userGroups
-    }).from(users).leftJoin(userGroups, eq(users.groupId, userGroups.id));
-    
     const conditions = [];
     if (groupId !== undefined) conditions.push(eq(users.groupId, groupId));
     if (isActive !== undefined) conditions.push(eq(users.isActive, isActive));
@@ -249,11 +244,29 @@ export class DatabaseStorage implements IStorage {
       );
     }
     
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
+    const baseQuery = db.select({
+      id: users.id,
+      email: users.email,
+      password: users.password,
+      fullName: users.fullName,
+      isActive: users.isActive,
+      createdAt: users.createdAt,
+      groupId: users.groupId,
+      aiCredits: users.aiCredits,
+      googleId: users.googleId,
+      profileImage: users.profileImage,
+      stripeCustomerId: users.stripeCustomerId,
+      stripeSubscriptionId: users.stripeSubscriptionId,
+      lastLoginAt: users.lastLoginAt,
+      updatedAt: users.updatedAt,
+      group: userGroups
+    }).from(users).leftJoin(userGroups, eq(users.groupId, userGroups.id));
     
-    return await query.limit(limit).offset(offset).orderBy(desc(users.createdAt));
+    const query = conditions.length > 0 
+      ? baseQuery.where(and(...conditions))
+      : baseQuery;
+    
+    return await query.limit(limit).offset(offset).orderBy(desc(users.createdAt)) as (User & { group: UserGroup | null })[];
   }
 
   async getUserPermissions(userId: number): Promise<Permission[]> {

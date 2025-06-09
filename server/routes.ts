@@ -7,7 +7,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
-import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema } from "@shared/schema";
+import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema } from "@shared/schema";
 import { users, tickets, materials, templates } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
@@ -569,6 +569,378 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ message: 'Failed to delete partner category' });
+    }
+  });
+
+  // User Management Routes
+  app.get('/api/admin/users', requireAuth, async (req, res) => {
+    try {
+      const { limit, offset, groupId, isActive, search } = req.query;
+      const users = await storage.getUsersWithGroups(
+        limit ? parseInt(limit as string) : undefined,
+        offset ? parseInt(offset as string) : undefined,
+        groupId ? parseInt(groupId as string) : undefined,
+        isActive ? isActive === 'true' : undefined,
+        search as string
+      );
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Failed to fetch users' });
+    }
+  });
+
+  app.get('/api/admin/users/:id', requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(parseInt(req.params.id));
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user' });
+    }
+  });
+
+  app.get('/api/admin/users/:id/permissions', requireAuth, async (req, res) => {
+    try {
+      const permissions = await storage.getUserPermissions(parseInt(req.params.id));
+      res.json(permissions);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user permissions' });
+    }
+  });
+
+  app.post('/api/admin/users', requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      // Hash password if provided
+      if (validatedData.password) {
+        validatedData.password = await bcrypt.hash(validatedData.password, 10);
+      }
+      
+      const user = await storage.createUser(validatedData);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'CREATE_USER',
+        details: { createdUserId: user.id, email: user.email },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(201).json(user);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      res.status(400).json({ message: 'Failed to create user' });
+    }
+  });
+
+  app.put('/api/admin/users/:id', requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.partial().parse(req.body);
+      
+      // Hash password if provided
+      if (validatedData.password) {
+        validatedData.password = await bcrypt.hash(validatedData.password, 10);
+      }
+      
+      const user = await storage.updateUser(parseInt(req.params.id), validatedData);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'UPDATE_USER',
+        details: { updatedUserId: user.id, changes: validatedData },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json(user);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(400).json({ message: 'Failed to update user' });
+    }
+  });
+
+  // User Groups Management Routes
+  app.get('/api/admin/user-groups', requireAuth, async (req, res) => {
+    try {
+      const groups = await storage.getUserGroups();
+      res.json(groups);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user groups' });
+    }
+  });
+
+  app.get('/api/admin/user-groups/:id', requireAuth, async (req, res) => {
+    try {
+      const group = await storage.getUserGroup(parseInt(req.params.id));
+      if (!group) {
+        return res.status(404).json({ message: 'User group not found' });
+      }
+      res.json(group);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user group' });
+    }
+  });
+
+  app.get('/api/admin/user-groups/:id/permissions', requireAuth, async (req, res) => {
+    try {
+      const permissions = await storage.getGroupPermissions(parseInt(req.params.id));
+      res.json(permissions);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch group permissions' });
+    }
+  });
+
+  app.post('/api/admin/user-groups', requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertUserGroupSchema.parse(req.body);
+      const group = await storage.createUserGroup(validatedData);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'CREATE_USER_GROUP',
+        details: { groupId: group.id, name: group.name },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(201).json(group);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create user group' });
+    }
+  });
+
+  app.put('/api/admin/user-groups/:id', requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertUserGroupSchema.partial().parse(req.body);
+      const group = await storage.updateUserGroup(parseInt(req.params.id), validatedData);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'UPDATE_USER_GROUP',
+        details: { groupId: group.id, changes: validatedData },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json(group);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update user group' });
+    }
+  });
+
+  app.delete('/api/admin/user-groups/:id', requireAuth, async (req, res) => {
+    try {
+      await storage.deleteUserGroup(parseInt(req.params.id));
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'DELETE_USER_GROUP',
+        details: { groupId: parseInt(req.params.id) },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete user group' });
+    }
+  });
+
+  // Permissions Management Routes
+  app.get('/api/admin/permissions', requireAuth, async (req, res) => {
+    try {
+      const { module } = req.query;
+      const permissions = module 
+        ? await storage.getPermissionsByModule(module as string)
+        : await storage.getPermissions();
+      res.json(permissions);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch permissions' });
+    }
+  });
+
+  app.get('/api/admin/permissions/:id', requireAuth, async (req, res) => {
+    try {
+      const permission = await storage.getPermission(parseInt(req.params.id));
+      if (!permission) {
+        return res.status(404).json({ message: 'Permission not found' });
+      }
+      res.json(permission);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch permission' });
+    }
+  });
+
+  app.post('/api/admin/permissions', requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertPermissionSchema.parse(req.body);
+      const permission = await storage.createPermission(validatedData);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'CREATE_PERMISSION',
+        details: { permissionId: permission.id, key: permission.key },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(201).json(permission);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create permission' });
+    }
+  });
+
+  app.put('/api/admin/permissions/:id', requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertPermissionSchema.partial().parse(req.body);
+      const permission = await storage.updatePermission(parseInt(req.params.id), validatedData);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'UPDATE_PERMISSION',
+        details: { permissionId: permission.id, changes: validatedData },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json(permission);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update permission' });
+    }
+  });
+
+  app.delete('/api/admin/permissions/:id', requireAuth, async (req, res) => {
+    try {
+      await storage.deletePermission(parseInt(req.params.id));
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'DELETE_PERMISSION',
+        details: { permissionId: parseInt(req.params.id) },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete permission' });
+    }
+  });
+
+  // Group Permissions Management Routes
+  app.put('/api/admin/user-groups/:id/permissions', requireAuth, async (req, res) => {
+    try {
+      const { permissionIds } = req.body;
+      const groupId = parseInt(req.params.id);
+      
+      if (!Array.isArray(permissionIds)) {
+        return res.status(400).json({ message: 'permissionIds must be an array' });
+      }
+      
+      await storage.setGroupPermissions(groupId, permissionIds);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'UPDATE_GROUP_PERMISSIONS',
+        details: { groupId, permissionIds },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json({ message: 'Permissions updated successfully' });
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update group permissions' });
+    }
+  });
+
+  app.post('/api/admin/user-groups/:groupId/permissions/:permissionId', requireAuth, async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.groupId);
+      const permissionId = parseInt(req.params.permissionId);
+      
+      const groupPermission = await storage.addGroupPermission(groupId, permissionId);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'ADD_GROUP_PERMISSION',
+        details: { groupId, permissionId },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(201).json(groupPermission);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to add group permission' });
+    }
+  });
+
+  app.delete('/api/admin/user-groups/:groupId/permissions/:permissionId', requireAuth, async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.groupId);
+      const permissionId = parseInt(req.params.permissionId);
+      
+      await storage.removeGroupPermission(groupId, permissionId);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'REMOVE_GROUP_PERMISSION',
+        details: { groupId, permissionId },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to remove group permission' });
+    }
+  });
+
+  // User Activity Log Routes
+  app.get('/api/admin/activity-log', requireAuth, async (req, res) => {
+    try {
+      const { limit, offset, userId } = req.query;
+      const activities = userId 
+        ? await storage.getUserActivity(
+            parseInt(userId as string),
+            limit ? parseInt(limit as string) : undefined,
+            offset ? parseInt(offset as string) : undefined
+          )
+        : await storage.getAllUserActivity(
+            limit ? parseInt(limit as string) : undefined,
+            offset ? parseInt(offset as string) : undefined
+          );
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch activity log' });
+    }
+  });
+
+  app.get('/api/admin/users/:id/activity', requireAuth, async (req, res) => {
+    try {
+      const { limit, offset } = req.query;
+      const activities = await storage.getUserActivity(
+        parseInt(req.params.id),
+        limit ? parseInt(limit as string) : undefined,
+        offset ? parseInt(offset as string) : undefined
+      );
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user activity' });
     }
   });
 
