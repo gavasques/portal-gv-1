@@ -69,15 +69,35 @@ function VideoCard({
   title, 
   thumbnail, 
   duration, 
-  publishedAt 
+  publishedAt,
+  url 
 }: { 
   title: string; 
   thumbnail: string; 
   duration: string; 
-  publishedAt: string; 
+  publishedAt: string;
+  url?: string;
 }) {
+  const formatPublishedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffInDays === 0) return 'hoje';
+    if (diffInDays === 1) return 'há 1 dia';
+    if (diffInDays < 7) return `há ${diffInDays} dias`;
+    if (diffInDays < 30) return `há ${Math.floor(diffInDays / 7)} semana${Math.floor(diffInDays / 7) > 1 ? 's' : ''}`;
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const handleClick = () => {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
+
   return (
-    <div className="group cursor-pointer">
+    <div className="group cursor-pointer" onClick={handleClick}>
       <div className="relative rounded-lg overflow-hidden mb-3">
         <img 
           src={thumbnail} 
@@ -96,7 +116,7 @@ function VideoCard({
       <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
         {title}
       </h4>
-      <p className="text-xs text-muted-foreground mt-1">{publishedAt}</p>
+      <p className="text-xs text-muted-foreground mt-1">{formatPublishedDate(publishedAt)}</p>
     </div>
   );
 }
@@ -115,7 +135,7 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  const { data: youtubeData } = useQuery({
+  const { data: youtubeData } = useQuery<{videos: any[], lastUpdated: string, cacheStatus: string}>({
     queryKey: ['/api/youtube/videos'],
     enabled: !!user,
   });
@@ -182,14 +202,31 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {mockVideos.map((video, index) => (
-                  <VideoCard key={index} {...video} />
-                ))}
+                {youtubeData?.videos && youtubeData.videos.length > 0 ? (
+                  youtubeData.videos.slice(0, 4).map((video: any) => (
+                    <VideoCard 
+                      key={video.id} 
+                      title={video.title}
+                      thumbnail={video.thumbnail}
+                      duration={video.duration}
+                      publishedAt={video.publishedAt}
+                      url={video.url}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-muted-foreground">Carregando vídeos do canal...</p>
+                  </div>
+                )}
               </div>
               
               <div className="mt-6 text-center">
-                <Button variant="outline" className="gap-2">
-                  Ver todos os vídeos
+                <Button 
+                  variant="outline" 
+                  className="gap-2"
+                  onClick={() => window.open('https://youtube.com/@guilhermeavasques', '_blank')}
+                >
+                  Ver Canal no YouTube
                   <ExternalLink className="h-4 w-4" />
                 </Button>
               </div>
@@ -238,7 +275,7 @@ export default function Dashboard() {
               <CardTitle>Ações Rápidas</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <QuickActionButton
                   title="Gerar Listing"
                   subtitle="com IA"
