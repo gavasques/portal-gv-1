@@ -75,22 +75,22 @@ export default function AdminUsers() {
   // Fetch users with groups
   const { data: users = [], isLoading: isUsersLoading } = useQuery({
     queryKey: ['/api/admin/users', searchQuery, selectedGroupFilter],
-    queryFn: async () => {
+    queryFn: () => {
       const groupFilter = selectedGroupFilter === "all" ? "" : selectedGroupFilter;
-      return await apiRequest(`/api/admin/users?search=${searchQuery}&groupId=${groupFilter}`);
+      return apiRequest(`/api/admin/users?search=${searchQuery}&groupId=${groupFilter}`);
     }
   });
 
   // Fetch user groups
   const { data: userGroups = [] } = useQuery({
     queryKey: ['/api/admin/groups'],
-    queryFn: async () => await apiRequest('/api/admin/groups')
+    queryFn: () => apiRequest('/api/admin/groups')
   });
 
   // Create user mutation
   const createUserMutation = useMutation({
-    mutationFn: async (userData: UserFormData) => 
-      await apiRequest('/api/admin/users', 'POST', userData),
+    mutationFn: (userData: UserFormData) => 
+      apiRequest('/api/admin/users', 'POST', userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setIsCreateDialogOpen(false);
@@ -111,8 +111,8 @@ export default function AdminUsers() {
 
   // Update user mutation
   const updateUserMutation = useMutation({
-    mutationFn: async ({ id, ...userData }: UserFormData & { id: number }) => 
-      await apiRequest(`/api/admin/users/${id}`, 'PUT', userData),
+    mutationFn: ({ id, ...userData }: UserFormData & { id: number }) => 
+      apiRequest(`/api/admin/users/${id}`, 'PUT', userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setEditingUser(null);
