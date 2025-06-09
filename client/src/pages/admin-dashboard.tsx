@@ -77,7 +77,13 @@ export default function AdminDashboard() {
     localStorage.setItem('admin-dashboard-widgets', JSON.stringify(updatedWidgets));
   };
 
+  const resetToDefaults = () => {
+    setWidgets(defaultWidgets);
+    localStorage.setItem('admin-dashboard-widgets', JSON.stringify(defaultWidgets));
+  };
+
   const enabledWidgets = widgets.filter(w => w.enabled).sort((a, b) => a.order - b.order);
+  const enabledCount = widgets.filter(w => w.enabled).length;
 
   if (isLoading) {
     return (
@@ -203,9 +209,19 @@ export default function AdminDashboard() {
                 <DialogTitle>Configurar Dashboard</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Escolha quais widgets deseja exibir no dashboard:
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Widgets ativos: {enabledCount} de {widgets.length}
+                  </p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={resetToDefaults}
+                    className="text-xs"
+                  >
+                    Restaurar Padrão
+                  </Button>
+                </div>
                 <div className="space-y-3">
                   {widgets.map((widget) => (
                     <div key={widget.id} className="flex items-center space-x-3">
@@ -254,125 +270,141 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* User Statistics */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Estatísticas de Usuários</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-          {userStats.map((stat) => (
-            <Card key={stat.title} className="card-hover">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`h-6 w-6 rounded flex items-center justify-center ${stat.color}`}>
-                    <stat.icon className="h-3 w-3" />
-                  </div>
+      {/* Render widgets based on configuration */}
+      {enabledWidgets.map((widget) => {
+        switch (widget.id) {
+          case 'userStats':
+            return (
+              <div key={widget.id}>
+                <h2 className="text-lg font-semibold mb-3">Estatísticas de Usuários</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+                  {userStats.map((stat) => (
+                    <Card key={stat.title} className="card-hover">
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className={`h-6 w-6 rounded flex items-center justify-center ${stat.color}`}>
+                            <stat.icon className="h-3 w-3" />
+                          </div>
+                        </div>
+                        <div className="text-lg font-bold">{stat.value}</div>
+                        <p className="text-xs text-muted-foreground leading-tight">
+                          {stat.title}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-                <div className="text-lg font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground leading-tight">
-                  {stat.title}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+              </div>
+            );
 
-      {/* System Statistics */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Estatísticas do Sistema</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-          {systemStats.map((stat) => (
-            <Card key={stat.title} className="card-hover">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className={`h-6 w-6 rounded flex items-center justify-center ${stat.color}`}>
-                    <stat.icon className="h-3 w-3" />
-                  </div>
+          case 'systemStats':
+            return (
+              <div key={widget.id}>
+                <h2 className="text-lg font-semibold mb-3">Estatísticas do Sistema</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+                  {systemStats.map((stat) => (
+                    <Card key={stat.title} className="card-hover">
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className={`h-6 w-6 rounded flex items-center justify-center ${stat.color}`}>
+                            <stat.icon className="h-3 w-3" />
+                          </div>
+                        </div>
+                        <div className="text-lg font-bold">{stat.value}</div>
+                        <p className="text-xs text-muted-foreground leading-tight">
+                          {stat.title}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-                <div className="text-lg font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground leading-tight">
-                  {stat.title}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+              </div>
+            );
 
-      {/* Key Metrics */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Métricas Principais</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4" />
-                <span className="font-medium text-sm">Taxa de Conversão</span>
-              </div>
-              <div className="text-2xl font-bold mb-2">
-                {paidUsersPercentage.toFixed(1)}%
-              </div>
-              <Progress value={paidUsersPercentage} className="w-full mb-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Pagos: {stats.users.aluno + stats.users.alunoPro}</span>
-                <span>Total: {stats.users.total}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageSquare className="h-4 w-4" />
-                <span className="font-medium text-sm">Taxa de Resolução</span>
-              </div>
-              <div className="text-2xl font-bold mb-2">
-                {ticketResolutionRate.toFixed(1)}%
-              </div>
-              <Progress value={ticketResolutionRate} className="w-full mb-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Resolvidos: {stats.tickets.total - stats.tickets.open}</span>
-                <span>Total: {stats.tickets.total}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* User Distribution */}
-      <Card>
-        <CardContent className="p-4">
-          <h3 className="font-medium text-sm mb-3">Distribuição por Nível de Acesso</h3>
-          <div className="space-y-2">
-            {[
-              { label: "Básico", value: stats.users.basic, color: "bg-gray-500" },
-              { label: "Aluno", value: stats.users.aluno, color: "bg-blue-500" },
-              { label: "Aluno Pro", value: stats.users.alunoPro, color: "bg-purple-500" },
-              { label: "Suporte", value: stats.users.support, color: "bg-yellow-500" },
-              { label: "Admin", value: stats.users.admin, color: "bg-red-500" }
-            ].map((item) => {
-              const percentage = stats.users.total > 0 ? (item.value / stats.users.total) * 100 : 0;
-              return (
-                <div key={item.label} className="flex items-center gap-3">
-                  <div className="w-16 text-xs font-medium">{item.label}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-muted rounded-full h-1.5">
-                        <div 
-                          className={`h-1.5 rounded-full ${item.color}`}
-                          style={{ width: `${percentage}%` }}
-                        />
+          case 'keyMetrics':
+            return (
+              <div key={widget.id}>
+                <h2 className="text-lg font-semibold mb-3">Métricas Principais</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="h-4 w-4" />
+                        <span className="font-medium text-sm">Taxa de Conversão</span>
                       </div>
-                      <div className="text-xs text-muted-foreground w-12">
-                        {item.value} ({percentage.toFixed(0)}%)
+                      <div className="text-2xl font-bold mb-2">
+                        {paidUsersPercentage.toFixed(1)}%
                       </div>
-                    </div>
-                  </div>
+                      <Progress value={paidUsersPercentage} className="w-full mb-2" />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Pagos: {stats.users.aluno + stats.users.alunoPro}</span>
+                        <span>Total: {stats.users.total}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="font-medium text-sm">Taxa de Resolução</span>
+                      </div>
+                      <div className="text-2xl font-bold mb-2">
+                        {ticketResolutionRate.toFixed(1)}%
+                      </div>
+                      <Progress value={ticketResolutionRate} className="w-full mb-2" />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Resolvidos: {stats.tickets.total - stats.tickets.open}</span>
+                        <span>Total: {stats.tickets.total}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            );
+
+          case 'userDistribution':
+            return (
+              <Card key={widget.id}>
+                <CardContent className="p-4">
+                  <h3 className="font-medium text-sm mb-3">Distribuição por Nível de Acesso</h3>
+                  <div className="space-y-2">
+                    {[
+                      { label: "Básico", value: stats.users.basic, color: "bg-gray-500" },
+                      { label: "Aluno", value: stats.users.aluno, color: "bg-blue-500" },
+                      { label: "Aluno Pro", value: stats.users.alunoPro, color: "bg-purple-500" },
+                      { label: "Suporte", value: stats.users.support, color: "bg-yellow-500" },
+                      { label: "Admin", value: stats.users.admin, color: "bg-red-500" }
+                    ].map((item) => {
+                      const percentage = stats.users.total > 0 ? (item.value / stats.users.total) * 100 : 0;
+                      return (
+                        <div key={item.label} className="flex items-center gap-3">
+                          <div className="w-16 text-xs font-medium">{item.label}</div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 bg-muted rounded-full h-1.5">
+                                <div 
+                                  className={`h-1.5 rounded-full ${item.color}`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <div className="text-xs text-muted-foreground w-12">
+                                {item.value} ({percentage.toFixed(0)}%)
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+
+          default:
+            return null;
+        }
+      })}
     </div>
   );
 }
