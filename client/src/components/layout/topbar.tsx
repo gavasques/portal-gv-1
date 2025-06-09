@@ -16,7 +16,7 @@ export default function Topbar() {
     <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
       <div className="flex items-center space-x-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Bem-vindo ao Portal do Aluno
+          Bem-vindo ao Portal Guilherme Vasques
         </h2>
       </div>
 
@@ -36,10 +36,14 @@ export default function Topbar() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                {user?.fullName?.charAt(0).toUpperCase() || user?.username.charAt(0).toUpperCase()}
+                {user?.profileImage ? (
+                  <img src={user.profileImage} alt="Profile" className="w-8 h-8 rounded-full" />
+                ) : (
+                  user?.fullName?.charAt(0).toUpperCase() || user?.email.charAt(0).toUpperCase()
+                )}
               </div>
               <span className="hidden md:block text-sm font-medium text-gray-900 dark:text-white">
-                {user?.fullName || user?.username}
+                {user?.fullName || user?.email.split('@')[0]}
               </span>
             </Button>
           </DropdownMenuTrigger>
