@@ -11,10 +11,13 @@ import { GraduationCap, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import logoPath from "@assets/Asset 11-8_1749488723029.png";
+import logoLightPath from "@assets/Asset 14-8_1749490361481.png";
+import { useTheme } from "@/components/theme-provider";
 
 export default function Login() {
   const { login, register, isLoginPending, isRegisterPending, loginError, registerError, user } = useAuth();
   const [, navigate] = useLocation();
+  const { theme } = useTheme();
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
     email: "",
@@ -52,7 +55,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img 
-            src={logoPath} 
+            src={theme === 'dark' ? logoPath : logoLightPath} 
             alt="Portal Guilherme Vasques" 
             className="mx-auto h-20 w-auto mb-4"
           />
