@@ -126,11 +126,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  if (!user) return null;
-
-  // Always show student dashboard for /dashboard route
-  // Admin area is accessed via /admin route
-
   // Student dashboard for other users
   const { data: metrics } = useQuery<DashboardMetrics>({
     queryKey: ['/api/dashboard/metrics'],
@@ -146,6 +141,8 @@ export default function Dashboard() {
     queryKey: ['/api/youtube/videos'],
     enabled: !!user,
   });
+
+  if (!user) return null;
 
   return (
     <div className="space-y-8">
