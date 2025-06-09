@@ -7,7 +7,14 @@ export const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
       queryFn: async ({ queryKey }) => {
         const url = queryKey[0] as string;
+        
+        // Validate URL format
+        if (!url || !url.startsWith('/api/')) {
+          throw new Error('Invalid API endpoint');
+        }
+
         const response = await fetch(url, {
+          method: 'GET',
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
@@ -53,18 +60,15 @@ export const queryClient = new QueryClient({
 });
 
 // Helper function for API requests with explicit methods
-export async function apiRequest(method: string, url: string, data?: any) {
+export async function apiRequest(url: string, options: RequestInit = {}) {
   const config: RequestInit = {
-    method,
+    method: 'GET',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
+    ...options,
   };
-
-  if (data) {
-    config.body = JSON.stringify(data);
-  }
 
   const response = await fetch(url, config);
 
