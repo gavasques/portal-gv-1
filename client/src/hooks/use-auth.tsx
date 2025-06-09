@@ -26,8 +26,7 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
-      const response = await apiRequest('POST', '/api/auth/login', { email, password });
-      return response.json();
+      return await apiRequest('/api/auth/login', 'POST', { email, password });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
@@ -41,8 +40,7 @@ export function useAuth() {
       fullName: string;
       accessLevel?: string;
     }) => {
-      const response = await apiRequest('POST', '/api/auth/register', userData);
-      return response.json();
+      return await apiRequest('/api/auth/register', 'POST', userData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
@@ -51,7 +49,7 @@ export function useAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('POST', '/api/auth/logout');
+      return await apiRequest('/api/auth/logout', 'POST');
     },
     onSuccess: () => {
       queryClient.setQueryData(['/api/auth/me'], null);

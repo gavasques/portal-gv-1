@@ -1086,24 +1086,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Middleware to ensure all API routes return JSON
-  app.use('/api/*', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Middleware to ensure all API routes return JSON and handle errors
+  app.use('/api', (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    // Set JSON content type for all API routes
     res.setHeader('Content-Type', 'application/json');
+    
+    // Override res.send to ensure JSON responses
+    const originalSend = res.send;
+    res.send = function(data) {
+      if (typeof data === 'string' && !data.startsWith('{') && !data.startsWith('[')) {
+        // Convert plain text to JSON
+        return originalSend.call(this, JSON.stringify({ message: data }));
+      }
+      return originalSend.call(this, data);
+    };
+    
     next();
   });
 
-  // Error handling middleware
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Server error:', err);
+  // Error handling middleware specifically for API routes
+  app.use('/api/*', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('API Error:', err);
 
-    // Ensure we always send JSON, not HTML
     if (!res.headersSent) {
       res.setHeader('Content-Type', 'application/json');
-      res.status(500).json({ message: 'Internal server error' });
+      const statusCode = err.status || err.statusCode || 500;
+      const message = err.message || 'Internal server error';
+      
+      res.status(statusCode).json({ 
+        message,
+        error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
     }
   });
 
-  // Catch-all route to ensure we don't serve HTML for API routes
+  // Catch-all route for API 404s
   app.use('/api/*', (req: express.Request, res: express.Response) => {
     res.setHeader('Content-Type', 'application/json');
     res.status(404).json({ message: 'API endpoint not found' });
