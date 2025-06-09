@@ -72,23 +72,29 @@ function MaterialRow({ material, onEdit, onDelete }: {
     <tr className="border-b">
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">
-          <Icon className="h-5 w-5 text-primary shrink-0" />
-          <div className="min-w-0">
-            <div className="font-medium truncate">{material.title}</div>
-            <div className="text-sm text-muted-foreground truncate">
-              {material.description}
+          <Icon className="h-4 w-4 text-primary shrink-0" />
+          <div className="min-w-0 max-w-xs">
+            <div className="text-sm font-medium truncate">{material.title}</div>
+            <div className="text-xs text-muted-foreground truncate">
+              {material.description && material.description.length > 50 
+                ? material.description.substring(0, 50) + "..." 
+                : material.description}
             </div>
           </div>
         </div>
       </td>
-      <td className="px-4 py-3">
-        <Badge variant="outline">{material.category}</Badge>
+      <td className="px-3 py-2">
+        <Badge variant="outline" className="text-xs">
+          {material.category && material.category.length > 15 
+            ? material.category.substring(0, 15) + "..." 
+            : material.category}
+        </Badge>
       </td>
-      <td className="px-4 py-3">
-        <Badge variant="secondary">{material.type}</Badge>
+      <td className="px-3 py-2">
+        <Badge variant="secondary" className="text-xs">{material.type}</Badge>
       </td>
-      <td className="px-4 py-3">
-        <Badge variant={material.accessLevel === "Public" ? "default" : "secondary"}>
+      <td className="px-3 py-2">
+        <Badge variant={material.accessLevel === "Public" ? "default" : "secondary"} className="text-xs">
           {material.accessLevel === "Public" ? (
             <>
               <Globe className="h-3 w-3 mr-1" />
@@ -102,44 +108,47 @@ function MaterialRow({ material, onEdit, onDelete }: {
           )}
         </Badge>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-2">
         <div className="flex items-center space-x-1">
-          <Eye className="h-4 w-4" />
-          <span>{material.viewCount}</span>
+          <Eye className="h-3 w-3" />
+          <span className="text-xs">{material.viewCount}</span>
         </div>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-2">
         <div className="flex items-center space-x-1">
-          <MessageSquare className="h-4 w-4" />
-          <span>0</span>
+          <MessageSquare className="h-3 w-3" />
+          <span className="text-xs">0</span>
         </div>
       </td>
-      <td className="px-4 py-3">
-        <span className="text-sm text-muted-foreground">
+      <td className="px-3 py-2">
+        <span className="text-xs text-muted-foreground">
           {new Date(material.createdAt).toLocaleDateString('pt-BR')}
         </span>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-2">
         <Switch 
           checked={material.isActive}
           onCheckedChange={(checked) => toggleStatus(checked)}
+          className="scale-75"
         />
       </td>
-      <td className="px-4 py-3">
-        <div className="flex items-center space-x-2">
+      <td className="px-3 py-2">
+        <div className="flex items-center space-x-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onEdit(material)}
+            className="h-7 w-7 p-0"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3 w-3" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onDelete(material.id)}
+            className="h-7 w-7 p-0"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </td>
@@ -275,18 +284,18 @@ export default function AdminMaterials() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[1000px]">
                 <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Título</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Categoria</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Formato</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Acesso</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Visualizações</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Comentários</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Data</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Ações</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-1/3">Título</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-20">Categoria</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-16">Formato</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-20">Acesso</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-20">Visualizações</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-20">Comentários</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-20">Data</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-16">Status</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium w-20">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
