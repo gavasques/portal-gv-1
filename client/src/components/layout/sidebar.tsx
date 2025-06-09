@@ -180,18 +180,18 @@ export default function Sidebar() {
 
       {/* Area Switching for Admin/Support */}
       {(userAccessLevel === "admin" || userAccessLevel === "suporte") && open && (
-        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex gap-2">
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm" className="flex-1">
-                <UserCheck className="h-4 w-4 mr-2" />
-                Área Aluno
+        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-2 gap-2">
+            <Link href="/dashboard" className="w-full">
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                <UserCheck className="h-3 w-3 mr-1" />
+                Aluno
               </Button>
             </Link>
-            <Link href="/admin">
-              <Button variant="outline" size="sm" className="flex-1">
-                <Shield className="h-4 w-4 mr-2" />
-                Área Admin
+            <Link href="/admin" className="w-full">
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                <Shield className="h-3 w-3 mr-1" />
+                Admin
               </Button>
             </Link>
           </div>
