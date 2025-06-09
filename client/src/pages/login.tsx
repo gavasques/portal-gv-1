@@ -46,6 +46,10 @@ export default function Login() {
     register({ ...userData, accessLevel: "Basic" });
   };
 
+  const handleReplitLogin = () => {
+    window.location.href = "/api/login";
+  };
+
   const handleGoogleLogin = () => {
     window.location.href = "/auth/google";
   };
