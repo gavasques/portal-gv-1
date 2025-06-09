@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Users, 
   UserCheck, 
@@ -11,7 +15,10 @@ import {
   FileText, 
   Shield,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 interface AdminStats {
@@ -33,10 +40,44 @@ interface AdminStats {
   };
 }
 
+interface DashboardWidget {
+  id: string;
+  title: string;
+  description: string;
+  category: 'users' | 'system' | 'metrics' | 'distribution';
+  enabled: boolean;
+  order: number;
+}
+
+const defaultWidgets: DashboardWidget[] = [
+  { id: 'userStats', title: 'Estatísticas de Usuários', description: 'Contadores de usuários por tipo', category: 'users', enabled: true, order: 1 },
+  { id: 'systemStats', title: 'Estatísticas do Sistema', description: 'Métricas de tickets e conteúdo', category: 'system', enabled: true, order: 2 },
+  { id: 'keyMetrics', title: 'Métricas Principais', description: 'Taxa de conversão e resolução', category: 'metrics', enabled: true, order: 3 },
+  { id: 'userDistribution', title: 'Distribuição de Usuários', description: 'Gráfico de distribuição por nível', category: 'distribution', enabled: true, order: 4 },
+];
+
 export default function AdminDashboard() {
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
   });
+
+  // Widget management state
+  const [widgets, setWidgets] = useState<DashboardWidget[]>(() => {
+    const saved = localStorage.getItem('admin-dashboard-widgets');
+    return saved ? JSON.parse(saved) : defaultWidgets;
+  });
+
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+
+  const updateWidgetVisibility = (widgetId: string, enabled: boolean) => {
+    const updatedWidgets = widgets.map(widget => 
+      widget.id === widgetId ? { ...widget, enabled } : widget
+    );
+    setWidgets(updatedWidgets);
+    localStorage.setItem('admin-dashboard-widgets', JSON.stringify(updatedWidgets));
+  };
+
+  const enabledWidgets = widgets.filter(w => w.enabled).sort((a, b) => a.order - b.order);
 
   if (isLoading) {
     return (
@@ -149,32 +190,85 @@ export default function AdminDashboard() {
             Visão geral do sistema e métricas importantes
           </p>
         </div>
-        <Badge variant="secondary" className="flex items-center gap-2">
-          <Shield className="h-4 w-4" />
-          Área Administrativa
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Personalizar
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Configurar Dashboard</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Escolha quais widgets deseja exibir no dashboard:
+                </p>
+                <div className="space-y-3">
+                  {widgets.map((widget) => (
+                    <div key={widget.id} className="flex items-center space-x-3">
+                      <Checkbox
+                        id={widget.id}
+                        checked={widget.enabled}
+                        onCheckedChange={(checked) => 
+                          updateWidgetVisibility(widget.id, !!checked)
+                        }
+                      />
+                      <div className="flex-1">
+                        <label 
+                          htmlFor={widget.id} 
+                          className="text-sm font-medium cursor-pointer"
+                        >
+                          {widget.title}
+                        </label>
+                        <p className="text-xs text-muted-foreground">
+                          {widget.description}
+                        </p>
+                      </div>
+                      {widget.enabled ? (
+                        <Eye className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsConfigOpen(false)}
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Badge variant="secondary" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Área Administrativa
+          </Badge>
+        </div>
       </div>
 
       {/* User Statistics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Estatísticas de Usuários</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <h2 className="text-lg font-semibold mb-3">Estatísticas de Usuários</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {userStats.map((stat) => (
             <Card key={stat.title} className="card-hover">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </CardTitle>
-                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${stat.color}`}>
-                    <stat.icon className="h-4 w-4" />
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className={`h-6 w-6 rounded flex items-center justify-center ${stat.color}`}>
+                    <stat.icon className="h-3 w-3" />
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.description}
+                <div className="text-lg font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {stat.title}
                 </p>
               </CardContent>
             </Card>
@@ -184,24 +278,19 @@ export default function AdminDashboard() {
 
       {/* System Statistics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Estatísticas do Sistema</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <h2 className="text-lg font-semibold mb-3">Estatísticas do Sistema</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
           {systemStats.map((stat) => (
             <Card key={stat.title} className="card-hover">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.title}
-                  </CardTitle>
-                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${stat.color}`}>
-                    <stat.icon className="h-4 w-4" />
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className={`h-6 w-6 rounded flex items-center justify-center ${stat.color}`}>
+                    <stat.icon className="h-3 w-3" />
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stat.description}
+                <div className="text-lg font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground leading-tight">
+                  {stat.title}
                 </p>
               </CardContent>
             </Card>
@@ -211,46 +300,36 @@ export default function AdminDashboard() {
 
       {/* Key Metrics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Métricas Principais</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h2 className="text-lg font-semibold mb-3">Métricas Principais</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Taxa de Conversão
-              </CardTitle>
-              <CardDescription>
-                Percentual de usuários com planos pagos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-3xl font-bold">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-4 w-4" />
+                <span className="font-medium text-sm">Taxa de Conversão</span>
+              </div>
+              <div className="text-2xl font-bold mb-2">
                 {paidUsersPercentage.toFixed(1)}%
               </div>
-              <Progress value={paidUsersPercentage} className="w-full" />
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Usuários Pagos: {stats.users.aluno + stats.users.alunoPro}</span>
+              <Progress value={paidUsersPercentage} className="w-full mb-2" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Pagos: {stats.users.aluno + stats.users.alunoPro}</span>
                 <span>Total: {stats.users.total}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Taxa de Resolução de Tickets
-              </CardTitle>
-              <CardDescription>
-                Percentual de tickets resolvidos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-3xl font-bold">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare className="h-4 w-4" />
+                <span className="font-medium text-sm">Taxa de Resolução</span>
+              </div>
+              <div className="text-2xl font-bold mb-2">
                 {ticketResolutionRate.toFixed(1)}%
               </div>
-              <Progress value={ticketResolutionRate} className="w-full" />
-              <div className="flex justify-between text-sm text-muted-foreground">
+              <Progress value={ticketResolutionRate} className="w-full mb-2" />
+              <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Resolvidos: {stats.tickets.total - stats.tickets.open}</span>
                 <span>Total: {stats.tickets.total}</span>
               </div>
@@ -261,14 +340,9 @@ export default function AdminDashboard() {
 
       {/* User Distribution */}
       <Card>
-        <CardHeader>
-          <CardTitle>Distribuição de Usuários por Nível</CardTitle>
-          <CardDescription>
-            Visualização da distribuição dos níveis de acesso
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-4">
+          <h3 className="font-medium text-sm mb-3">Distribuição por Nível de Acesso</h3>
+          <div className="space-y-2">
             {[
               { label: "Básico", value: stats.users.basic, color: "bg-gray-500" },
               { label: "Aluno", value: stats.users.aluno, color: "bg-blue-500" },
@@ -278,18 +352,18 @@ export default function AdminDashboard() {
             ].map((item) => {
               const percentage = stats.users.total > 0 ? (item.value / stats.users.total) * 100 : 0;
               return (
-                <div key={item.label} className="flex items-center gap-4">
-                  <div className="w-20 text-sm font-medium">{item.label}</div>
+                <div key={item.label} className="flex items-center gap-3">
+                  <div className="w-16 text-xs font-medium">{item.label}</div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-muted rounded-full h-2">
+                      <div className="flex-1 bg-muted rounded-full h-1.5">
                         <div 
-                          className={`h-2 rounded-full ${item.color}`}
+                          className={`h-1.5 rounded-full ${item.color}`}
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <div className="text-sm text-muted-foreground w-16">
-                        {item.value} ({percentage.toFixed(1)}%)
+                      <div className="text-xs text-muted-foreground w-12">
+                        {item.value} ({percentage.toFixed(0)}%)
                       </div>
                     </div>
                   </div>
