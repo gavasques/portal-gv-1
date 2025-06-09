@@ -106,7 +106,17 @@ function requireRole(roles: string[]) {
     }
     
     const user = req.user as any;
-    if (roles.includes(user.accessLevel)) {
+    // Map group IDs to role names for compatibility
+    const groupToRole: Record<number, string> = {
+      1: 'Basic',
+      2: 'Aluno', 
+      3: 'Aluno Pro',
+      4: 'Suporte',
+      5: 'Administradores'
+    };
+    
+    const userRole = user.groupId ? groupToRole[user.groupId] : 'Basic';
+    if (roles.includes(userRole)) {
       return next();
     }
     
