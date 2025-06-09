@@ -1,21 +1,35 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb, varchar, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table.
+// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table.
+// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  password: text("password"),
-  fullName: text("full_name").notNull(),
-  accessLevel: text("access_level").notNull().default("Basic"), // Basic, Aluno, Aluno Pro, Suporte, Administradores
-  aiCredits: integer("ai_credits").notNull().default(0),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  accessLevel: text("access_level").notNull().default("basic"), // basic, aluno, aluno_pro, suporte, admin
+  aiCredits: integer("ai_credits").notNull().default(100),
   isActive: boolean("is_active").notNull().default(true),
-  googleId: text("google_id"),
-  profileImage: text("profile_image"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const partners = pgTable("partners", {
@@ -398,8 +412,8 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export const insertPartnerSchema = createInsertSchema(partners).omit({
@@ -456,6 +470,7 @@ export const insertReviewSchema = createInsertSchema(reviews).omit({
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = typeof users.$inferInsert;
 export type Partner = typeof partners.$inferSelect;
 export type InsertPartner = z.infer<typeof insertPartnerSchema>;
 export type Supplier = typeof suppliers.$inferSelect;
