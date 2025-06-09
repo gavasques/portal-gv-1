@@ -128,10 +128,8 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-  // Show admin dashboard for administrators and support
-  if (user.accessLevel === 'Administradores' || user.accessLevel === 'Suporte') {
-    return <AdminDashboard />;
-  }
+  // Always show student dashboard for /dashboard route
+  // Admin area is accessed via /admin route
 
   // Student dashboard for other users
   const { data: metrics } = useQuery<DashboardMetrics>({

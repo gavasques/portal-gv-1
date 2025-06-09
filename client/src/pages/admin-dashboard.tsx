@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Users, 
@@ -207,6 +207,9 @@ export default function AdminDashboard() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Configurar Dashboard</DialogTitle>
+                <DialogDescription>
+                  Personalize quais widgets deseja exibir no dashboard administrativo
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
