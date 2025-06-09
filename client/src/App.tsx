@@ -21,6 +21,7 @@ import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
 import AdminDashboard from "@/pages/admin-dashboard";
+import ResetPassword from "@/pages/reset-password";
 import { useAuth } from "./hooks/use-auth";
 import Sidebar from "./components/layout/sidebar";
 import Topbar from "./components/layout/topbar";

@@ -28,6 +28,12 @@ export default function Login() {
     confirmPassword: "",
     fullName: ""
   });
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [magicLinkEmail, setMagicLinkEmail] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showMagicLink, setShowMagicLink] = useState(false);
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
+  const [magicLinkMessage, setMagicLinkMessage] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -51,6 +57,36 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     window.location.href = "/auth/google";
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotPasswordEmail }),
+      });
+      const data = await response.json();
+      setForgotPasswordMessage(data.message);
+    } catch (error) {
+      setForgotPasswordMessage("Erro ao enviar link de recuperação");
+    }
+  };
+
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: magicLinkEmail }),
+      });
+      const data = await response.json();
+      setMagicLinkMessage(data.message);
+    } catch (error) {
+      setMagicLinkMessage("Erro ao enviar magic link");
+    }
   };
 
   return (
@@ -145,8 +181,125 @@ export default function Login() {
                     {isLoginPending ? "Entrando..." : "Entrar"}
                   </Button>
                 </form>
+
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-primary"
+                      onClick={() => setShowForgotPassword(true)}
+                    >
+                      Esqueci minha senha
+                    </Button>
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto text-primary"
+                      onClick={() => setShowMagicLink(true)}
+                    >
+                      Entrar com Magic Link
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
+
+            {/* Forgot Password Modal */}
+            {showForgotPassword && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-lg">Recuperar Senha</CardTitle>
+                  <CardDescription>
+                    Digite seu email para receber um link de recuperação
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {forgotPasswordMessage ? (
+                    <Alert>
+                      <AlertDescription>{forgotPasswordMessage}</AlertDescription>
+                    </Alert>
+                  ) : (
+                    <form onSubmit={handleForgotPassword} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="forgot-email">Email</Label>
+                        <Input
+                          id="forgot-email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={forgotPasswordEmail}
+                          onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" className="flex-1">
+                          Enviar Link
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          onClick={() => {
+                            setShowForgotPassword(false);
+                            setForgotPasswordMessage("");
+                            setForgotPasswordEmail("");
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Magic Link Modal */}
+            {showMagicLink && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-lg">Magic Link</CardTitle>
+                  <CardDescription>
+                    Digite seu email para receber um link de acesso direto
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {magicLinkMessage ? (
+                    <Alert>
+                      <AlertDescription>{magicLinkMessage}</AlertDescription>
+                    </Alert>
+                  ) : (
+                    <form onSubmit={handleMagicLink} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="magic-email">Email</Label>
+                        <Input
+                          id="magic-email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={magicLinkEmail}
+                          onChange={(e) => setMagicLinkEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" className="flex-1">
+                          Enviar Magic Link
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          onClick={() => {
+                            setShowMagicLink(false);
+                            setMagicLinkMessage("");
+                            setMagicLinkEmail("");
+                          }}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
           
           <TabsContent value="register">

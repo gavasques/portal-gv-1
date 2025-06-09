@@ -189,6 +189,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Forgot password route
+  app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if user exists for security
+        return res.json({ message: 'If this email exists, a password reset link has been sent' });
+      }
+
+      // Generate secure token
+      const crypto = require('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Store token in database
+      await storage.createAuthToken({
+        userId: user.id,
+        token,
+        type: 'reset_password',
+        expiresAt,
+        used: false
+      });
+
+      // In a real implementation, you would send an email here
+      console.log(`Password reset token for ${email}: ${token}`);
+      console.log(`Reset link: ${req.protocol}://${req.get('host')}/reset-password?token=${token}`);
+
+      res.json({ message: 'If this email exists, a password reset link has been sent' });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({ message: 'Failed to process password reset request' });
+    }
+  });
+
+  // Reset password with token
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword) {
+        return res.status(400).json({ message: 'Token and new password are required' });
+      }
+
+      // Validate token
+      const authToken = await storage.getAuthToken(token);
+      if (!authToken || authToken.type !== 'reset_password') {
+        return res.status(400).json({ message: 'Invalid or expired token' });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user password
+      await storage.updateUser(authToken.userId, { password: hashedPassword });
+
+      // Mark token as used
+      await storage.markTokenAsUsed(token);
+
+      res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({ message: 'Failed to reset password' });
+    }
+  });
+
+  // Magic link login request
+  app.post('/api/auth/magic-link', async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if user exists for security
+        return res.json({ message: 'If this email exists, a magic link has been sent' });
+      }
+
+      // Generate secure token
+      const crypto = require('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+      // Store token in database
+      await storage.createAuthToken({
+        userId: user.id,
+        token,
+        type: 'magic_link',
+        expiresAt,
+        used: false
+      });
+
+      // In a real implementation, you would send an email here
+      console.log(`Magic link for ${email}: ${token}`);
+      console.log(`Login link: ${req.protocol}://${req.get('host')}/api/auth/magic-login?token=${token}`);
+
+      res.json({ message: 'If this email exists, a magic link has been sent' });
+    } catch (error) {
+      console.error('Magic link error:', error);
+      res.status(500).json({ message: 'Failed to send magic link' });
+    }
+  });
+
+  // Magic link login verification
+  app.get('/api/auth/magic-login', async (req, res) => {
+    try {
+      const { token } = req.query;
+      if (!token) {
+        return res.status(400).json({ message: 'Token is required' });
+      }
+
+      // Validate token
+      const authToken = await storage.getAuthToken(token as string);
+      if (!authToken || authToken.type !== 'magic_link') {
+        return res.redirect('/login?error=invalid_token');
+      }
+
+      // Get user
+      const user = await storage.getUser(authToken.userId);
+      if (!user) {
+        return res.redirect('/login?error=user_not_found');
+      }
+
+      // Log user in
+      req.login(user, (err) => {
+        if (err) {
+          console.error('Magic login error:', err);
+          return res.redirect('/login?error=login_failed');
+        }
+
+        // Mark token as used
+        storage.markTokenAsUsed(token as string);
+
+        // Redirect to dashboard
+        res.redirect('/dashboard');
+      });
+    } catch (error) {
+      console.error('Magic login verification error:', error);
+      res.redirect('/login?error=verification_failed');
+    }
+  });
+
   // Dashboard routes
   app.get('/api/dashboard/metrics', requireAuth, async (req, res) => {
     try {
