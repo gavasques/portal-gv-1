@@ -20,6 +20,7 @@ import Materials from "@/pages/materials";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
+import AdminDashboard from "@/pages/admin-dashboard";
 import { useAuth } from "./hooks/use-auth";
 import Sidebar from "./components/layout/sidebar";
 import Topbar from "./components/layout/topbar";
@@ -77,6 +78,7 @@ function Router() {
         <Route path="/simulators" component={Simulators} />
         <Route path="/courses" component={Courses} />
         <Route path="/settings" component={Settings} />
+        <Route path="/admin" component={AdminDashboard} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>

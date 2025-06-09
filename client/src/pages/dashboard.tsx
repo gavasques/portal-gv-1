@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Factory, Package, Bot, Headphones, Calculator, Plus, Rocket, ExternalLink } from "lucide-react";
 import { useLocation } from "wouter";
 import type { DashboardMetrics, NewsItem } from "@/lib/types";
+import AdminDashboard from "./admin-dashboard";
 
 function MetricCard({ 
   title, 
@@ -125,6 +126,14 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
+  if (!user) return null;
+
+  // Show admin dashboard for administrators and support
+  if (user.accessLevel === 'Administradores' || user.accessLevel === 'Suporte') {
+    return <AdminDashboard />;
+  }
+
+  // Student dashboard for other users
   const { data: metrics } = useQuery<DashboardMetrics>({
     queryKey: ['/api/dashboard/metrics'],
     enabled: !!user,
@@ -139,8 +148,6 @@ export default function Dashboard() {
     queryKey: ['/api/youtube/videos'],
     enabled: !!user,
   });
-
-  if (!user) return null;
 
   return (
     <div className="space-y-8">

@@ -182,14 +182,18 @@ export default function Sidebar() {
       {(userAccessLevel === "admin" || userAccessLevel === "suporte") && open && (
         <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <UserCheck className="h-4 w-4 mr-2" />
-              Área Aluno
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1">
-              <Shield className="h-4 w-4 mr-2" />
-              Área Admin
-            </Button>
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm" className="flex-1">
+                <UserCheck className="h-4 w-4 mr-2" />
+                Área Aluno
+              </Button>
+            </Link>
+            <Link href="/admin">
+              <Button variant="outline" size="sm" className="flex-1">
+                <Shield className="h-4 w-4 mr-2" />
+                Área Admin
+              </Button>
+            </Link>
           </div>
         </div>
       )}
