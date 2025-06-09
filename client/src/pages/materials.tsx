@@ -48,36 +48,40 @@ function MaterialCard({ material }: { material: Material }) {
   const Icon = formatIcons[material.type as keyof typeof formatIcons] || FileText;
 
   return (
-    <Card className="card-hover cursor-pointer">
+    <Card className="card-hover cursor-pointer h-full">
       <Link href={`/materials/${material.id}`}>
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-2">
-              <Icon className="h-5 w-5 text-primary" />
-              <Badge variant={canAccess ? "default" : "secondary"}>
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex items-center space-x-1 flex-wrap">
+              <Icon className="h-4 w-4 text-primary shrink-0" />
+              <Badge variant={canAccess ? "default" : "secondary"} className="text-xs">
                 {material.accessLevel === "Public" ? (
                   <>
-                    <Globe className="h-3 w-3 mr-1" />
+                    <Globe className="h-2 w-2 mr-1" />
                     Público
                   </>
                 ) : (
                   <>
-                    <Lock className="h-3 w-3 mr-1" />
-                    Aluno Exclusivo
+                    <Lock className="h-2 w-2 mr-1" />
+                    Exclusivo
                   </>
                 )}
               </Badge>
             </div>
           </div>
-          <CardTitle className="text-base line-clamp-2">{material.title}</CardTitle>
+          <CardTitle className="text-sm font-medium line-clamp-2 leading-tight">
+            {material.title}
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+        <CardContent className="pt-0">
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-3 leading-relaxed">
             {material.description}
           </p>
-          <div className="flex items-center justify-between">
-            <Badge variant="outline">{material.category}</Badge>
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-2">
+            <Badge variant="outline" className="text-xs truncate max-w-24">
+              {material.category}
+            </Badge>
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
               <Eye className="h-3 w-3" />
               <span>{material.viewCount}</span>
             </div>
@@ -95,30 +99,38 @@ function MaterialListItem({ material }: { material: Material }) {
 
   return (
     <Link href={`/materials/${material.id}`}>
-      <div className="flex items-center justify-between p-4 hover:bg-muted/50 border-b border-border last:border-b-0 cursor-pointer">
-        <div className="flex items-center space-x-4 flex-1">
-          <Icon className="h-5 w-5 text-primary shrink-0" />
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium truncate">{material.title}</h3>
-            <p className="text-sm text-muted-foreground truncate">{material.description}</p>
-          </div>
-          <Badge variant="outline" className="shrink-0">{material.category}</Badge>
-          <Badge variant={canAccess ? "default" : "secondary"} className="shrink-0">
-            {material.accessLevel === "Public" ? (
-              <>
-                <Globe className="h-3 w-3 mr-1" />
-                Público
-              </>
-            ) : (
-              <>
-                <Lock className="h-3 w-3 mr-1" />
-                Aluno Exclusivo
-              </>
-            )}
-          </Badge>
-          <div className="flex items-center space-x-1 text-xs text-muted-foreground shrink-0">
-            <Eye className="h-3 w-3" />
-            <span>{material.viewCount}</span>
+      <div className="flex items-start p-3 hover:bg-muted/50 border-b border-border last:border-b-0 cursor-pointer gap-3">
+        <Icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0 space-y-1">
+          <h3 className="text-sm font-medium line-clamp-2 leading-tight">
+            {material.title}
+          </h3>
+          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+            {material.description}
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="text-xs">
+              {material.category.length > 15 
+                ? material.category.substring(0, 15) + "..." 
+                : material.category}
+            </Badge>
+            <Badge variant={canAccess ? "default" : "secondary"} className="text-xs">
+              {material.accessLevel === "Public" ? (
+                <>
+                  <Globe className="h-2 w-2 mr-1" />
+                  Público
+                </>
+              ) : (
+                <>
+                  <Lock className="h-2 w-2 mr-1" />
+                  Exclusivo
+                </>
+              )}
+            </Badge>
+            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+              <Eye className="h-3 w-3" />
+              <span>{material.viewCount}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -172,69 +184,71 @@ export default function Materials() {
 
       {/* Toolbar */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="p-3">
+          <div className="flex flex-col gap-3">
             {/* Search */}
-            <div className="relative flex-1">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar materiais..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 text-sm"
               />
             </div>
 
-            {/* Filters */}
-            <div className="flex gap-2">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {categoryOptions.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Filters and View Toggle */}
+            <div className="flex flex-col sm:flex-row gap-2 justify-between">
+              <div className="flex gap-2 flex-1">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="flex-1 min-w-0 text-xs">
+                    <Filter className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {categoryOptions.map(category => (
+                      <SelectItem key={category} value={category}>
+                        {category.length > 20 ? category.substring(0, 20) + "..." : category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              <Select value={selectedFormat} onValueChange={setSelectedFormat}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Formato" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os formatos</SelectItem>
-                  <SelectItem value="pdf">PDF</SelectItem>
-                  <SelectItem value="text">Artigo</SelectItem>
-                  <SelectItem value="video">Vídeo</SelectItem>
-                  <SelectItem value="link">Link</SelectItem>
-                  <SelectItem value="embed">Embed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                <Select value={selectedFormat} onValueChange={setSelectedFormat}>
+                  <SelectTrigger className="flex-1 min-w-0 text-xs max-w-32">
+                    <SelectValue placeholder="Formato" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="pdf">PDF</SelectItem>
+                    <SelectItem value="text">Artigo</SelectItem>
+                    <SelectItem value="video">Vídeo</SelectItem>
+                    <SelectItem value="link">Link</SelectItem>
+                    <SelectItem value="embed">Embed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex border rounded-lg">
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-r-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-l-none"
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
+              {/* View Mode Toggle */}
+              <div className="flex border rounded-lg self-start">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-r-none px-3"
+                >
+                  <List className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-l-none px-3"
+                >
+                  <Grid3X3 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -259,7 +273,7 @@ export default function Materials() {
       ) : (
         <>
           {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {paginatedMaterials.map((material) => (
                 <MaterialCard key={material.id} material={material} />
               ))}
