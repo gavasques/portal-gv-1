@@ -46,11 +46,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     try {
       // Check if user already exists with this Google ID
       let user = await storage.getUserByGoogleId(profile.id);
-      
+
       if (user) {
         return done(null, user);
       }
-      
+
       // Check if user exists with this email
       const email = profile.emails?.[0]?.value;
       if (email) {
@@ -64,7 +64,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           return done(null, user);
         }
       }
-      
+
       // Create new user
       if (email) {
         const newUser = await storage.createUser({
@@ -76,7 +76,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         });
         return done(null, newUser);
       }
-      
+
       return done(new Error('No email found in Google profile'));
     } catch (error) {
       return done(error);
@@ -128,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/register', async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Password is required' });
       }
       const hashedPassword = await bcrypt.hash(userData.password, 10);
-      
+
       const user = await storage.createUser({
         ...userData,
         password: hashedPassword,
@@ -667,14 +667,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
       const user = req.user as any;
-      
+
       let tickets;
       if (user.accessLevel === 'Administradores' || user.accessLevel === 'Suporte') {
         tickets = await storage.getTickets(undefined, limit, offset);
       } else {
         tickets = await storage.getUserTickets(user.id, limit, offset);
       }
-      
+
       res.json(tickets);
     } catch (error) {
       res.status(500).json({ message: 'Failed to load tickets' });
@@ -687,13 +687,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!ticket) {
         return res.status(404).json({ message: 'Ticket not found' });
       }
-      
+
       const user = req.user as any;
       // Users can only see their own tickets unless they're admin/support
       if (ticket.userId !== user.id && !['Administradores', 'Suporte'].includes(user.accessLevel)) {
         return res.status(403).json({ message: 'Access denied' });
       }
-      
+
       res.json(ticket);
     } catch (error) {
       res.status(500).json({ message: 'Failed to load ticket' });
@@ -729,7 +729,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
       const user = req.user as any;
-      
+
       let accessLevel;
       if (user.accessLevel === 'Basic') {
         accessLevel = 'Public';
@@ -737,7 +737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Aluno, Aluno Pro, Suporte, Administradores can see both Public and Restricted
         accessLevel = undefined;
       }
-      
+
       const materials = await storage.getMaterials(accessLevel, limit, offset);
       res.json(materials);
     } catch (error) {
@@ -751,13 +751,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!query) {
         return res.status(400).json({ message: 'Query parameter is required' });
       }
-      
+
       const user = req.user as any;
       let accessLevel;
       if (user.accessLevel === 'Basic') {
         accessLevel = 'Public';
       }
-      
+
       const materials = await storage.searchMaterials(query as string, category as string, accessLevel);
       res.json(materials);
     } catch (error) {
@@ -771,13 +771,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!material) {
         return res.status(404).json({ message: 'Material not found' });
       }
-      
+
       const user = req.user as any;
       // Check access level
       if (material.accessLevel === 'Restricted' && user.accessLevel === 'Basic') {
         return res.status(403).json({ message: 'Access denied' });
       }
-      
+
       res.json(material);
     } catch (error) {
       res.status(500).json({ message: 'Failed to load material' });
@@ -789,13 +789,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const materialId = parseInt(req.params.id);
       const material = await storage.getMaterial(materialId);
-      
+
       if (material) {
         await storage.updateMaterial(materialId, { 
           viewCount: material.viewCount + 1 
         });
       }
-      
+
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: 'Failed to track view' });
@@ -818,7 +818,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const materialId = parseInt(req.params.id);
       const { content } = req.body;
       const user = req.user as any;
-      
+
       // For now, return success - would implement comments table
       res.json({ 
         id: Date.now(),
@@ -841,14 +841,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
       const search = req.query.search as string;
-      
+
       let materials;
       if (search) {
         materials = await storage.searchMaterials(search);
       } else {
-        materials = await storage.getMaterials(undefined, limit, offset);
+        materials =```text
+await storage.getMaterials(undefined, limit, offset);
       }
-      
+
       res.json(materials);
     } catch (error) {
       res.status(500).json({ message: 'Failed to load materials' });
@@ -1004,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
-      
+
       // This would be implemented in storage if needed
       res.json([]);
     } catch (error) {
@@ -1016,7 +1017,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as any;
       const { productInfo, targetAudience, competitors } = req.body;
-      
+
       if (user.aiCredits < 5) {
         return res.status(400).json({ message: 'Insufficient AI credits' });
       }
@@ -1052,7 +1053,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as any;
       const { productImage, style } = req.body;
-      
+
       if (user.aiCredits < 3) {
         return res.status(400).json({ message: 'Insufficient AI credits' });
       }
@@ -1091,14 +1092,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/create-payment-intent", requireAuth, async (req, res) => {
     try {
       const { amount, credits } = req.body;
-      
+
       if (!process.env.STRIPE_SECRET_KEY) {
         return res.status(500).json({ message: 'Stripe not configured' });
       }
 
       const Stripe = require('stripe');
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-      
+
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency: "brl",
@@ -1107,7 +1108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           credits: credits.toString()
         }
       });
-      
+
       res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error: any) {
       res.status(500).json({ message: "Error creating payment intent: " + error.message });
@@ -1118,20 +1119,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { paymentIntentId } = req.body;
       const userId = (req.user as any).id;
-      
+
       if (!process.env.STRIPE_SECRET_KEY) {
         return res.status(500).json({ message: 'Stripe not configured' });
       }
 
       const Stripe = require('stripe');
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-      
+
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      
+
       if (paymentIntent.status === 'succeeded' && paymentIntent.metadata.userId === userId.toString()) {
         const creditsToAdd = parseInt(paymentIntent.metadata.credits);
         const user = await storage.getUser(userId);
-        
+
         if (user) {
           await storage.updateUserAiCredits(userId, user.aiCredits + creditsToAdd);
           res.json({ success: true, creditsAdded: creditsToAdd });
@@ -1151,7 +1152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as any;
       const { fullName } = req.body;
-      
+
       if (!fullName || fullName.trim().length < 2) {
         return res.status(400).json({ message: 'Nome deve ter pelo menos 2 caracteres' });
       }
@@ -1168,7 +1169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = req.user as any;
       const { password } = req.body;
-      
+
       if (!password || password.length < 6) {
         return res.status(400).json({ message: 'Senha deve ter pelo menos 6 caracteres' });
       }
@@ -1222,6 +1223,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: 'Failed to load admin stats' });
+    }
+  });
+
+  // Admin user lookup route
+  app.get('/api/admin/user/:email', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const email = req.params.email;
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('User lookup error:', error);
+      res.status(500).json({ message: 'Failed to lookup user' });
+    }
+  });
+
+  // Admin users list route
+  app.get('/api/admin/users', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const offset = parseInt(req.query.offset as string) || 0;
+
+      const allUsers = await db.select({
+        id: users.id,
+        email: users.email,
+        fullName: users.fullName,
+        accessLevel: users.accessLevel,
+        aiCredits: users.aiCredits,
+        createdAt: users.createdAt,
+        isActive: users.isActive
+      }).from(users)
+        .limit(limit)
+        .offset(offset)
+        .orderBy(users.createdAt);
+
+      res.json(allUsers);
+    } catch (error) {
+      console.error('Users list error:', error);
+      res.status(500).json({ message: 'Failed to load users' });
     }
   });
 

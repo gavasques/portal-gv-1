@@ -28,7 +28,8 @@ import { useState } from "react";
 import logoPath from "@assets/Asset 11-8_1749488723029.png";
 import logoLightPath from "@assets/Asset 14-8_1749490361481.png";
 
-const menuGroups = [
+// Student Area Menu Groups
+const studentMenuGroups = [
   {
     title: "Principal",
     items: [
@@ -128,6 +129,95 @@ const menuGroups = [
   }
 ];
 
+// Admin Area Menu Groups
+const adminMenuGroups = [
+  {
+    title: "Dashboard",
+    items: [
+      { 
+        label: "Dashboard Admin", 
+        href: "/admin", 
+        icon: Home,
+        accessLevels: ["admin", "suporte"]
+      }
+    ]
+  },
+  {
+    title: "Gestão de Usuários",
+    items: [
+      { 
+        label: "Usuários", 
+        href: "/admin/users", 
+        icon: Users,
+        accessLevels: ["admin"]
+      },
+      { 
+        label: "Acessos", 
+        href: "/admin/access", 
+        icon: Shield,
+        accessLevels: ["admin"]
+      }
+    ]
+  },
+  {
+    title: "Gestão de Conteúdo",
+    items: [
+      { 
+        label: "Materiais", 
+        href: "/admin/materials", 
+        icon: BookOpen,
+        accessLevels: ["admin", "suporte"]
+      },
+      { 
+        label: "Cursos", 
+        href: "/admin/courses", 
+        icon: GraduationCap,
+        accessLevels: ["admin", "suporte"]
+      },
+      { 
+        label: "Templates", 
+        href: "/admin/templates", 
+        icon: FileText,
+        accessLevels: ["admin", "suporte"]
+      }
+    ]
+  },
+  {
+    title: "Sistema",
+    items: [
+      { 
+        label: "Chamados", 
+        href: "/admin/tickets", 
+        icon: MessageSquare,
+        accessLevels: ["admin", "suporte"]
+      },
+      { 
+        label: "Parceiros", 
+        href: "/admin/partners", 
+        icon: Package,
+        accessLevels: ["admin"]
+      },
+      { 
+        label: "Fornecedores", 
+        href: "/admin/suppliers", 
+        icon: UserPlus,
+        accessLevels: ["admin"]
+      }
+    ]
+  },
+  {
+    title: "Configurações",
+    items: [
+      { 
+        label: "Sistema", 
+        href: "/admin/settings", 
+        icon: Settings,
+        accessLevels: ["admin"]
+      }
+    ]
+  }
+];
+
 export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
@@ -151,8 +241,11 @@ export default function Sidebar() {
   const userAccessLevel = mapAccessLevel(user.accessLevel);
   const isAdminArea = location.startsWith('/admin');
   
+  // Choose menu groups based on current area
+  const currentMenuGroups = isAdminArea ? adminMenuGroups : studentMenuGroups;
+  
   // Filter menu groups based on current area and user access
-  const filteredMenuGroups = menuGroups.map(group => ({
+  const filteredMenuGroups = currentMenuGroups.map(group => ({
     ...group,
     items: group.items.filter(item => item.accessLevels.includes(userAccessLevel))
   })).filter(group => group.items.length > 0);

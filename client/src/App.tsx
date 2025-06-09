@@ -23,6 +23,7 @@ import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminUsers from "@/pages/admin-users";
 import ResetPassword from "@/pages/reset-password";
 import { useAuth } from "./hooks/use-auth";
 import Sidebar from "./components/layout/sidebar";
@@ -85,6 +86,14 @@ function Router() {
         <Route path="/settings" component={Settings} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/materials" component={AdminMaterials} />
+        <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
+        <Route path="/admin/courses" component={() => <div>Admin Courses - Em desenvolvimento</div>} />
+        <Route path="/admin/templates" component={() => <div>Admin Templates - Em desenvolvimento</div>} />
+        <Route path="/admin/tickets" component={() => <div>Admin Tickets - Em desenvolvimento</div>} />
+        <Route path="/admin/partners" component={() => <div>Admin Partners - Em desenvolvimento</div>} />
+        <Route path="/admin/suppliers" component={() => <div>Admin Suppliers - Em desenvolvimento</div>} />
+        <Route path="/admin/settings" component={() => <div>Admin Settings - Em desenvolvimento</div>} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>
