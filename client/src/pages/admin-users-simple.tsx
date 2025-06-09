@@ -1,29 +1,29 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Plus, Search, Edit, Trash2, Key, Activity, Users, Shield } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Users, Search, Edit, Shield, Activity } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 const userFormSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters").optional(),
-  groupId: z.number().optional(),
-  isActive: z.boolean().default(true),
-  aiCredits: z.number().min(0).default(0)
+  email: z.string().email(),
+  fullName: z.string().min(1),
+  password: z.string().optional(),
+  groupId: z.number().nullable(),
+  aiCredits: z.number().min(0),
+  isActive: z.boolean()
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -51,69 +51,50 @@ interface UserGroup {
   isActive: boolean;
 }
 
-interface Permission {
-  id: number;
-  key: string;
-  name: string;
-  description: string;
-  module: string;
-  category: string;
-}
-
-interface UserActivity {
-  id: number;
-  action: string;
-  details: any;
-  createdAt: string;
-  ipAddress: string;
-  userAgent: string;
-}
-
 export default function AdminUsers() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGroupFilter, setSelectedGroupFilter] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const form = useForm<UserFormData>({
+    resolver: zodResolver(userFormSchema),
+    defaultValues: {
+      email: '',
+      fullName: '',
+      password: '',
+      groupId: null,
+      aiCredits: 0,
+      isActive: true
+    }
+  });
+
   // Fetch users with groups
   const { data: users = [], isLoading: isUsersLoading } = useQuery({
     queryKey: ['/api/admin/users', searchQuery, selectedGroupFilter],
-    queryFn: () => {
+    queryFn: async () => {
       const groupFilter = selectedGroupFilter === "all" ? "" : selectedGroupFilter;
-      return apiRequest(`/api/admin/users?search=${searchQuery}&groupId=${groupFilter}`);
+      return await apiRequest(`/api/admin/users?search=${searchQuery}&groupId=${groupFilter}`);
     }
   });
 
   // Fetch user groups
   const { data: userGroups = [] } = useQuery({
     queryKey: ['/api/admin/groups'],
-    queryFn: () => apiRequest('/api/admin/groups')
-  });
-
-  // Fetch user permissions
-  const { data: userPermissions = [] } = useQuery({
-    queryKey: ['/api/admin/users', selectedUserId, 'permissions'],
-    queryFn: () => apiRequest(`/api/admin/users/${selectedUserId}/permissions`),
-    enabled: !!selectedUserId
-  });
-
-  // Fetch user activity
-  const { data: userActivity = [] } = useQuery({
-    queryKey: ['/api/admin/users', selectedUserId, 'activity'],
-    queryFn: () => apiRequest(`/api/admin/users/${selectedUserId}/activity`),
-    enabled: !!selectedUserId
+    queryFn: async () => await apiRequest('/api/admin/groups')
   });
 
   // Create user mutation
   const createUserMutation = useMutation({
-    mutationFn: (userData: UserFormData) => 
-      apiRequest('/api/admin/users', 'POST', userData),
+    mutationFn: async (userData: UserFormData) => 
+      await apiRequest('/api/admin/users', 'POST', userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setIsCreateDialogOpen(false);
+      form.reset();
       toast({
         title: "Success",
         description: "User created successfully"
@@ -130,8 +111,8 @@ export default function AdminUsers() {
 
   // Update user mutation
   const updateUserMutation = useMutation({
-    mutationFn: ({ id, ...userData }: UserFormData & { id: number }) => 
-      apiRequest(`/api/admin/users/${id}`, 'PUT', userData),
+    mutationFn: async ({ id, ...userData }: UserFormData & { id: number }) => 
+      await apiRequest(`/api/admin/users/${id}`, 'PUT', userData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setEditingUser(null);
@@ -149,18 +130,6 @@ export default function AdminUsers() {
     }
   });
 
-  const form = useForm<UserFormData>({
-    resolver: zodResolver(userFormSchema),
-    defaultValues: {
-      email: "",
-      fullName: "",
-      password: "",
-      groupId: undefined,
-      isActive: true,
-      aiCredits: 0
-    }
-  });
-
   const onSubmit = (data: UserFormData) => {
     if (editingUser) {
       updateUserMutation.mutate({ ...data, id: editingUser.id });
@@ -174,11 +143,12 @@ export default function AdminUsers() {
     form.reset({
       email: user.email,
       fullName: user.fullName,
-      groupId: user.groupId || undefined,
-      isActive: user.isActive,
+      groupId: user.groupId,
       aiCredits: user.aiCredits,
-      password: ""
+      isActive: user.isActive,
+      password: ''
     });
+    setIsCreateDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
@@ -187,40 +157,29 @@ export default function AdminUsers() {
     form.reset();
   };
 
-  const groupPermissionsByModule = userPermissions.reduce((acc: Record<string, Permission[]>, permission: Permission) => {
-    if (!acc[permission.module]) {
-      acc[permission.module] = [];
-    }
-    acc[permission.module].push(permission);
-    return acc;
-  }, {});
-
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">
-            Manage users, roles, and permissions
-          </p>
+          <p className="text-muted-foreground">Manage user accounts and permissions</p>
         </div>
-        <Dialog open={isCreateDialogOpen || !!editingUser} onOpenChange={handleCloseDialog}>
+        
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Button onClick={() => setEditingUser(null)}>
               <Plus className="h-4 w-4 mr-2" />
-              Add User
+              Create User
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>{editingUser ? 'Edit User' : 'Create New User'}</DialogTitle>
-              <DialogDescription>
-                {editingUser ? 'Update user information and permissions.' : 'Add a new user to the system.'}
-              </DialogDescription>
+              <DialogTitle>{editingUser ? 'Edit User' : 'Create User'}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
                     name="email"
@@ -228,7 +187,7 @@ export default function AdminUsers() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="user@example.com" {...field} />
+                          <Input placeholder="user@example.com" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -247,16 +206,14 @@ export default function AdminUsers() {
                       </FormItem>
                     )}
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{editingUser ? 'New Password (optional)' : 'Password'}</FormLabel>
+                        <FormLabel>Password {editingUser && '(leave blank to keep current)'}</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Password" {...field} />
+                          <Input type="password" placeholder="••••••••" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -268,14 +225,15 @@ export default function AdminUsers() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>User Group</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} value={field.value?.toString()}>
+                        <Select value={field.value?.toString() || ""} onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a group" />
+                              <SelectValue placeholder="Select group" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {userGroups.map((group: UserGroup) => (
+                            <SelectItem value="">No Group</SelectItem>
+                            {Array.isArray(userGroups) && userGroups.map((group: UserGroup) => (
                               <SelectItem key={group.id} value={group.id.toString()}>
                                 {group.name}
                               </SelectItem>
@@ -286,8 +244,6 @@ export default function AdminUsers() {
                       </FormItem>
                     )}
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="aiCredits"
@@ -350,10 +306,9 @@ export default function AdminUsers() {
           <div className="flex space-x-4">
             <div className="flex-1">
               <Input
-                placeholder="Search users by name or email..."
+                placeholder="Search users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-md"
               />
             </div>
             <Select value={selectedGroupFilter} onValueChange={setSelectedGroupFilter}>
@@ -362,7 +317,7 @@ export default function AdminUsers() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Groups</SelectItem>
-                {userGroups.map((group: UserGroup) => (
+                {Array.isArray(userGroups) && userGroups.map((group: UserGroup) => (
                   <SelectItem key={group.id} value={group.id.toString()}>
                     {group.name}
                   </SelectItem>
@@ -378,7 +333,7 @@ export default function AdminUsers() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Users className="h-5 w-5 mr-2" />
-            Users ({users.length})
+            Users ({Array.isArray(users) ? users.length : 0})
           </CardTitle>
           <CardDescription>
             Manage user accounts and their access levels
@@ -400,7 +355,7 @@ export default function AdminUsers() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user: User) => (
+                {Array.isArray(users) && users.map((user: User) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <div>
@@ -422,10 +377,13 @@ export default function AdminUsers() {
                     </TableCell>
                     <TableCell>{user.aiCredits}</TableCell>
                     <TableCell>
-                      {user.lastLoginAt 
-                        ? new Date(user.lastLoginAt).toLocaleDateString()
-                        : "Never"
-                      }
+                      {user.lastLoginAt ? (
+                        <span className="text-sm">
+                          {new Date(user.lastLoginAt).toLocaleDateString()}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">Never</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
@@ -441,14 +399,7 @@ export default function AdminUsers() {
                           size="sm"
                           onClick={() => setSelectedUserId(user.id)}
                         >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedUserId(user.id)}
-                        >
-                          <Activity className="h-4 w-4" />
+                          <Shield className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -460,69 +411,17 @@ export default function AdminUsers() {
         </CardContent>
       </Card>
 
-      {/* User Details Dialog */}
+      {/* User Details Modal */}
       {selectedUserId && (
         <Dialog open={!!selectedUserId} onOpenChange={() => setSelectedUserId(null)}>
           <DialogContent className="max-w-4xl">
             <DialogHeader>
-              <DialogTitle>User Details</DialogTitle>
-              <DialogDescription>
-                View user permissions and activity history
-              </DialogDescription>
+              <DialogTitle>User Details & Permissions</DialogTitle>
             </DialogHeader>
-            <Tabs defaultValue="permissions" className="w-full">
-              <TabsList>
-                <TabsTrigger value="permissions">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Permissions
-                </TabsTrigger>
-                <TabsTrigger value="activity">
-                  <Activity className="h-4 w-4 mr-2" />
-                  Activity
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="permissions" className="space-y-4">
-                <div className="grid gap-4">
-                  {Object.entries(groupPermissionsByModule).map(([module, permissions]) => (
-                    <Card key={module}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">{module}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-2">
-                          {permissions.map((permission: Permission) => (
-                            <div key={permission.id} className="flex items-center space-x-2">
-                              <Badge variant="outline">{permission.name}</Badge>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value="activity" className="space-y-4">
-                <div className="max-h-96 overflow-y-auto">
-                  {userActivity.map((activity: UserActivity) => (
-                    <div key={activity.id} className="border-l-4 border-blue-500 pl-4 py-2">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">{activity.action}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {new Date(activity.createdAt).toLocaleString()}
-                          </div>
-                          {activity.details && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {JSON.stringify(activity.details, null, 2)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
+            <div className="space-y-4">
+              <p>User management details will be displayed here.</p>
+              <Button onClick={() => setSelectedUserId(null)}>Close</Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}

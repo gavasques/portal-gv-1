@@ -24,7 +24,7 @@ import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
 import AdminDashboard from "@/pages/admin-dashboard";
-import AdminUsers from "@/pages/admin-users";
+import AdminUsers from "@/pages/admin-users-simple";
 import AdminGroups from "@/pages/admin-groups";
 import ResetPassword from "@/pages/reset-password";
 import { useAuth } from "./hooks/use-auth";
