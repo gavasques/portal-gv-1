@@ -622,6 +622,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/admin/users/:id/activity', requireAuth, async (req, res) => {
+    try {
+      const activity = await storage.getUserActivity(parseInt(req.params.id));
+      res.json(activity);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user activity' });
+    }
+  });
+
   app.post('/api/admin/users', requireAuth, async (req, res) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
@@ -677,6 +686,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User Groups Management Routes
+  app.get('/api/admin/groups', requireAuth, async (req, res) => {
+    try {
+      const groups = await storage.getUserGroups();
+      res.json(groups);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user groups' });
+    }
+  });
+
   app.get('/api/admin/user-groups', requireAuth, async (req, res) => {
     try {
       const groups = await storage.getUserGroups();

@@ -81,13 +81,16 @@ export default function AdminUsers() {
   // Fetch users with groups
   const { data: users = [], isLoading: isUsersLoading } = useQuery({
     queryKey: ['/api/admin/users', searchQuery, selectedGroupFilter],
-    queryFn: () => apiRequest(`/api/admin/users?search=${searchQuery}&groupId=${selectedGroupFilter}`)
+    queryFn: () => {
+      const groupFilter = selectedGroupFilter === "all" ? "" : selectedGroupFilter;
+      return apiRequest(`/api/admin/users?search=${searchQuery}&groupId=${groupFilter}`);
+    }
   });
 
   // Fetch user groups
   const { data: userGroups = [] } = useQuery({
-    queryKey: ['/api/admin/user-groups'],
-    queryFn: () => apiRequest('/api/admin/user-groups')
+    queryKey: ['/api/admin/groups'],
+    queryFn: () => apiRequest('/api/admin/groups')
   });
 
   // Fetch user permissions
@@ -364,7 +367,7 @@ export default function AdminUsers() {
                 <SelectValue placeholder="Filter by group" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Groups</SelectItem>
+                <SelectItem value="all">All Groups</SelectItem>
                 {userGroups.map((group: UserGroup) => (
                   <SelectItem key={group.id} value={group.id.toString()}>
                     {group.name}
