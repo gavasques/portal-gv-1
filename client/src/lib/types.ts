@@ -40,3 +40,31 @@ export interface FilterState {
   country?: string;
   primaryFunction?: string;
 }
+
+export interface Material {
+  id: number;
+  title: string;
+  description?: string;
+  type: string;
+  content?: string;
+  filePath?: string;
+  url?: string;
+  accessLevel: string;
+  category?: string;
+  tags?: string[];
+  downloadCount: number;
+  viewCount: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface Comment {
+  id: number;
+  content: string;
+  createdAt: string;
+  user?: {
+    id: number;
+    email: string;
+    fullName?: string;
+  };
+}

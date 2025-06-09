@@ -1,324 +1,345 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
-import { ListViewToggle } from "@/components/common/list-view-toggle";
-import { SearchFilters } from "@/components/common/search-filters";
-import { EmptyState } from "@/components/common/empty-state";
-import { LoadingSkeleton } from "@/components/common/loading-skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
-import { BookMarked, Download, ExternalLink, FileText, Link, Play, Eye } from "lucide-react";
-import type { Material } from "@shared/schema";
+import { 
+  Search, 
+  Filter, 
+  Grid3X3, 
+  List, 
+  FileText, 
+  Video, 
+  Download, 
+  ExternalLink,
+  Eye,
+  Lock,
+  Globe,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
+import type { Material } from "@/lib/types";
 
-const typeIcons = {
-  pdf: FileText,
+const formatIcons = {
+  pdf: Download,
   text: FileText,
-  link: Link,
-  embed: Play
+  video: Video,
+  link: ExternalLink,
+  embed: ExternalLink
 };
 
-const typeLabels = {
-  pdf: "PDF",
-  text: "Texto",
-  link: "Link",
-  embed: "Vídeo/Embed"
-};
+const categoryOptions = [
+  "Estratégias de E-commerce",
+  "Marketing Digital",
+  "Logística",
+  "Fornecedores",
+  "Análise de Mercado",
+  "Ferramentas",
+  "Cases de Sucesso"
+];
 
-export default function Materials() {
-  const [view, setView] = useState<"list" | "grid">("grid");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({});
-
+function MaterialCard({ material }: { material: Material }) {
   const { user } = useAuth();
+  const canAccess = material.accessLevel === "Public" || (user && user.accessLevel !== "Basic");
+  const Icon = formatIcons[material.type as keyof typeof formatIcons] || FileText;
 
-  const { data: materials, isLoading } = useQuery<Material[]>({
-    queryKey: ['/api/materials', { page, pageSize, search: searchQuery, ...filters }],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        limit: pageSize.toString(),
-        offset: ((page - 1) * pageSize).toString(),
-      });
-
-      if (searchQuery) {
-        params.append('q', searchQuery);
-        if (filters.category) {
-          params.append('category', filters.category);
-        }
-        const response = await fetch(`/api/materials/search?${params}`, { credentials: 'include' });
-        if (!response.ok) throw new Error('Failed to search materials');
-        return response.json();
-      }
-
-      const response = await fetch(`/api/materials?${params}`, { credentials: 'include' });
-      if (!response.ok) throw new Error('Failed to fetch materials');
-      return response.json();
-    },
-  });
-
-  const handleSearch = (query: string, newFilters: Record<string, string>) => {
-    setSearchQuery(query);
-    setFilters(newFilters);
-    setPage(1);
-  };
-
-  const filterOptions = [
-    {
-      key: "category",
-      label: "Categoria",
-      options: [
-        { value: "Curso", label: "Curso" },
-        { value: "Importação", label: "Importação" },
-        { value: "Amazon", label: "Amazon" },
-        { value: "Fornecedores", label: "Fornecedores" },
-        { value: "Marketing", label: "Marketing" },
-      ],
-    },
-  ];
-
-  const handleMaterialAccess = (material: Material) => {
-    if (material.type === 'link' && material.url) {
-      window.open(material.url, '_blank');
-    } else if (material.type === 'pdf' && material.filePath) {
-      window.open(material.filePath, '_blank');
-    }
-    // For text and embed types, you could open a modal or navigate to a detail page
-  };
-
-  const columns = [
-    {
-      key: "title" as keyof Material,
-      header: "Título",
-      render: (value: string, material: Material) => {
-        const Icon = typeIcons[material.type as keyof typeof typeIcons] || FileText;
-        return (
-          <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-              <Icon className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <div className="font-medium">{value}</div>
-              <div className="flex items-center space-x-2 mt-1">
-                <Badge variant="outline" className="text-xs">
-                  {typeLabels[material.type as keyof typeof typeLabels]}
-                </Badge>
-                {material.accessLevel === 'Restricted' && (
-                  <Badge variant="secondary" className="text-xs">
-                    Restrito
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: "category" as keyof Material,
-      header: "Categoria",
-      render: (value: string) => value ? (
-        <Badge variant="outline">{value}</Badge>
-      ) : (
-        <span className="text-muted-foreground">-</span>
-      ),
-    },
-    {
-      key: "downloadCount" as keyof Material,
-      header: "Downloads",
-      render: (value: number) => (
-        <span className="text-muted-foreground">{value}</span>
-      ),
-    },
-    {
-      key: "viewCount" as keyof Material,
-      header: "Visualizações",
-      render: (value: number) => (
-        <span className="text-muted-foreground">{value}</span>
-      ),
-    },
-    {
-      key: "id" as keyof Material,
-      header: "Ações",
-      render: (value: number, material: Material) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleMaterialAccess(material)}
-        >
-          {material.type === 'link' ? (
-            <ExternalLink className="h-4 w-4" />
-          ) : material.type === 'pdf' ? (
-            <Download className="h-4 w-4" />
-          ) : (
-            <Eye className="h-4 w-4" />
-          )}
-        </Button>
-      ),
-    },
-  ];
-
-  const MaterialCard = ({ material }: { material: Material }) => {
-    const Icon = typeIcons[material.type as keyof typeof typeIcons] || FileText;
-    const typeLabel = typeLabels[material.type as keyof typeof typeLabels];
-
-    return (
-      <Card className="card-hover">
+  return (
+    <Card className="card-hover cursor-pointer">
+      <Link href={`/materials/${material.id}`}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Icon className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">{material.title}</CardTitle>
-                <div className="flex items-center space-x-2 mt-1">
-                  <Badge variant="outline">{typeLabel}</Badge>
-                  {material.category && (
-                    <Badge variant="secondary">{material.category}</Badge>
-                  )}
-                  {material.accessLevel === 'Restricted' && (
-                    <Badge variant="destructive" className="text-xs">
-                      Restrito
-                    </Badge>
-                  )}
-                </div>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Icon className="h-5 w-5 text-primary" />
+              <Badge variant={canAccess ? "default" : "secondary"}>
+                {material.accessLevel === "Public" ? (
+                  <>
+                    <Globe className="h-3 w-3 mr-1" />
+                    Público
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-3 w-3 mr-1" />
+                    Aluno Exclusivo
+                  </>
+                )}
+              </Badge>
             </div>
           </div>
+          <CardTitle className="text-base line-clamp-2">{material.title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {material.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3">
-              {material.description}
-            </p>
-          )}
-
-          {material.tags && material.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {material.tags.slice(0, 3).map((tag, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-              {material.tags.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{material.tags.length - 3}
-                </Badge>
-              )}
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+            {material.description}
+          </p>
+          <div className="flex items-center justify-between">
+            <Badge variant="outline">{material.category}</Badge>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+              <Eye className="h-3 w-3" />
+              <span>{material.viewCount}</span>
             </div>
-          )}
-
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex space-x-4">
-              <span>{material.viewCount} visualizações</span>
-              <span>{material.downloadCount} downloads</span>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t">
-            <Button 
-              className="w-full"
-              onClick={() => handleMaterialAccess(material)}
-            >
-              {material.type === 'link' ? (
-                <>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Acessar Link
-                </>
-              ) : material.type === 'pdf' ? (
-                <>
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar PDF
-                </>
-              ) : (
-                <>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Visualizar
-                </>
-              )}
-            </Button>
           </div>
         </CardContent>
-      </Card>
-    );
-  };
+      </Link>
+    </Card>
+  );
+}
 
-  if (!user) return null;
+function MaterialListItem({ material }: { material: Material }) {
+  const { user } = useAuth();
+  const canAccess = material.accessLevel === "Public" || (user && user.accessLevel !== "Basic");
+  const Icon = formatIcons[material.type as keyof typeof formatIcons] || FileText;
+
+  return (
+    <Link href={`/materials/${material.id}`}>
+      <div className="flex items-center justify-between p-4 hover:bg-muted/50 border-b border-border last:border-b-0 cursor-pointer">
+        <div className="flex items-center space-x-4 flex-1">
+          <Icon className="h-5 w-5 text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium truncate">{material.title}</h3>
+            <p className="text-sm text-muted-foreground truncate">{material.description}</p>
+          </div>
+          <Badge variant="outline" className="shrink-0">{material.category}</Badge>
+          <Badge variant={canAccess ? "default" : "secondary"} className="shrink-0">
+            {material.accessLevel === "Public" ? (
+              <>
+                <Globe className="h-3 w-3 mr-1" />
+                Público
+              </>
+            ) : (
+              <>
+                <Lock className="h-3 w-3 mr-1" />
+                Aluno Exclusivo
+              </>
+            )}
+          </Badge>
+          <div className="flex items-center space-x-1 text-xs text-muted-foreground shrink-0">
+            <Eye className="h-3 w-3" />
+            <span>{material.viewCount}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export default function Materials() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedFormat, setSelectedFormat] = useState<string>("");
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
+
+  const { data: materials, isLoading } = useQuery<Material[]>({
+    queryKey: ['/api/materials', { 
+      search: searchQuery, 
+      category: selectedCategory, 
+      format: selectedFormat,
+      page: currentPage,
+      limit: itemsPerPage 
+    }],
+  });
+
+  const filteredMaterials = materials?.filter(material => {
+    const matchesSearch = !searchQuery || 
+      material.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      material.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = !selectedCategory || selectedCategory === "all" || material.category === selectedCategory;
+    const matchesFormat = !selectedFormat || selectedFormat === "all" || material.type === selectedFormat;
+    
+    return matchesSearch && matchesCategory && matchesFormat;
+  }) || [];
+
+  const totalPages = Math.ceil(filteredMaterials.length / itemsPerPage);
+  const paginatedMaterials = filteredMaterials.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Materiais</h1>
-          <p className="text-muted-foreground">
-            Biblioteca de conteúdo para aprendizado contínuo
-          </p>
-        </div>
-        <ListViewToggle view={view} onViewChange={setView} />
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold">Biblioteca de Materiais</h1>
+        <p className="text-muted-foreground">
+          Acesse conteúdos educacionais, guias práticos e recursos exclusivos
+        </p>
       </div>
 
-      {/* Access Level Info */}
-      <Card className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+      {/* Toolbar */}
+      <Card>
         <CardContent className="p-4">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-blue-500 rounded-lg flex items-center justify-center">
-              <BookMarked className="h-5 w-5 text-white" />
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar materiais..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <div>
-              <div className="font-medium text-blue-900 dark:text-blue-100">
-                Seu Nível de Acesso: {user.accessLevel}
-              </div>
-              <div className="text-sm text-blue-700 dark:text-blue-300">
-                {user.accessLevel === 'Basic' 
-                  ? "Você tem acesso aos materiais públicos"
-                  : "Você tem acesso a todos os materiais, incluindo conteúdo restrito"
-                }
-              </div>
+
+            {/* Filters */}
+            <div className="flex gap-2">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categoryOptions.map(category => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedFormat} onValueChange={setSelectedFormat}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Formato" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os formatos</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="text">Artigo</SelectItem>
+                  <SelectItem value="video">Vídeo</SelectItem>
+                  <SelectItem value="link">Link</SelectItem>
+                  <SelectItem value="embed">Embed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex border rounded-lg">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-r-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="rounded-l-none"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <SearchFilters
-        searchPlaceholder="Buscar materiais..."
-        filters={filterOptions}
-        onSearch={handleSearch}
-      />
-
+      {/* Materials List/Grid */}
       {isLoading ? (
-        <LoadingSkeleton type={view} count={pageSize} />
-      ) : !materials || materials.length === 0 ? (
-        <EmptyState
-          icon={<BookMarked className="h-12 w-12" />}
-          title="Nenhum material encontrado"
-          description={
-            searchQuery
-              ? "Tente ajustar os filtros de busca para encontrar outros materiais."
-              : user.accessLevel === 'Basic'
-              ? "Ainda não há materiais públicos disponíveis. Faça upgrade para acessar mais conteúdo."
-              : "Ainda não há materiais disponíveis no sistema."
-          }
-        />
-      ) : view === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {materials.map((material) => (
-            <MaterialCard key={material.id} material={material} />
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-6 bg-muted rounded w-full"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-4 bg-muted rounded w-full mb-2"></div>
+                <div className="h-4 bg-muted rounded w-2/3"></div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : (
-        <DataTable
-          data={materials}
-          columns={columns}
-          isLoading={isLoading}
-          currentPage={page}
-          pageSize={pageSize}
-          totalItems={materials.length}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-        />
+        <>
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginatedMaterials.map((material) => (
+                <MaterialCard key={material.id} material={material} />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                {paginatedMaterials.map((material) => (
+                  <MaterialListItem key={material.id} material={material} />
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              
+              <div className="flex items-center space-x-1">
+                {[...Array(totalPages)].map((_, i) => {
+                  const page = i + 1;
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    );
+                  } else if (
+                    page === currentPage - 2 ||
+                    page === currentPage + 2
+                  ) {
+                    return <span key={page} className="px-2">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Próxima
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* No results */}
+          {paginatedMaterials.length === 0 && !isLoading && (
+            <Card>
+              <CardContent className="text-center py-12">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nenhum material encontrado</h3>
+                <p className="text-muted-foreground">
+                  Tente ajustar os filtros ou termos de busca
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );

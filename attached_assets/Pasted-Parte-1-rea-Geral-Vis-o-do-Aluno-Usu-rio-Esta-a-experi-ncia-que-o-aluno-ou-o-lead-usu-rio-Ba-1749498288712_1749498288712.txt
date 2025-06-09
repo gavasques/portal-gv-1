@@ -1,0 +1,59 @@
+Parte 1: Área Geral (Visão do Aluno/Usuário)
+Esta é a experiência que o aluno ou o lead (usuário "Basic") terá ao interagir com a seção de materiais.
+
+Tela 1.1: Biblioteca de Materiais (Listagem Geral)
+Objetivo: Ser a página principal onde o usuário descobre, busca e filtra todos os conteúdos disponíveis.
+Componentes:
+Cabeçalho: Título "Biblioteca de Materiais".
+Barra de Ferramentas:
+Campo de busca por palavra-chave.
+Filtros por "Categoria" e "Formato".
+Controles para alternar entre visualização em Lista (Padrão) e em Cards.
+Área de Listagem:
+Lista: Colunas com Ícone do Formato, Título, Categoria e uma "tag" de acesso ("Público" ou "Aluno Exclusivo").
+Cards: Grade com Imagem de destaque, Título e a "tag" de acesso.
+Paginação: Controles na base da lista para navegar entre as páginas (25 ou 50 itens por vez).
+Tela 1.2: Página do Material (Consumo do Conteúdo)
+Objetivo: Apresentar o material de forma focada e permitir a interação da comunidade.
+Componentes:
+Cabeçalho: Navegação "breadcrumb" (Ex: Biblioteca > Categoria > Nome do Material).
+Bloco de Conteúdo Principal: A área central que se adapta ao formato:
+Artigo: Exibe o texto formatado.
+PDF: Exibe um visualizador de PDF embutido e um botão de "Baixar".
+Vídeo/Fluxograma: Exibe o player de vídeo ou o conteúdo interativo embutido.
+CTA para Leads: (Aparece apenas para usuários "Basic" em materiais públicos) Um banner incentivando o upgrade para um plano de aluno.
+Seção de Comentários: Um formulário para o usuário publicar um comentário e um feed com a discussão da comunidade sobre aquele material.
+Parte 2: Área de Administração (Visão do Admin)
+Esta é a interface no painel ADM que a sua equipe usará para gerenciar todo o conteúdo da biblioteca.
+
+Tela 2.1: Gestão de Materiais (Listagem no ADM)
+Objetivo: Dar ao administrador uma visão geral de todos os materiais publicados e em rascunho, com métricas e acesso rápido para edição.
+Componentes:
+Cabeçalho: Título "Gestão de Materiais" e um botão + Adicionar Novo Material.
+Tabela de Materiais: Uma tabela densa com as seguintes colunas:
+Título do Material
+Autor
+Categoria(s)
+Formato (PDF, Vídeo...)
+Nível de Acesso (Público/Aluno)
+Visualizações (Contador de quantas vezes foi visto)
+Comentários (Contador de quantos comentários tem)
+Data de Publicação
+Status (Um botão de alternância (toggle) para mudar rapidamente entre "Publicado" e "Rascunho")
+Ações (Ícones para "Editar" e "Excluir" cada material).
+Tela 2.2: Formulário de Criação/Edição de Material
+Objetivo: Um formulário completo e flexível para criar ou editar um material.
+Componentes do Formulário:
+Título do Material: Campo de texto.
+Editor de Conteúdo (Campo principal e dinâmico):
+Primeiro, um seletor de "Formato do Material" (Artigo, PDF, Vídeo, Embed).
+Se "Artigo" for selecionado: Aparece um editor de texto rico (Rich Text Editor).
+Se "PDF" for selecionado: Aparece um campo para upload do arquivo PDF.
+Se "Vídeo" for selecionado: Aparece um campo para colar a URL do vídeo (YouTube/Vimeo).
+Se "Embed" for selecionado: Aparece uma caixa de texto para colar o código de embed.
+Configurações e Metadados (geralmente em uma coluna lateral):
+Imagem de Destaque: Campo para upload da thumbnail.
+Categorias: Campo de seleção (pode ser múltipla) para associar o material às categorias.
+Nível de Acesso: Botões de opção (Público ou Aluno Exclusivo).
+Status de Publicação: Botões de opção (Publicar ou Salvar como Rascunho).
+Botões de Ação: Salvar Alterações e Cancelar.
