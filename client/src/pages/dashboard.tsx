@@ -51,15 +51,15 @@ function QuickActionButton({
   return (
     <Button 
       variant="outline" 
-      className="h-auto p-3 text-left justify-start"
+      className="h-auto p-4 text-left justify-start w-full flex items-center space-x-3"
       onClick={onClick}
     >
-      <div className={`${color} mr-3 p-2 rounded-lg`}>
+      <div className={`${color} p-2 rounded-lg shrink-0`}>
         <Icon className="h-4 w-4" />
       </div>
-      <div>
-        <p className="text-sm font-medium">{title}</p>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-left">{title}</p>
+        <p className="text-xs text-muted-foreground text-left">{subtitle}</p>
       </div>
     </Button>
   );
@@ -115,35 +115,12 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  if (!user) return null;
+  const { data: youtubeData } = useQuery({
+    queryKey: ['/api/youtube/videos'],
+    enabled: !!user,
+  });
 
-  // Mock YouTube videos data since we don't have YouTube API integration yet
-  const mockVideos = [
-    {
-      title: "Como Encontrar Fornecedores Confiáveis na China",
-      thumbnail: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=225",
-      duration: "12:34",
-      publishedAt: "há 2 dias"
-    },
-    {
-      title: "Estratégias de FBA para Maximizar Lucros",
-      thumbnail: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=225",
-      duration: "8:47",
-      publishedAt: "há 5 dias"
-    },
-    {
-      title: "Análise de Produtos: O que Vender em 2024",
-      thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=225",
-      duration: "15:23",
-      publishedAt: "há 1 semana"
-    },
-    {
-      title: "Importação Simplificada vs Formal: Qual Escolher?",
-      thumbnail: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=225",
-      duration: "22:15",
-      publishedAt: "há 1 semana"
-    }
-  ];
+  if (!user) return null;
 
   return (
     <div className="space-y-8">

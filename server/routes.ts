@@ -720,7 +720,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           url: "https://youtube.com/watch?v=dQw4w9WgXcV"
         }
       ];
-      res.json(mockVideos);
+      const { videos, lastUpdated } = getCachedVideos();
+      res.json({
+        videos,
+        lastUpdated,
+        cacheStatus: videos.length > 0 ? 'active' : 'empty'
+      });
     } catch (error) {
       res.status(500).json({ message: 'Failed to load YouTube videos' });
     }

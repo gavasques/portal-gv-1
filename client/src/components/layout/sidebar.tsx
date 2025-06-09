@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/components/theme-provider";
 import { 
   Home, 
   Users, 
@@ -21,6 +22,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useState } from "react";
+import logoPath from "@assets/Asset 11-8_1749488723029.png";
+import logoLightPath from "@assets/Asset 14-8_1749490361481.png";
 
 const menuItems = [
   { 
@@ -101,6 +104,7 @@ export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
   const { open, setOpen } = useSidebar();
+  const { theme } = useTheme();
 
   if (!user) return null;
 
@@ -116,9 +120,11 @@ export default function Sidebar() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         {open && (
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Portal Guilherme Vasques
-          </h1>
+          <img 
+            src={theme === 'dark' ? logoPath : logoLightPath} 
+            alt="Portal Guilherme Vasques" 
+            className="h-8 w-auto"
+          />
         )}
         <Button
           variant="ghost"
