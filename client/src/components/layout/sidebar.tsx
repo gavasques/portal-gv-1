@@ -21,7 +21,8 @@ import {
   Settings,
   Shield,
   UserCheck,
-  Database
+  Database,
+  Key
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -150,12 +151,18 @@ const adminMenuGroups = [
         label: "Usuários", 
         href: "/admin/users", 
         icon: Users,
+        accessLevels: ["admin", "suporte"]
+      },
+      { 
+        label: "Grupos de Usuários", 
+        href: "/admin/groups", 
+        icon: Shield,
         accessLevels: ["admin"]
       },
       { 
-        label: "Acessos", 
+        label: "Controle de Acesso", 
         href: "/admin/access", 
-        icon: Shield,
+        icon: Key,
         accessLevels: ["admin"]
       }
     ]
@@ -234,18 +241,19 @@ export default function Sidebar() {
   if (!user) return null;
 
   // Map backend access levels to frontend access levels
-  const mapAccessLevel = (level: string) => {
-    const mapping: Record<string, string> = {
-      'Basic': 'basic',
-      'Aluno': 'aluno', 
-      'Aluno Pro': 'aluno_pro',
-      'Suporte': 'suporte',
-      'Administradores': 'admin'
+  // Map group ID to access level for compatibility
+  const mapGroupIdToAccessLevel = (groupId: number | null) => {
+    const mapping: Record<number, string> = {
+      1: 'basic',        // Basic Group
+      2: 'aluno',        // Aluno Group  
+      3: 'aluno_pro',    // Aluno Pro Group
+      4: 'suporte',      // Suporte Group
+      5: 'admin'         // Admin Group
     };
-    return mapping[level] || level.toLowerCase();
+    return groupId ? mapping[groupId] || 'basic' : 'basic';
   };
 
-  const userAccessLevel = mapAccessLevel(user.accessLevel);
+  const userAccessLevel = mapGroupIdToAccessLevel(user.groupId);
   const isAdminArea = location.startsWith('/admin');
   
   // Choose menu groups based on current area
@@ -259,7 +267,17 @@ export default function Sidebar() {
   
   // Get current area context for display
   const currentAreaName = isAdminArea ? "Área Administrativa" : "Área do Aluno";
-  const currentAreaRole = isAdminArea ? "ADMIN" : user.accessLevel?.toUpperCase() || "ALUNO";
+  const getGroupName = (groupId: number | null) => {
+    const groupNames: Record<number, string> = {
+      1: 'BASIC',
+      2: 'ALUNO', 
+      3: 'ALUNO PRO',
+      4: 'SUPORTE',
+      5: 'ADMIN'
+    };
+    return groupId ? groupNames[groupId] || 'ALUNO' : 'ALUNO';
+  };
+  const currentAreaRole = isAdminArea ? "ADMIN" : getGroupName(user.groupId);
 
   return (
     <div className={cn(
@@ -368,11 +386,11 @@ export default function Sidebar() {
                     "text-xs px-2 py-1 rounded-full font-medium",
                     isAdminArea 
                       ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                      : user.accessLevel === "Suporte"
+                      : userAccessLevel === "suporte"
                       ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                      : user.accessLevel === "Aluno Pro"
+                      : userAccessLevel === "aluno_pro"
                       ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-                      : user.accessLevel === "Aluno"
+                      : userAccessLevel === "aluno"
                       ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                       : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
                   )}>
@@ -383,7 +401,7 @@ export default function Sidebar() {
               <Settings className="h-4 w-4 text-gray-400" />
             </div>
           </Link>
-          {user.accessLevel !== "Basic" && (
+          {userAccessLevel !== "basic" && (
             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 px-2">
               Créditos IA: {user.aiCredits || 0}
             </div>
