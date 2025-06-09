@@ -7,7 +7,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
-import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema } from "@shared/schema";
+import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema } from "@shared/schema";
 import { users, tickets, materials, templates } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";

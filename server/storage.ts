@@ -1,12 +1,16 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, 
-  tickets, materials, news, reviews, authTokens, type User, type InsertUser,
-  type Partner, type InsertPartner, type Supplier, type InsertSupplier,
-  type Tool, type InsertTool, type MySupplier, type InsertMySupplier,
-  type Product, type InsertProduct, type Template, type InsertTemplate,
-  type Ticket, type InsertTicket, type Material, type InsertMaterial,
-  type News, type InsertNews, type Review, type InsertReview,
-  type AuthToken, type InsertAuthToken
+  tickets, materials, news, reviews, authTokens, materialTypes, softwareTypes,
+  supplierTypes, productCategories, partnerCategories,
+  type User, type InsertUser, type Partner, type InsertPartner, 
+  type Supplier, type InsertSupplier, type Tool, type InsertTool, 
+  type MySupplier, type InsertMySupplier, type Product, type InsertProduct, 
+  type Template, type InsertTemplate, type Ticket, type InsertTicket, 
+  type Material, type InsertMaterial, type News, type InsertNews, 
+  type Review, type InsertReview, type AuthToken, type InsertAuthToken,
+  type MaterialType, type InsertMaterialType, type SoftwareType, type InsertSoftwareType,
+  type SupplierType, type InsertSupplierType, type ProductCategory, type InsertProductCategory,
+  type PartnerCategory, type InsertPartnerCategory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -101,6 +105,42 @@ export interface IStorage {
   getAuthToken(token: string): Promise<AuthToken | undefined>;
   markTokenAsUsed(token: string): Promise<void>;
   cleanupExpiredTokens(): Promise<void>;
+
+  // Cadastros - Lookup table management
+  // Material Types
+  getMaterialTypes(limit?: number, offset?: number): Promise<MaterialType[]>;
+  getMaterialType(id: number): Promise<MaterialType | undefined>;
+  createMaterialType(materialType: InsertMaterialType): Promise<MaterialType>;
+  updateMaterialType(id: number, updates: Partial<MaterialType>): Promise<MaterialType>;
+  deleteMaterialType(id: number): Promise<void>;
+
+  // Software Types
+  getSoftwareTypes(limit?: number, offset?: number): Promise<SoftwareType[]>;
+  getSoftwareType(id: number): Promise<SoftwareType | undefined>;
+  createSoftwareType(softwareType: InsertSoftwareType): Promise<SoftwareType>;
+  updateSoftwareType(id: number, updates: Partial<SoftwareType>): Promise<SoftwareType>;
+  deleteSoftwareType(id: number): Promise<void>;
+
+  // Supplier Types
+  getSupplierTypes(limit?: number, offset?: number): Promise<SupplierType[]>;
+  getSupplierTypeById(id: number): Promise<SupplierType | undefined>;
+  createSupplierType(supplierType: InsertSupplierType): Promise<SupplierType>;
+  updateSupplierType(id: number, updates: Partial<SupplierType>): Promise<SupplierType>;
+  deleteSupplierType(id: number): Promise<void>;
+
+  // Product Categories
+  getProductCategories(limit?: number, offset?: number): Promise<ProductCategory[]>;
+  getProductCategory(id: number): Promise<ProductCategory | undefined>;
+  createProductCategory(productCategory: InsertProductCategory): Promise<ProductCategory>;
+  updateProductCategory(id: number, updates: Partial<ProductCategory>): Promise<ProductCategory>;
+  deleteProductCategory(id: number): Promise<void>;
+
+  // Partner Categories
+  getPartnerCategories(limit?: number, offset?: number): Promise<PartnerCategory[]>;
+  getPartnerCategoryById(id: number): Promise<PartnerCategory | undefined>;
+  createPartnerCategory(partnerCategory: InsertPartnerCategory): Promise<PartnerCategory>;
+  updatePartnerCategory(id: number, updates: Partial<PartnerCategory>): Promise<PartnerCategory>;
+  deletePartnerCategory(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -522,6 +562,161 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(authTokens)
       .where(sql`${authTokens.expiresAt} < NOW() OR ${authTokens.used} = true`);
+  }
+
+  // Cadastros - Material Types
+  async getMaterialTypes(limit = 50, offset = 0): Promise<MaterialType[]> {
+    return await db.select().from(materialTypes)
+      .orderBy(desc(materialTypes.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getMaterialType(id: number): Promise<MaterialType | undefined> {
+    const [materialType] = await db.select().from(materialTypes).where(eq(materialTypes.id, id));
+    return materialType || undefined;
+  }
+
+  async createMaterialType(materialType: InsertMaterialType): Promise<MaterialType> {
+    const [newMaterialType] = await db.insert(materialTypes).values(materialType).returning();
+    return newMaterialType;
+  }
+
+  async updateMaterialType(id: number, updates: Partial<MaterialType>): Promise<MaterialType> {
+    const [updatedMaterialType] = await db
+      .update(materialTypes)
+      .set(updates)
+      .where(eq(materialTypes.id, id))
+      .returning();
+    return updatedMaterialType;
+  }
+
+  async deleteMaterialType(id: number): Promise<void> {
+    await db.delete(materialTypes).where(eq(materialTypes.id, id));
+  }
+
+  // Cadastros - Software Types
+  async getSoftwareTypes(limit = 50, offset = 0): Promise<SoftwareType[]> {
+    return await db.select().from(softwareTypes)
+      .orderBy(desc(softwareTypes.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getSoftwareType(id: number): Promise<SoftwareType | undefined> {
+    const [softwareType] = await db.select().from(softwareTypes).where(eq(softwareTypes.id, id));
+    return softwareType || undefined;
+  }
+
+  async createSoftwareType(softwareType: InsertSoftwareType): Promise<SoftwareType> {
+    const [newSoftwareType] = await db.insert(softwareTypes).values(softwareType).returning();
+    return newSoftwareType;
+  }
+
+  async updateSoftwareType(id: number, updates: Partial<SoftwareType>): Promise<SoftwareType> {
+    const [updatedSoftwareType] = await db
+      .update(softwareTypes)
+      .set(updates)
+      .where(eq(softwareTypes.id, id))
+      .returning();
+    return updatedSoftwareType;
+  }
+
+  async deleteSoftwareType(id: number): Promise<void> {
+    await db.delete(softwareTypes).where(eq(softwareTypes.id, id));
+  }
+
+  // Cadastros - Supplier Types
+  async getSupplierTypes(limit = 50, offset = 0): Promise<SupplierType[]> {
+    return await db.select().from(supplierTypes)
+      .orderBy(desc(supplierTypes.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getSupplierTypeById(id: number): Promise<SupplierType | undefined> {
+    const [supplierType] = await db.select().from(supplierTypes).where(eq(supplierTypes.id, id));
+    return supplierType || undefined;
+  }
+
+  async createSupplierType(supplierType: InsertSupplierType): Promise<SupplierType> {
+    const [newSupplierType] = await db.insert(supplierTypes).values(supplierType).returning();
+    return newSupplierType;
+  }
+
+  async updateSupplierType(id: number, updates: Partial<SupplierType>): Promise<SupplierType> {
+    const [updatedSupplierType] = await db
+      .update(supplierTypes)
+      .set(updates)
+      .where(eq(supplierTypes.id, id))
+      .returning();
+    return updatedSupplierType;
+  }
+
+  async deleteSupplierType(id: number): Promise<void> {
+    await db.delete(supplierTypes).where(eq(supplierTypes.id, id));
+  }
+
+  // Cadastros - Product Categories
+  async getProductCategories(limit = 50, offset = 0): Promise<ProductCategory[]> {
+    return await db.select().from(productCategories)
+      .orderBy(desc(productCategories.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getProductCategory(id: number): Promise<ProductCategory | undefined> {
+    const [productCategory] = await db.select().from(productCategories).where(eq(productCategories.id, id));
+    return productCategory || undefined;
+  }
+
+  async createProductCategory(productCategory: InsertProductCategory): Promise<ProductCategory> {
+    const [newProductCategory] = await db.insert(productCategories).values(productCategory).returning();
+    return newProductCategory;
+  }
+
+  async updateProductCategory(id: number, updates: Partial<ProductCategory>): Promise<ProductCategory> {
+    const [updatedProductCategory] = await db
+      .update(productCategories)
+      .set(updates)
+      .where(eq(productCategories.id, id))
+      .returning();
+    return updatedProductCategory;
+  }
+
+  async deleteProductCategory(id: number): Promise<void> {
+    await db.delete(productCategories).where(eq(productCategories.id, id));
+  }
+
+  // Cadastros - Partner Categories
+  async getPartnerCategories(limit = 50, offset = 0): Promise<PartnerCategory[]> {
+    return await db.select().from(partnerCategories)
+      .orderBy(desc(partnerCategories.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getPartnerCategoryById(id: number): Promise<PartnerCategory | undefined> {
+    const [partnerCategory] = await db.select().from(partnerCategories).where(eq(partnerCategories.id, id));
+    return partnerCategory || undefined;
+  }
+
+  async createPartnerCategory(partnerCategory: InsertPartnerCategory): Promise<PartnerCategory> {
+    const [newPartnerCategory] = await db.insert(partnerCategories).values(partnerCategory).returning();
+    return newPartnerCategory;
+  }
+
+  async updatePartnerCategory(id: number, updates: Partial<PartnerCategory>): Promise<PartnerCategory> {
+    const [updatedPartnerCategory] = await db
+      .update(partnerCategories)
+      .set(updates)
+      .where(eq(partnerCategories.id, id))
+      .returning();
+    return updatedPartnerCategory;
+  }
+
+  async deletePartnerCategory(id: number): Promise<void> {
+    await db.delete(partnerCategories).where(eq(partnerCategories.id, id));
   }
 }
 

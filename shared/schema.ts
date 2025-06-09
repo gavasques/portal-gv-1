@@ -29,6 +29,47 @@ export const authTokens = pgTable("auth_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Cadastros - Lookup tables for admin management
+export const materialTypes = pgTable("material_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const softwareTypes = pgTable("software_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const supplierTypes = pgTable("supplier_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const productCategories = pgTable("product_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const partnerCategories = pgTable("partner_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const partners = pgTable("partners", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -469,6 +510,32 @@ export const insertAuthTokenSchema = createInsertSchema(authTokens).omit({
   createdAt: true,
 });
 
+// Cadastros insert schemas
+export const insertMaterialTypeSchema = createInsertSchema(materialTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSoftwareTypeSchema = createInsertSchema(softwareTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSupplierTypeSchema = createInsertSchema(supplierTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertProductCategorySchema = createInsertSchema(productCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPartnerCategorySchema = createInsertSchema(partnerCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -494,3 +561,15 @@ export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type AuthToken = typeof authTokens.$inferSelect;
 export type InsertAuthToken = z.infer<typeof insertAuthTokenSchema>;
+
+// Cadastros types
+export type MaterialType = typeof materialTypes.$inferSelect;
+export type InsertMaterialType = z.infer<typeof insertMaterialTypeSchema>;
+export type SoftwareType = typeof softwareTypes.$inferSelect;
+export type InsertSoftwareType = z.infer<typeof insertSoftwareTypeSchema>;
+export type SupplierType = typeof supplierTypes.$inferSelect;
+export type InsertSupplierType = z.infer<typeof insertSupplierTypeSchema>;
+export type ProductCategory = typeof productCategories.$inferSelect;
+export type InsertProductCategory = z.infer<typeof insertProductCategorySchema>;
+export type PartnerCategory = typeof partnerCategories.$inferSelect;
+export type InsertPartnerCategory = z.infer<typeof insertPartnerCategorySchema>;
