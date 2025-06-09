@@ -1,0 +1,131 @@
+Portal do Aluno V2
+
+Documento de Especificação do Projeto: Portal do Aluno
+1. Visão Geral e Objetivo
+Criar um ecossistema digital centralizado ("Portal do Aluno") para agregar valor aos alunos do Liberdade Virtual Brasil. O portal servirá como uma plataforma de conteúdo, ferramentas de trabalho, comunidade e suporte, com o objetivo de acelerar os resultados dos alunos e criar novas linhas de receita através de serviços de IA.
+
+Geral: - Todas listagem com visualização Lista + Cards - Sistema totalmente ajustável para Light / Dark Teme, e que fique salvo a decisão do usuário - Sidebar ajustável, expandir / Mostrar. Totalmente ajustável o layout. Responsivo o layout.  - Sistema totalmente responsivo para Web / Mobile.  - Usaremos leazyload, em todo sistema.  - Criar paginações em todos locais com listagens e cards, com opção de 25 / 50 por página. Carregar conforme for exibido, não carregar tudo de uma vez.  
+2. Grupos de Acesso e Permissões
+O sistema terá 5 níveis de acesso distintos:
+* Basic: Usuários que vieram de um lead magnet (ex: materiais públicos). Acesso limitado.
+* Aluno: Clientes do curso de entrada. Acesso à maioria das funcionalidades.
+* Aluno Pro: Clientes de mentorias ou cursos avançados. Acesso total e a conteúdos exclusivos.
+* Suporte: Membros da equipe responsáveis por responder chamados e interagir com alunos.
+* Administradores: Acesso total a todas as funcionalidades do portal e ao painel de administração. 
+3. Dashboard Principal
+A primeira página que o aluno vê ao logar.
+* Conteúdo: Exibição dinâmica dos 6 últimos vídeos do seu canal do YouTube, para manter os alunos engajados com o conteúdo mais recente.
+* Ultimas Noticias, noticias criadas pelo ADM no portal do ADM, e aparecem aqui, como Ultimas notificas. Como se fosse um RSS de noticias sobre a plataforma, Amazon, Importação, Dolar, Fretes. …
+* ** Não existe controle de faturamentos **
+* Cards com
+    * Total de Fornecedores em Meus Fornecedores
+    * Total de produtos em Meus produtos
+    * Meus Créditos de IA
+*  
+4. Módulos: Parceiros, Fornecedores e Ferramentas (Menus Separados)
+O portal terá três seções distintas no menu principal para o diretório de recursos. Embora separadas na navegação, elas compartilharão a mesma estrutura funcional de cadastro, avaliação e gestão.
+Funcionalidades Comuns (Aplicáveis a cada uma das 3 seções):
+* Cadastro e Perfil Individual: Cada parceiro, fornecedor ou ferramenta terá sua própria página detalhada.
+* Avaliações e Comentários: Alunos podem avaliar de 1 a 5 estrelas (comentário obrigatório) e deixar feedback.
+* Selo de Verificação "Liberdade Virtual": A equipe de administração poderá aplicar um selo de confiança em qualquer item das três seções.
+* Desconto Exclusivo para Alunos: Um campo de destaque para exibir ofertas especiais negociadas.
+* Gestão Centralizada (ADM): O painel de administração permitirá gerenciar todos os cadastros, comentários e selos das três seções de forma unificada
+* Dados Com abas dos dados, 
+* Contatos aba: contatos(podendo ser múltiplos contatos),
+* Todas listagem com visualização Lista + Cards
+
+A estrutura do menu será a seguinte:
+4.1. Menu: Parceiros
+* Objetivo: Listar prestadores de serviço essenciais para vendedores.
+    * Exemplos: Contadores, advogados, despachantes aduaneiros, fotógrafos de produto, agências de marketing.
+* Filtros: A busca poderá ser refinada por Categoria de Serviço.
+* Todas listagem com visualização Lista + Cards 
+4.2. Menu: Fornecedores
+* Objetivo: Apresentar um diretório de fabricantes e distribuidores de produtos. Com abas dos dados, contatos(podendo ser múltiplos contatos), cadastro de filiais, para ter os dados de cada filial. 
+    * Exemplos: Fornecedores de eletrônicos, têxteis, utilidades domésticas.
+* Filtros: A busca poderá ser refinada por Tipo de Produto e País de Origem.
+* Todas listagem com visualização Lista + Cards 
+4.3. Menu: Ferramentas
+* Objetivo: Listar softwares, plataformas e serviços online que otimizam a operação de e-commerce.
+    * Exemplos: Ferramentas de pesquisa de palavras-chave, softwares de gestão financeira, plataformas de automação de marketing.
+* Filtros: A busca poderá ser refinada pela Função Principal da Ferramenta.
+    * Todas listagem com visualização Lista + Cards 
+5. Módulo: Meus Fornecedores (CRM Pessoal)
+Uma área privada para cada aluno gerenciar seus contatos comerciais.
+* Funcionalidades:
+    * Cadastro de fornecedores com informações, filiais e múltiplos contatos.
+    * Histórico de Conversas: Registro de interações (o que, quando, onde foi conversado - e-mail, telefone) para manter um histórico organizado.
+    * Privacidade total, acessível apenas pelo próprio aluno.
+    * Area de Arquivos, podendo anexar arquivos. 
+    * Todas listagem com visualização Lista + Cards 
+6. Módulo: Área de Templates
+Uma biblioteca centralizada de modelos para otimizar a comunicação dos alunos.
+* Conteúdo:
+    * Templates de e-mail e mensagens para diversas situações:
+        * Primeiro contato com fornecedores (inglês/português).
+        * Negociação de descontos.
+        * Comunicação com suporte de ferramentas.
+        * Abertura de casos na Amazon.
+        * Entre outros. 
+        * Todas listagem com visualização Lista + Cards  
+7. Módulo: Agentes de IA
+Serviços baseados em IA para automação e otimização de tarefas, operando com um sistema de créditos.
+* Sistema de Créditos:
+    * Integrado com Stripe para compra de pacotes de créditos (modelo recorrente).
+    * O painel do aluno exibirá o saldo atual e um histórico de uso detalhado (ex: "-5 créditos: Geração de Listing para Produto X").
+* Agentes Disponíveis:
+    * Gerador de Listing:
+        * Inputs: Informações do produto, público-alvo, e principais concorrentes.
+        * Output: Título, bullet points e descrição otimizados.
+        * Funcionalidade para salvar múltiplas versões do listing gerado.
+    * Gerador de Imagens:
+        * Inputs: Imagem do produto e seleção de "estilos".
+        * Estilos: "Lifestyle (produto em uso)", "Infográfico (com benefícios)", "Studio (fundo branco)".
+    * Especialistas (Amazon, Importação, Planos de Ação):
+        * Formato de pergunta e resposta direta.
+        * Infraestrutura: Conectado ao Dify para alavancar a base de conhecimento proprietária (RAG), garantindo respostas alinhadas à metodologia do curso. 
+8. Módulo: Área de Chamados (Suporte)
+Sistema de tickets para centralizar e organizar o suporte.
+* Funcionalidades para Alunos:
+    * Abrir chamados, anexar arquivos, ver status (aberto, em andamento, respondido) e histórico.
+    * Seleção de Categoria Obrigatória: Ao abrir um chamado, o aluno deve escolher uma categoria ("Dúvida sobre Curso", "Problema Técnico", "Financeiro", "Sugestão").
+* Funcionalidades para Suporte/ADM:
+    * Visão centralizada dos tickets.
+    * Respostas Padrão: Área no ADM para criar e gerenciar templates de respostas para agilizar o atendimento.
+    * Notificações por e-mail para alunos e equipe.
+9. Módulo: Materiais (Biblioteca de Conteúdo)
+Repositório de conteúdo para aprendizado contínuo e captação de leads.
+* Funcionalidades:
+    * Controle de Acesso: Divisão de conteúdo entre "Público" (para leads do grupo Basic) e "Restrito" (para Aluno/Aluno Pro).
+    * Formatos Diversos: Suporte para PDF, textos, links e embeds de fluxogramas/apresentações.
+    * Métricas (Painel ADM): Monitoramento de quais materiais são mais acessados e baixados para gerar insights.
+10. Módulo: Conheça Nossos Cursos
+Área dedicada para a divulgação dos produtos educacionais.
+* Conteúdo:
+    * Curso Iniciante: Descrição e preço (R$ 297), com link para a landing page de vendas.
+    * Curso Completo: Descrição e preço (R$ 2997), com link para a landing page e um link direto para agendamento de conversa via Calendly.
+    * Mentorias: Descrição e um link direto para agendamento de conversa via Calendly para interessados.
+11. Módulo: Simuladores
+Ferramentas práticas para auxiliar nas decisões dos alunos.
+* Disclaimer Legal: Todos os simuladores exibirão um aviso legal claro de que os resultados são estimativas e não substituem consulta profissional.
+* Simuladores Disponíveis:
+    * Simulador de Precificação: Uma ferramenta rápida, simples e desconectada de outros módulos para cálculos de preço ágeis.
+    * Simulador do Simples Nacional.
+    * Simulador de Importação (Simplificada, Formal, Compartilhada) com opção de salvar as simulações.
+12. Módulo: Meus Produtos
+Área para os alunos cadastrarem e gerenciarem seus próprios produtos.
+* Funcionalidades:
+    * Cadastro de produtos com dados básicos, foto e descrição.
+    * Simulador de Rentabilidade Integrado: Uma listagem que exibe os produtos e calcula a rentabilidade atual com base nos custos.
+    * Controle de Custos Detalhado: Campos para Custo FBA, FBM, DBA, comissão, impostos, prep center, e custos customizáveis (% ou R$).
+    * Simulação de Rebate: Campo para adicionar um "rebate" (% ou R$) e simular o impacto na precificação e lucro final. 
+13. Painel de Administração (ADM)
+Área central para gestão de todo o portal.
+* Funcionalidades Chave:
+    * Gestão Unificada de Comentários: Um painel que agrega todos os comentários de todas as áreas do sistema para resposta centralizada.
+    * Dashboard de Métricas: Visão geral do portal (novos usuários, uso de IA, materiais mais acessados, etc.).
+    * Gestão de Usuários e Grupos de Acesso.
+    * Gestão de Parceiros, Ferramentas e do "Selo de Verificação".
+    * Gestão de Categorias para o Hub de Parceiros.
+    * Gestão de Respostas Padrão para a Área de Chamados.
+    * Configuração dos pacotes e preços dos créditos de IA.
