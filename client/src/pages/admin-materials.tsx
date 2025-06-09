@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -69,93 +70,94 @@ function MaterialRow({ material, onEdit, onDelete }: {
   });
 
   return (
-    <tr className="border-b text-xs">
-      <td className="px-2 py-2">
-        <div className="flex items-center space-x-2">
-          <Icon className="h-3 w-3 text-primary shrink-0" />
-          <div className="min-w-0 max-w-[200px]">
-            <div className="text-xs font-medium truncate leading-tight">{material.title}</div>
-            <div className="text-[10px] text-muted-foreground truncate leading-tight">
-              {material.description && material.description.length > 40 
-                ? material.description.substring(0, 40) + "..." 
-                : material.description}
+    <div className="p-3 border-b border-border hover:bg-muted/30 transition-colors">
+      <div className="flex items-start justify-between gap-3">
+        {/* Main content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-2 mb-2">
+            <Icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-medium line-clamp-2 leading-tight mb-1">
+                {material.title}
+              </h3>
+              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-2">
+                {material.description && material.description.length > 80 
+                  ? material.description.substring(0, 80) + "..." 
+                  : material.description}
+              </p>
             </div>
           </div>
+          
+          {/* Badges and stats */}
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            <Badge variant="outline" className="text-xs">
+              {material.category && material.category.length > 12 
+                ? material.category.substring(0, 12) + "..." 
+                : material.category}
+            </Badge>
+            <Badge variant="secondary" className="text-xs">{material.type}</Badge>
+            <Badge variant={material.accessLevel === "Public" ? "default" : "secondary"} className="text-xs">
+              {material.accessLevel === "Public" ? (
+                <>
+                  <Globe className="h-2 w-2 mr-1" />
+                  Público
+                </>
+              ) : (
+                <>
+                  <Lock className="h-2 w-2 mr-1" />
+                  Aluno
+                </>
+              )}
+            </Badge>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span>{material.viewCount}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <MessageSquare className="h-3 w-3" />
+              <span>0</span>
+            </div>
+            <span>
+              {new Date(material.createdAt).toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit',
+                year: '2-digit'
+              })}
+            </span>
+          </div>
         </div>
-      </td>
-      <td className="px-2 py-2">
-        <Badge variant="outline" className="text-[10px] px-1 py-0.5">
-          {material.category && material.category.length > 12 
-            ? material.category.substring(0, 12) + "..." 
-            : material.category}
-        </Badge>
-      </td>
-      <td className="px-2 py-2">
-        <Badge variant="secondary" className="text-[10px] px-1 py-0.5">{material.type}</Badge>
-      </td>
-      <td className="px-2 py-2">
-        <Badge variant={material.accessLevel === "Public" ? "default" : "secondary"} className="text-[10px] px-1 py-0.5">
-          {material.accessLevel === "Public" ? (
-            <>
-              <Globe className="h-2 w-2 mr-1" />
-              Público
-            </>
-          ) : (
-            <>
-              <Lock className="h-2 w-2 mr-1" />
-              Aluno
-            </>
-          )}
-        </Badge>
-      </td>
-      <td className="px-2 py-2">
-        <div className="flex items-center space-x-1">
-          <Eye className="h-2 w-2" />
-          <span className="text-[10px]">{material.viewCount}</span>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Switch 
+            checked={material.isActive}
+            onCheckedChange={(checked) => toggleStatus(checked)}
+            className="scale-75"
+          />
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(material)}
+              className="h-7 w-7 p-0"
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(material.id)}
+              className="h-7 w-7 p-0"
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
-      </td>
-      <td className="px-2 py-2">
-        <div className="flex items-center space-x-1">
-          <MessageSquare className="h-2 w-2" />
-          <span className="text-[10px]">0</span>
-        </div>
-      </td>
-      <td className="px-2 py-2">
-        <span className="text-[10px] text-muted-foreground">
-          {new Date(material.createdAt).toLocaleDateString('pt-BR', { 
-            day: '2-digit', 
-            month: '2-digit' 
-          })}
-        </span>
-      </td>
-      <td className="px-2 py-2">
-        <Switch 
-          checked={material.isActive}
-          onCheckedChange={(checked) => toggleStatus(checked)}
-          className="scale-[0.6]"
-        />
-      </td>
-      <td className="px-2 py-2">
-        <div className="flex items-center space-x-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit(material)}
-            className="h-6 w-6 p-0"
-          >
-            <Edit className="h-2.5 w-2.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(material.id)}
-            className="h-6 w-6 p-0"
-          >
-            <Trash2 className="h-2.5 w-2.5" />
-          </Button>
-        </div>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 }
 
@@ -217,18 +219,19 @@ export default function AdminMaterials() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Gestão de Materiais</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold">Gestão de Materiais</h1>
+          <p className="text-sm text-muted-foreground">
             Gerencie todos os materiais educacionais da plataforma
           </p>
         </div>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingMaterial(null)}>
+            <Button onClick={() => setEditingMaterial(null)} className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
-              Adicionar Novo Material
+              <span className="hidden sm:inline">Adicionar Novo Material</span>
+              <span className="sm:hidden">Novo Material</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -260,10 +263,10 @@ export default function AdminMaterials() {
         </CardContent>
       </Card>
 
-      {/* Materials Table */}
+      {/* Materials List */}
       <Card>
         <CardHeader>
-          <CardTitle>Materiais ({filteredMaterials.length})</CardTitle>
+          <CardTitle className="text-lg">Materiais ({filteredMaterials.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {isLoading ? (
@@ -286,32 +289,15 @@ export default function AdminMaterials() {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px]">
-                <thead className="bg-muted/50">
-                  <tr className="text-[10px]">
-                    <th className="px-2 py-2 text-left font-medium">Título</th>
-                    <th className="px-2 py-2 text-left font-medium">Categoria</th>
-                    <th className="px-2 py-2 text-left font-medium">Formato</th>
-                    <th className="px-2 py-2 text-left font-medium">Acesso</th>
-                    <th className="px-2 py-2 text-left font-medium">Views</th>
-                    <th className="px-2 py-2 text-left font-medium">Coment.</th>
-                    <th className="px-2 py-2 text-left font-medium">Data</th>
-                    <th className="px-2 py-2 text-left font-medium">Status</th>
-                    <th className="px-2 py-2 text-left font-medium">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMaterials.map((material) => (
-                    <MaterialRow
-                      key={material.id}
-                      material={material}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              {filteredMaterials.map((material) => (
+                <MaterialRow
+                  key={material.id}
+                  material={material}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
           )}
         </CardContent>
