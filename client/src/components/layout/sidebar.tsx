@@ -17,7 +17,10 @@ import {
   GraduationCap,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  Settings,
+  Shield,
+  UserCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -25,78 +28,103 @@ import { useState } from "react";
 import logoPath from "@assets/Asset 11-8_1749488723029.png";
 import logoLightPath from "@assets/Asset 14-8_1749490361481.png";
 
-const menuItems = [
-  { 
-    label: "Dashboard", 
-    href: "/dashboard", 
-    icon: Home,
-    accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
+const menuGroups = [
+  {
+    title: "Principal",
+    items: [
+      { 
+        label: "Dashboard", 
+        href: "/dashboard", 
+        icon: Home,
+        accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
+      }
+    ]
   },
-  { 
-    label: "Parceiros", 
-    href: "/partners", 
-    icon: Users,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+  {
+    title: "Educacional",
+    items: [
+      { 
+        label: "Nossos Cursos", 
+        href: "/courses", 
+        icon: GraduationCap,
+        accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Materiais", 
+        href: "/materials", 
+        icon: BookOpen,
+        accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Templates", 
+        href: "/templates", 
+        icon: FileText,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      }
+    ]
   },
-  { 
-    label: "Fornecedores", 
-    href: "/suppliers", 
-    icon: Package,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+  {
+    title: "Fornecedores & Produtos",
+    items: [
+      { 
+        label: "Parceiros", 
+        href: "/partners", 
+        icon: Users,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Fornecedores", 
+        href: "/suppliers", 
+        icon: Package,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Meus Fornecedores", 
+        href: "/my-suppliers", 
+        icon: UserPlus,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Meus Produtos", 
+        href: "/my-products", 
+        icon: ShoppingCart,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      }
+    ]
   },
-  { 
-    label: "Ferramentas", 
-    href: "/tools", 
-    icon: Wrench,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+  {
+    title: "Ferramentas",
+    items: [
+      { 
+        label: "Ferramentas", 
+        href: "/tools", 
+        icon: Wrench,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Simuladores", 
+        href: "/simulators", 
+        icon: Calculator,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Agentes de IA", 
+        href: "/ai-agents", 
+        icon: Bot,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      }
+    ]
   },
-  { 
-    label: "Meus Fornecedores", 
-    href: "/my-suppliers", 
-    icon: UserPlus,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
-  },
-  { 
-    label: "Meus Produtos", 
-    href: "/my-products", 
-    icon: ShoppingCart,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
-  },
-  { 
-    label: "Templates", 
-    href: "/templates", 
-    icon: FileText,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
-  },
-  { 
-    label: "Agentes de IA", 
-    href: "/ai-agents", 
-    icon: Bot,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
-  },
-  { 
-    label: "Chamados", 
-    href: "/tickets", 
-    icon: MessageSquare,
-    accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
-  },
-  { 
-    label: "Materiais", 
-    href: "/materials", 
-    icon: BookOpen,
-    accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
-  },
-  { 
-    label: "Simuladores", 
-    href: "/simulators", 
-    icon: Calculator,
-    accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
-  },
-  { 
-    label: "Nossos Cursos", 
-    href: "/courses", 
-    icon: GraduationCap,
-    accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
+  {
+    title: "Suporte",
+    items: [
+      { 
+        label: "Chamados", 
+        href: "/tickets", 
+        icon: MessageSquare,
+        accessLevels: ["basic", "aluno", "aluno_pro", "suporte", "admin"]
+      }
+    ]
   }
 ];
 
@@ -121,9 +149,10 @@ export default function Sidebar() {
   };
 
   const userAccessLevel = mapAccessLevel(user.accessLevel);
-  const filteredMenuItems = menuItems.filter(item => 
-    item.accessLevels.includes(userAccessLevel)
-  );
+  const filteredMenuGroups = menuGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => item.accessLevels.includes(userAccessLevel))
+  })).filter(group => group.items.length > 0);
 
   return (
     <div className={cn(
@@ -149,64 +178,94 @@ export default function Sidebar() {
         </Button>
       </div>
 
+      {/* Area Switching for Admin/Support */}
+      {(userAccessLevel === "admin" || userAccessLevel === "suporte") && open && (
+        <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex-1">
+              <UserCheck className="h-4 w-4 mr-2" />
+              Área Aluno
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1">
+              <Shield className="h-4 w-4 mr-2" />
+              Área Admin
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        {filteredMenuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location === item.href || location.startsWith(item.href + "/");
-          
-          return (
-            <Link key={item.href} href={item.href}>
-              <a
-                className={cn(
-                  "sidebar-link",
-                  isActive && "active",
-                  !open && "justify-center px-2"
-                )}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                {open && <span className="ml-3">{item.label}</span>}
-              </a>
-            </Link>
-          );
-        })}
+      <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
+        {filteredMenuGroups.map((group) => (
+          <div key={group.title}>
+            {open && (
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                {group.title}
+              </h3>
+            )}
+            <div className="space-y-1">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = location === item.href || location.startsWith(item.href + "/");
+                
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <div
+                      className={cn(
+                        "sidebar-link",
+                        isActive && "active",
+                        !open && "justify-center px-2"
+                      )}
+                    >
+                      <Icon className="h-5 w-5 shrink-0" />
+                      {open && <span className="ml-3">{item.label}</span>}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* User Info */}
       {open && user && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              {user.profileImage ? (
-                <img src={user.profileImage} alt="Profile" className="w-8 h-8 rounded-full" />
-              ) : (
-                user.fullName?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                {user.fullName || user.email.split('@')[0]}
-              </p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={cn(
-                  "text-xs px-2 py-1 rounded-full font-medium",
-                  user.accessLevel === "Administradores" 
-                    ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                    : user.accessLevel === "Suporte"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                    : user.accessLevel === "Aluno Pro"
-                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-                    : user.accessLevel === "Aluno"
-                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-                )}>
-                  {user.accessLevel === "Administradores" ? "ADMIN" : user.accessLevel}
-                </span>
+          <Link href="/settings">
+            <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt="Profile" className="w-8 h-8 rounded-full" />
+                ) : (
+                  user.fullName?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()
+                )}
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {user.fullName || user.email.split('@')[0]}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={cn(
+                    "text-xs px-2 py-1 rounded-full font-medium",
+                    user.accessLevel === "Administradores" 
+                      ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                      : user.accessLevel === "Suporte"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                      : user.accessLevel === "Aluno Pro"
+                      ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                      : user.accessLevel === "Aluno"
+                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                      : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                  )}>
+                    {user.accessLevel === "Administradores" ? "ADMIN" : user.accessLevel}
+                  </span>
+                </div>
+              </div>
+              <Settings className="h-4 w-4 text-gray-400" />
             </div>
-          </div>
+          </Link>
           {user.accessLevel !== "Basic" && (
-            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 px-2">
               Créditos IA: {user.aiCredits || 0}
             </div>
           )}

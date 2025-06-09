@@ -19,6 +19,7 @@ import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
+import Settings from "@/pages/settings";
 import { useAuth } from "./hooks/use-auth";
 import Sidebar from "./components/layout/sidebar";
 import Topbar from "./components/layout/topbar";
@@ -75,6 +76,7 @@ function Router() {
         <Route path="/materials" component={Materials} />
         <Route path="/simulators" component={Simulators} />
         <Route path="/courses" component={Courses} />
+        <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>
     </AuthenticatedLayout>
