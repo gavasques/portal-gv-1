@@ -108,8 +108,21 @@ export default function Sidebar() {
 
   if (!user) return null;
 
+  // Map backend access levels to frontend access levels
+  const mapAccessLevel = (level: string) => {
+    const mapping: Record<string, string> = {
+      'Basic': 'basic',
+      'Aluno': 'aluno', 
+      'Aluno Pro': 'aluno_pro',
+      'Suporte': 'suporte',
+      'Administradores': 'admin'
+    };
+    return mapping[level] || level.toLowerCase();
+  };
+
+  const userAccessLevel = mapAccessLevel(user.accessLevel);
   const filteredMenuItems = menuItems.filter(item => 
-    item.accessLevels.includes(user.accessLevel.toLowerCase())
+    item.accessLevels.includes(userAccessLevel)
   );
 
   return (
@@ -174,18 +187,33 @@ export default function Sidebar() {
               <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                 {user.fullName || user.email.split('@')[0]}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                {user.accessLevel}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={cn(
+                  "text-xs px-2 py-1 rounded-full font-medium",
+                  user.accessLevel === "Administradores" 
+                    ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                    : user.accessLevel === "Suporte"
+                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                    : user.accessLevel === "Aluno Pro"
+                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                    : user.accessLevel === "Aluno"
+                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                    : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                )}>
+                  {user.accessLevel === "Administradores" ? "ADMIN" : user.accessLevel}
+                </span>
+              </div>
             </div>
           </div>
-          {user.accessLevel !== "basic" && (
+          {user.accessLevel !== "Basic" && (
             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Créditos IA: {user.aiCredits}
+              Créditos IA: {user.aiCredits || 0}
             </div>
           )}
         </div>
-      )}
+      )}</div>
+  );
+}
     </div>
   );
 }
