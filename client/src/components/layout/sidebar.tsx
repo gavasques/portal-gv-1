@@ -149,10 +149,17 @@ export default function Sidebar() {
   };
 
   const userAccessLevel = mapAccessLevel(user.accessLevel);
+  const isAdminArea = location.startsWith('/admin');
+  
+  // Filter menu groups based on current area and user access
   const filteredMenuGroups = menuGroups.map(group => ({
     ...group,
     items: group.items.filter(item => item.accessLevels.includes(userAccessLevel))
   })).filter(group => group.items.length > 0);
+  
+  // Get current area context for display
+  const currentAreaName = isAdminArea ? "Área Administrativa" : "Área do Aluno";
+  const currentAreaRole = isAdminArea ? "ADMIN" : user.accessLevel?.toUpperCase() || "ALUNO";
 
   return (
     <div className={cn(
@@ -183,13 +190,21 @@ export default function Sidebar() {
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-2 gap-2">
             <Link href="/dashboard" className="w-full">
-              <Button variant="outline" size="sm" className="w-full text-xs">
+              <Button 
+                variant={!isAdminArea ? "default" : "outline"} 
+                size="sm" 
+                className="w-full text-xs"
+              >
                 <UserCheck className="h-3 w-3 mr-1" />
                 Aluno
               </Button>
             </Link>
             <Link href="/admin" className="w-full">
-              <Button variant="outline" size="sm" className="w-full text-xs">
+              <Button 
+                variant={isAdminArea ? "default" : "outline"} 
+                size="sm" 
+                className="w-full text-xs"
+              >
                 <Shield className="h-3 w-3 mr-1" />
                 Admin
               </Button>
@@ -251,7 +266,7 @@ export default function Sidebar() {
                 <div className="flex items-center gap-2 mt-1">
                   <span className={cn(
                     "text-xs px-2 py-1 rounded-full font-medium",
-                    user.accessLevel === "Administradores" 
+                    isAdminArea 
                       ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                       : user.accessLevel === "Suporte"
                       ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
@@ -261,7 +276,7 @@ export default function Sidebar() {
                       ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
                       : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
                   )}>
-                    {user.accessLevel === "Administradores" ? "ADMIN" : user.accessLevel}
+                    {currentAreaRole}
                   </span>
                 </div>
               </div>
