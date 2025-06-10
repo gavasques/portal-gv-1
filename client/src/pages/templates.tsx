@@ -31,6 +31,18 @@ export default function Templates() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "cards">("cards");
 
+  // Load dynamic categories from the database
+  const { data: availableCategories = [] } = useQuery({
+    queryKey: ["/api/templates/categories"],
+    queryFn: async () => {
+      const response = await fetch("/api/templates/categories");
+      if (!response.ok) throw new Error("Failed to fetch categories");
+      return response.json();
+    },
+  });
+
+  const categories = ["Todos", ...availableCategories];
+
   const { data: templates, isLoading } = useQuery({
     queryKey: ["/api/templates", searchQuery, selectedCategory, selectedTags],
     queryFn: async () => {

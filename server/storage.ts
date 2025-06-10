@@ -106,6 +106,9 @@ export interface IStorage {
   updateTemplateTag(id: number, updates: Partial<TemplateTag>): Promise<TemplateTag>;
   deleteTemplateTag(id: number): Promise<void>;
 
+  // Template Categories
+  getTemplateCategories(): Promise<string[]>;
+
   // Tickets
   getTickets(userId?: number, limit?: number, offset?: number): Promise<Ticket[]>;
   getTicket(id: number): Promise<Ticket | undefined>;
