@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, FileText, Grid, List, Eye } from "lucide-react";
+import { Search, FileText, Grid, List, X } from "lucide-react";
 import { Link } from "wouter";
-import type { Template } from "@shared/schema";
+import type { Template, TemplateTag } from "@shared/schema";
 
 const categories = [
   "Todos",
@@ -19,21 +19,45 @@ const categories = [
   "Marketing"
 ];
 
+const tagColors = [
+  "#3B82F6", // blue
+  "#10B981", // emerald
+  "#F59E0B", // amber
+  "#EF4444", // red
+  "#8B5CF6", // violet
+  "#06B6D4", // cyan
+  "#84CC16", // lime
+  "#F97316", // orange
+  "#EC4899", // pink
+  "#6B7280", // gray
+];
+
 export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const [viewMode, setViewMode] = useState<"list" | "cards">("list");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<"list" | "cards">("cards");
 
   const { data: templates, isLoading } = useQuery({
-    queryKey: ["/api/templates", searchQuery, selectedCategory],
+    queryKey: ["/api/templates", searchQuery, selectedCategory, selectedTags],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append("search", searchQuery);
       if (selectedCategory !== "Todos") params.append("category", selectedCategory);
+      if (selectedTags.length > 0) params.append("tags", selectedTags.join(","));
       
       const response = await fetch(`/api/templates?${params}`);
       if (!response.ok) throw new Error("Failed to fetch templates");
       return response.json() as Template[];
+    },
+  });
+
+  const { data: templateTags } = useQuery({
+    queryKey: ["/api/template-tags"],
+    queryFn: async () => {
+      const response = await fetch("/api/template-tags");
+      if (!response.ok) throw new Error("Failed to fetch template tags");
+      return response.json() as TemplateTag[];
     },
   });
 
@@ -43,6 +67,20 @@ export default function Templates() {
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
+  };
+
+  const handleTagToggle = (tagName: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tagName) 
+        ? prev.filter(t => t !== tagName)
+        : [...prev, tagName]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setSelectedCategory("Todos");
+    setSelectedTags([]);
   };
 
   if (isLoading) {

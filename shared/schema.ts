@@ -256,6 +256,24 @@ export const products = pgTable("products", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Template tags management
+export const templateTags = pgTable("template_tags", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  color: text("color").notNull().default("#6b7280"), // Color for UI display
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Many-to-many relationship between templates and tags
+export const templateTagRelations = pgTable("template_tag_relations", {
+  id: serial("id").primaryKey(),
+  templateId: integer("template_id").notNull().references(() => templates.id),
+  tagId: integer("tag_id").notNull().references(() => templateTags.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const templates = pgTable("templates", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -267,7 +285,7 @@ export const templates = pgTable("templates", {
   status: text("status").notNull().default("published"), // published, draft
   copyCount: integer("copy_count").notNull().default(0), // Usage counter
   language: text("language").notNull().default("pt"),
-  tags: text("tags").array(),
+  tags: text("tags").array(), // Keep for backward compatibility
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -503,6 +521,26 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
   }),
 }));
 
+// Template tag relations
+export const templateTagsRelations = relations(templateTags, ({ many }) => ({
+  templateRelations: many(templateTagRelations),
+}));
+
+export const templateTagRelationsRelations = relations(templateTagRelations, ({ one }) => ({
+  template: one(templates, {
+    fields: [templateTagRelations.templateId],
+    references: [templates.id],
+  }),
+  tag: one(templateTags, {
+    fields: [templateTagRelations.tagId],
+    references: [templateTags.id],
+  }),
+}));
+
+export const templatesRelations = relations(templates, ({ many }) => ({
+  tagRelations: many(templateTagRelations),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -619,6 +657,17 @@ export const insertPartnerCategorySchema = createInsertSchema(partnerCategories)
   createdAt: true,
 });
 
+// Template tag schemas
+export const insertTemplateTagSchema = createInsertSchema(templateTags).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTemplateTagRelationSchema = createInsertSchema(templateTagRelations).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -666,3 +715,9 @@ export type ProductCategory = typeof productCategories.$inferSelect;
 export type InsertProductCategory = z.infer<typeof insertProductCategorySchema>;
 export type PartnerCategory = typeof partnerCategories.$inferSelect;
 export type InsertPartnerCategory = z.infer<typeof insertPartnerCategorySchema>;
+
+// Template tag types
+export type TemplateTag = typeof templateTags.$inferSelect;
+export type InsertTemplateTag = z.infer<typeof insertTemplateTagSchema>;
+export type TemplateTagRelation = typeof templateTagRelations.$inferSelect;
+export type InsertTemplateTagRelation = z.infer<typeof insertTemplateTagRelationSchema>;
