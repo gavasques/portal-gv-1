@@ -484,7 +484,7 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
                 <div className="mb-4">
                   <h3 className="text-lg font-medium mb-2">Conteúdo do Material</h3>
                   <p className="text-sm text-muted-foreground">
-                    Configure o conteúdo baseado no tipo selecionado: {materialTypes.find(t => t.value === watchedType)?.label}
+                    Configure o conteúdo baseado no tipo selecionado: {materialTypes.find(t => t.id === parseInt(watchedType || '0'))?.name}
                   </p>
                 </div>
                 

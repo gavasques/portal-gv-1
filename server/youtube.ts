@@ -112,7 +112,7 @@ function formatPublishedDate(dateString: string): string {
   return `há ${Math.floor(diffDays / 30)} mês${Math.floor(diffDays / 30) > 1 ? 'es' : ''}`;
 }
 
-async function updateVideoCache(): Promise<void> {
+export async function updateVideoCache(): Promise<void> {
   console.log('Updating YouTube video cache...');
   try {
     const videos = await fetchLatestVideos();

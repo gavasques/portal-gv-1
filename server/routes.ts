@@ -1442,6 +1442,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Force YouTube sync endpoint for admins
+  app.post('/api/admin/youtube/sync', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const { updateVideoCache } = require('./youtube');
+      await updateVideoCache();
+      
+      const { videos, lastUpdated } = getCachedVideos();
+      res.json({
+        message: 'YouTube videos synchronized successfully',
+        count: videos.length,
+        lastUpdated
+      });
+    } catch (error) {
+      console.error('Error syncing YouTube videos:', error);
+      res.status(500).json({ message: 'Failed to sync YouTube videos' });
+    }
+  });
+
   // News API routes (placeholder for future implementation)
   app.get('/api/news/latest', requireAuth, async (req, res) => {
     try {
