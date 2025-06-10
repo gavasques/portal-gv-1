@@ -50,17 +50,17 @@ function QuickActionButton({
   onClick: () => void; 
 }) {
   return (
-    <Button
-      variant="outline"
-      className="h-auto p-4 flex flex-col items-center gap-2 hover:bg-muted/50"
+    <Button 
+      variant="outline" 
+      className="h-auto p-4 text-left justify-start w-full flex items-center space-x-3"
       onClick={onClick}
     >
-      <div className={`p-2 rounded-lg ${color}`}>
+      <div className={`${color} p-2 rounded-lg shrink-0`}>
         <Icon className="h-4 w-4" />
       </div>
-      <div className="text-center">
-        <div className="font-medium text-sm">{title}</div>
-        <div className="text-xs text-muted-foreground">{subtitle}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-left">{title}</p>
+        <p className="text-xs text-muted-foreground text-left">{subtitle}</p>
       </div>
     </Button>
   );
@@ -71,7 +71,7 @@ function VideoCard({
   thumbnail, 
   duration, 
   publishedAt,
-  url
+  url 
 }: { 
   title: string; 
   thumbnail: string; 
@@ -136,11 +136,6 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  // Show admin dashboard for admin users
-  if (user?.role === 'Administradores') {
-    return <AdminDashboard />;
-  }
-
   // Student dashboard for other users
   const { data: metrics } = useQuery<DashboardMetrics>({
     queryKey: ['/api/dashboard/metrics'],
@@ -160,7 +155,7 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-6 text-primary-foreground">
         <div className="flex items-center justify-between">
@@ -177,7 +172,7 @@ export default function Dashboard() {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Meus Fornecedores"
           value={metrics?.suppliersCount || 0}
@@ -192,20 +187,20 @@ export default function Dashboard() {
         />
         <MetricCard
           title="Créditos de IA"
-          value={user.aiCredits}
+          value={metrics?.aiCredits || 0}
           icon={Bot}
           color="bg-purple-50 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400"
         />
         <MetricCard
-          title="Horas de Suporte"
-          value={metrics?.supportHours || 0}
+          title="Chamados Abertos"
+          value={metrics?.openTickets || 0}
           icon={Headphones}
           color="bg-yellow-50 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400"
         />
       </div>
 
       {/* Main Content Layout - 70% Videos, 30% News/Actions */}
-      <div className="grid grid-rows-[70vh_30vh] gap-4">
+      <div className="grid grid-rows-[70vh_30vh] gap-6">
         {/* YouTube Videos Section - 70% */}
         <Card className="overflow-hidden">
           <CardHeader className="border-b border-border py-4">
@@ -223,8 +218,8 @@ export default function Dashboard() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 h-full overflow-hidden flex flex-col">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 overflow-y-auto">
+          <CardContent className="p-4 h-full overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 h-full overflow-y-auto">
               {youtubeData?.videos && youtubeData.videos.length > 0 ? (
                 youtubeData.videos.map((video: any) => (
                   <VideoCard 
