@@ -133,10 +133,6 @@ function MaterialListItem({ material }: { material: Material }) {
                 </>
               )}
             </Badge>
-            <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-              <Eye className="h-3 w-3" />
-              <span>{material.viewCount}</span>
-            </div>
           </div>
         </div>
       </div>
