@@ -16,6 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import MaterialTypeForm from "@/components/admin/material-type-form";
 import type { MaterialType, MaterialCategory, SoftwareType, SupplierType, ProductCategory, PartnerCategory } from "@shared/schema";
 
 // Common form schemas
@@ -254,7 +255,7 @@ function GenericForm<T extends { id: number; name: string; description?: string 
 }
 
 // Generic card grid component
-function ItemGrid<T extends { id: number; name: string; description?: string | null; isActive: boolean; createdAt: Date }>({
+function ItemGrid<T extends { id: number; name: string; description?: string | null; isActive: boolean; createdAt: Date; formatType?: string }>({
   items,
   isLoading,
   onEdit,
@@ -330,6 +331,13 @@ function ItemGrid<T extends { id: number; name: string; description?: string | n
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {item.description}
               </p>
+            )}
+            {item.formatType && (
+              <div className="mt-2">
+                <Badge variant="secondary" className="text-xs">
+                  {getFormatTypeLabel(item.formatType)}
+                </Badge>
+              </div>
             )}
           </CardHeader>
           <CardContent>
@@ -532,15 +540,38 @@ export default function AdminCadastros() {
           </div>
 
           <TabsContent value="material-types">
-            <ItemGrid
-              items={operations.items}
-              isLoading={operations.isLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              searchQuery={searchQuery}
-              icon={FileType}
-              entityName="tipo de material"
-            />
+            {activeTab === "material-types" && isFormOpen ? (
+              <Dialog open={isFormOpen} onOpenChange={(open) => {
+                setIsFormOpen(open);
+                if (!open) {
+                  setEditingItem(null);
+                }
+              }}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingItem ? "Editar Tipo de Material" : "Novo Tipo de Material"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <MaterialTypeForm
+                    materialType={editingItem}
+                    onSubmit={handleSubmit}
+                    onCancel={handleCancel}
+                    isLoading={operations.isCreating || operations.isUpdating}
+                  />
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <ItemGrid
+                items={operations.items}
+                isLoading={operations.isLoading}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                searchQuery={searchQuery}
+                icon={FileType}
+                entityName="tipo de material"
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="material-categories">

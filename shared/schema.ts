@@ -81,6 +81,8 @@ export const materialTypes = pgTable("material_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   description: text("description"),
+  formatType: text("format_type").notNull().default("text"), // text, embed, iframe, youtube, pdf, audio, video, link, upload
+  displayConfig: jsonb("display_config"), // Configuration for how to display this type
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -646,6 +648,22 @@ export const insertUserActivityLogSchema = createInsertSchema(userActivityLog).o
 export const insertMaterialTypeSchema = createInsertSchema(materialTypes).omit({
   id: true,
   createdAt: true,
+}).extend({
+  formatType: z.enum([
+    "text", "embed", "iframe", "youtube", "pdf", "audio", "video", "link", "upload"
+  ]).default("text"),
+  displayConfig: z.object({
+    allowedExtensions: z.array(z.string()).optional(),
+    embedSettings: z.object({
+      width: z.string().optional(),
+      height: z.string().optional(),
+      allowFullscreen: z.boolean().optional(),
+    }).optional(),
+    validationRules: z.object({
+      urlPattern: z.string().optional(),
+      maxFileSize: z.number().optional(),
+    }).optional(),
+  }).optional(),
 });
 
 export const insertMaterialCategorySchema = createInsertSchema(materialCategories).omit({
