@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { FileText, Upload, Link, Video, FileAudio, FileSpreadsheet, File, Globe } from "lucide-react";
-import type { Material, MaterialCategory } from "@shared/schema";
+import type { Material, MaterialCategory, MaterialType } from "@shared/schema";
 
 const materialFormSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -53,22 +53,21 @@ interface MaterialFormProps {
   isLoading?: boolean;
 }
 
-// Categories are now loaded dynamically from the API
-
-const materialTypes = [
-  { value: "artigo_texto", label: "Artigo/Texto", icon: FileText },
-  { value: "documento_pdf", label: "Documento PDF", icon: File },
-  { value: "fluxograma_miro", label: "Fluxograma Miro", icon: Globe },
-  { value: "embed_iframe", label: "Embed/Iframe", icon: Globe },
-  { value: "video_youtube", label: "Vídeo YouTube", icon: Video },
-  { value: "video_panda", label: "Vídeo Panda", icon: Video },
-  { value: "video_upload", label: "Vídeo Upload", icon: Upload },
-  { value: "audio", label: "Áudio", icon: FileAudio },
-  { value: "planilha_excel", label: "Planilha Excel", icon: FileSpreadsheet },
-  { value: "arquivo_word", label: "Arquivo Word", icon: File },
-  { value: "link_pasta", label: "Link de Pasta", icon: Link },
-  { value: "link_documento", label: "Link de Documento", icon: Link },
-];
+// Helper function to get format type labels
+function getFormatTypeLabel(formatType: string): string {
+  const labels: Record<string, string> = {
+    text: "Texto/Artigo",
+    embed: "Embed HTML", 
+    iframe: "iFrame",
+    youtube: "YouTube",
+    pdf: "PDF",
+    audio: "Áudio",
+    video: "Vídeo",
+    link: "Link Externo",
+    upload: "Upload de Arquivo"
+  };
+  return labels[formatType] || formatType;
+}
 
 export default function MaterialForm({ material, onSubmit, onCancel, isLoading }: MaterialFormProps) {
   const [activeTab, setActiveTab] = useState("basic");
@@ -79,6 +78,16 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
     queryFn: async () => {
       const response = await fetch('/api/material-categories');
       if (!response.ok) throw new Error('Failed to fetch material categories');
+      return response.json();
+    },
+  });
+
+  // Load material types dynamically
+  const { data: materialTypes = [] } = useQuery<MaterialType[]>({
+    queryKey: ['/api/material-types'],
+    queryFn: async () => {
+      const response = await fetch('/api/material-types');
+      if (!response.ok) throw new Error('Failed to fetch material types');
       return response.json();
     },
   });
@@ -426,17 +435,18 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {materialTypes.map((type) => {
-                            const Icon = type.icon;
-                            return (
-                              <SelectItem key={type.value} value={type.value}>
-                                <div className="flex items-center gap-2">
-                                  <Icon className="h-4 w-4" />
-                                  {type.label}
+                          {materialTypes.filter(type => type.isActive).map((type) => (
+                            <SelectItem key={type.id} value={type.name}>
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{type.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {getFormatTypeLabel(type.formatType)}
+                                  </span>
                                 </div>
-                              </SelectItem>
-                            );
-                          })}
+                              </div>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

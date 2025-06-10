@@ -63,6 +63,22 @@ type SupplierTypeFormData = z.infer<typeof supplierTypeSchema>;
 type ProductCategoryFormData = z.infer<typeof productCategorySchema>;
 type PartnerCategoryFormData = z.infer<typeof partnerCategorySchema>;
 
+// Helper function to get format type labels
+function getFormatTypeLabel(formatType: string): string {
+  const labels: Record<string, string> = {
+    text: "Texto/Artigo",
+    embed: "Embed HTML", 
+    iframe: "iFrame",
+    youtube: "YouTube",
+    pdf: "PDF",
+    audio: "Áudio",
+    video: "Vídeo",
+    link: "Link Externo",
+    upload: "Upload de Arquivo"
+  };
+  return labels[formatType] || formatType;
+}
+
 // Generic CRUD hook for all cadastros types
 function useCrudOperations<T, F>(
   queryKey: string,
