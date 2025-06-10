@@ -1,17 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  Download, 
-  ExternalLink, 
-  Video, 
-  FileAudio, 
-  FileSpreadsheet, 
-  File as FileIcon,
-  Globe,
-  FolderOpen
-} from "lucide-react";
+import { ExternalLink, Download, Video, FileIcon, FileAudio, FileSpreadsheet, FileText, Globe } from "lucide-react";
 import type { Material } from "@shared/schema";
 
 interface MaterialContentRendererProps {
@@ -35,17 +24,148 @@ const renderTextContent = (content: string) => {
   );
 };
 
+const renderAudioPlayer = (material: Material) => {
+  return (
+    <Card className="border-l-4 border-l-purple-500">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <FileAudio className="h-8 w-8 text-purple-500 mt-1" />
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold mb-2">
+              {material.fileName || material.title}
+            </h3>
+            {material.description && (
+              <p className="text-sm text-muted-foreground mb-4">
+                {material.description}
+              </p>
+            )}
+            
+            {material.filePath && (
+              <div className="mb-4">
+                <audio controls className="w-full max-w-md">
+                  <source src={material.filePath} type={material.mimeType || "audio/mpeg"} />
+                  Seu navegador não suporta o elemento de áudio.
+                </audio>
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              {material.filePath && (
+                <Button variant="outline" size="sm" asChild>
+                  <a href={material.filePath} download>
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar Áudio
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const renderVideoPlayer = (material: Material) => {
+  return (
+    <Card className="border-l-4 border-l-blue-500">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <Video className="h-8 w-8 text-blue-500 mt-1" />
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold mb-2">
+              {material.fileName || material.title}
+            </h3>
+            {material.description && (
+              <p className="text-sm text-muted-foreground mb-4">
+                {material.description}
+              </p>
+            )}
+            
+            {material.filePath && (
+              <div className="mb-4">
+                <video controls className="w-full max-w-2xl rounded-lg">
+                  <source src={material.filePath} type={material.mimeType || "video/mp4"} />
+                  Seu navegador não suporta o elemento de vídeo.
+                </video>
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              {material.filePath && (
+                <Button variant="outline" size="sm" asChild>
+                  <a href={material.filePath} download>
+                    <Download className="h-4 w-4 mr-2" />
+                    Baixar Vídeo
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const renderPDFViewer = (material: Material) => {
+  return (
+    <Card className="border-l-4 border-l-red-500">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <FileText className="h-8 w-8 text-red-500 mt-1" />
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold mb-2">
+              {material.fileName || material.title}
+            </h3>
+            {material.description && (
+              <p className="text-sm text-muted-foreground mb-4">
+                {material.description}
+              </p>
+            )}
+            
+            {material.filePath && (
+              <div className="mb-4">
+                <iframe 
+                  src={material.filePath}
+                  className="w-full h-96 border rounded-lg"
+                  title="PDF Viewer"
+                />
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              {material.filePath && (
+                <>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={material.filePath} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Visualizar em Tela Cheia
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={material.filePath} download>
+                      <Download className="h-4 w-4 mr-2" />
+                      Baixar PDF
+                    </a>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const renderFileDownload = (material: Material) => {
   const getFileIcon = (type: string) => {
     switch (type) {
-      case "documento_pdf":
-        return <FileIcon className="h-8 w-8 text-red-500" />;
       case "planilha_excel":
         return <FileSpreadsheet className="h-8 w-8 text-green-500" />;
       case "arquivo_word":
         return <FileIcon className="h-8 w-8 text-blue-500" />;
-      case "audio":
-        return <FileAudio className="h-8 w-8 text-purple-500" />;
       default:
         return <FileIcon className="h-8 w-8 text-gray-500" />;
     }
@@ -53,14 +173,10 @@ const renderFileDownload = (material: Material) => {
 
   const getFileTypeLabel = (type: string) => {
     switch (type) {
-      case "documento_pdf":
-        return "Documento PDF";
       case "planilha_excel":
         return "Planilha Excel";
       case "arquivo_word":
         return "Documento Word";
-      case "audio":
-        return "Arquivo de Áudio";
       default:
         return "Arquivo";
     }
@@ -74,9 +190,9 @@ const renderFileDownload = (material: Material) => {
         <p className="text-sm text-muted-foreground mb-4">
           {getFileTypeLabel(material.type)}
         </p>
-        {material.url && (
+        {material.filePath && (
           <Button asChild>
-            <a href={material.url} target="_blank" rel="noopener noreferrer">
+            <a href={material.filePath} download>
               <Download className="h-4 w-4 mr-2" />
               Baixar Arquivo
             </a>
@@ -123,30 +239,13 @@ const renderYouTubeVideo = (url: string) => {
 
 const renderPandaVideo = (url: string) => {
   return (
-    <Card>
-      <CardContent className="p-6 text-center">
-        <Video className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <h3 className="text-lg font-semibold mb-2">Vídeo Panda</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Clique para assistir o vídeo
-        </p>
-        <Button asChild>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            <Video className="h-4 w-4 mr-2" />
-            Assistir Vídeo
-          </a>
-        </Button>
-      </CardContent>
-    </Card>
-  );
-};
-
-const renderEmbed = (embedCode: string) => {
-  return (
-    <div className="w-full">
-      <div 
-        className="w-full min-h-[400px] border rounded-lg overflow-hidden bg-background"
-        dangerouslySetInnerHTML={{ __html: embedCode }}
+    <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
+      <iframe
+        src={url}
+        title="Panda Video player"
+        frameBorder="0"
+        allowFullScreen
+        className="absolute inset-0 w-full h-full"
       />
     </div>
   );
@@ -155,17 +254,25 @@ const renderEmbed = (embedCode: string) => {
 const renderExternalLink = (material: Material) => {
   const getIcon = (type: string) => {
     switch (type) {
+      case "fluxograma_miro":
+        return <Globe className="h-12 w-12 text-blue-500" />;
+      case "video_panda":
+        return <Video className="h-12 w-12 text-orange-500" />;
       case "link_pasta":
-        return <FolderOpen className="h-8 w-8 text-blue-500" />;
+        return <FileIcon className="h-12 w-12 text-purple-500" />;
       case "link_documento":
-        return <FileText className="h-8 w-8 text-green-500" />;
+        return <FileText className="h-12 w-12 text-green-500" />;
       default:
-        return <ExternalLink className="h-8 w-8 text-gray-500" />;
+        return <ExternalLink className="h-12 w-12 text-gray-500" />;
     }
   };
 
   const getLabel = (type: string) => {
     switch (type) {
+      case "fluxograma_miro":
+        return "Fluxograma Miro";
+      case "video_panda":
+        return "Vídeo Panda";
       case "link_pasta":
         return "Pasta Externa";
       case "link_documento":
@@ -205,10 +312,17 @@ export default function MaterialContentRenderer({ material }: MaterialContentRen
         );
       
       case "documento_pdf":
+        return renderPDFViewer(material);
+      
       case "planilha_excel":
       case "arquivo_word":
-      case "audio":
         return renderFileDownload(material);
+      
+      case "audio":
+        return renderAudioPlayer(material);
+      
+      case "video_upload":
+        return renderVideoPlayer(material);
       
       case "video_youtube":
         return material.url ? renderYouTubeVideo(material.url) : (
@@ -222,20 +336,26 @@ export default function MaterialContentRenderer({ material }: MaterialContentRen
       
       case "fluxograma_miro":
       case "embed_iframe":
-        return material.embedCode ? renderEmbed(material.embedCode) : (
+        return material.embedCode ? (
+          <div 
+            className="w-full"
+            dangerouslySetInnerHTML={{ __html: material.embedCode }} 
+          />
+        ) : (
           <p className="text-muted-foreground">Código de incorporação não disponível</p>
         );
       
       case "link_pasta":
       case "link_documento":
-        return renderExternalLink(material);
+        return material.url ? renderExternalLink(material) : (
+          <p className="text-muted-foreground">Link não disponível</p>
+        );
       
       default:
         return (
           <Card>
             <CardContent className="p-6 text-center">
-              <Globe className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">Tipo de conteúdo não suportado</p>
+              <p className="text-muted-foreground">Tipo de material não suportado</p>
             </CardContent>
           </Card>
         );
@@ -243,31 +363,8 @@ export default function MaterialContentRenderer({ material }: MaterialContentRen
   };
 
   return (
-    <div className="space-y-6">
-      {/* Material Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary" className="text-xs">
-            {material.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-          </Badge>
-          {material.category && (
-            <Badge variant="outline" className="text-xs">
-              {material.category}
-            </Badge>
-          )}
-        </div>
-        
-        {material.description && (
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            {material.description}
-          </p>
-        )}
-      </div>
-
-      {/* Dynamic Content */}
-      <div className="space-y-4">
-        {renderContent()}
-      </div>
+    <div className="w-full">
+      {renderContent()}
     </div>
   );
 }
