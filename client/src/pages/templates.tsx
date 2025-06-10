@@ -10,14 +10,7 @@ import { Search, FileText, Grid, List, X } from "lucide-react";
 import { Link } from "wouter";
 import type { Template, TemplateTag } from "@shared/schema";
 
-const categories = [
-  "Todos",
-  "Fornecedores", 
-  "Amazon", 
-  "Ferramentas", 
-  "Negociação", 
-  "Marketing"
-];
+// Categories are now loaded dynamically from templates in the database
 
 const tagColors = [
   "#3B82F6", // blue

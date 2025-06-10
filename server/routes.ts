@@ -392,7 +392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           category as string
         );
       } else {
-        templates = await storage.getAllTemplates();
+        templates = await storage.getAllTemplatesWithTags();
       }
 
       // Filter by tags if provided
@@ -407,6 +407,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(templates);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch templates' });
+    }
+  });
+
+  // Template categories endpoint - gets unique categories from existing templates
+  app.get('/api/templates/categories', requireAuth, async (req, res) => {
+    try {
+      const categories = await storage.getTemplateCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch template categories' });
     }
   });
 

@@ -776,6 +776,17 @@ export class DatabaseStorage implements IStorage {
     return template || undefined;
   }
 
+  // Get unique categories from existing templates
+  async getTemplateCategories(): Promise<string[]> {
+    const result = await db
+      .selectDistinct({ category: templates.category })
+      .from(templates)
+      .where(eq(templates.status, 'published'))
+      .orderBy(templates.category);
+    
+    return result.map(row => row.category).filter(Boolean);
+  }
+
   // Template Tags implementation
   async getTemplateTags(): Promise<TemplateTag[]> {
     return await db.select().from(templateTags).where(eq(templateTags.isActive, true)).orderBy(templateTags.name);
