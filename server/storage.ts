@@ -1,23 +1,20 @@
 import { 
-  users, partners, suppliers, tools, mySuppliers, products, templates, 
-  tickets, materials, news, reviews, authTokens, materialTypes, softwareTypes,
-  supplierTypes, productCategories, partnerCategories, userGroups, permissions,
-  groupPermissions, userActivityLog,
-  type User, type InsertUser, type Partner, type InsertPartner, 
-  type Supplier, type InsertSupplier, type Tool, type InsertTool, 
-  type MySupplier, type InsertMySupplier, type Product, type InsertProduct, 
-  type Template, type InsertTemplate, type Ticket, type InsertTicket, 
-  type Material, type InsertMaterial, type News, type InsertNews, 
-  type Review, type InsertReview, type AuthToken, type InsertAuthToken,
-  type MaterialType, type InsertMaterialType, type SoftwareType, type InsertSoftwareType,
-  type SupplierType, type InsertSupplierType, type ProductCategory, type InsertProductCategory,
-  type PartnerCategory, type InsertPartnerCategory, type UserGroup, type InsertUserGroup,
-  type Permission, type InsertPermission, type GroupPermission, type InsertGroupPermission,
-  type UserActivityLog, type InsertUserActivityLog
+  users, partners, suppliers, tools, mySuppliers, products, templates, tickets, ticketFiles, ticketMessages,
+  materials, news, reviews, userGroups, permissions, groupPermissions, userActivityLog, authTokens,
+  materialTypes, softwareTypes, supplierTypes, productCategories, partnerCategories
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
 
+import type { 
+  User, InsertUser, Partner, InsertPartner, Supplier, InsertSupplier, Tool, InsertTool,
+  MySupplier, InsertMySupplier, Product, InsertProduct, Template, InsertTemplate,
+  Ticket, InsertTicket, Material, InsertMaterial, News, InsertNews, Review, InsertReview,
+  UserGroup, InsertUserGroup, Permission, InsertPermission, GroupPermission, InsertGroupPermission,
+  UserActivityLog, InsertUserActivityLog, AuthToken, InsertAuthToken,
+  MaterialType, InsertMaterialType, SoftwareType, InsertSoftwareType, SupplierType, InsertSupplierType,
+  ProductCategory, InsertProductCategory, PartnerCategory, InsertPartnerCategory
+} from "@shared/schema";
 export interface IStorage {
   // User management
   getUser(id: number): Promise<User | undefined>;
@@ -211,7 +208,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUsers(limit = 50, offset = 0, groupId?: number, isActive?: boolean, search?: string): Promise<User[]> {
     let query = db.select().from(users);
-    
+
     const conditions = [];
     if (groupId !== undefined) conditions.push(eq(users.groupId, groupId));
     if (isActive !== undefined) conditions.push(eq(users.isActive, isActive));
@@ -223,11 +220,11 @@ export class DatabaseStorage implements IStorage {
         )
       );
     }
-    
+
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
     }
-    
+
     return await query.limit(limit).offset(offset).orderBy(desc(users.createdAt));
   }
 
@@ -243,7 +240,7 @@ export class DatabaseStorage implements IStorage {
         )
       );
     }
-    
+
     const baseQuery = db.select({
       id: users.id,
       email: users.email,
@@ -261,18 +258,18 @@ export class DatabaseStorage implements IStorage {
       updatedAt: users.updatedAt,
       group: userGroups
     }).from(users).leftJoin(userGroups, eq(users.groupId, userGroups.id));
-    
+
     const query = conditions.length > 0 
       ? baseQuery.where(and(...conditions))
       : baseQuery;
-    
+
     return await query.limit(limit).offset(offset).orderBy(desc(users.createdAt)) as (User & { group: UserGroup | null })[];
   }
 
   async getUserPermissions(userId: number): Promise<Permission[]> {
     const user = await this.getUser(userId);
     if (!user || !user.groupId) return [];
-    
+
     return await db.select({
       id: permissions.id,
       key: permissions.key,
@@ -361,7 +358,7 @@ export class DatabaseStorage implements IStorage {
   async setGroupPermissions(groupId: number, permissionIds: number[]): Promise<void> {
     // Remove existing permissions
     await db.delete(groupPermissions).where(eq(groupPermissions.groupId, groupId));
-    
+
     // Add new permissions
     if (permissionIds.length > 0) {
       const values = permissionIds.map(permissionId => ({
@@ -732,7 +729,7 @@ export class DatabaseStorage implements IStorage {
     })
     .from(reviews)
     .where(and(eq(reviews.itemType, itemType), eq(reviews.itemId, itemId), eq(reviews.isApproved, true)));
-    
+
     return result[0]?.avg || 0;
   }
 
@@ -756,7 +753,7 @@ export class DatabaseStorage implements IStorage {
 
     const [ticketsResult] = await db.select({
       count: sql<number>`COUNT(*)`,
-    }).from(tickets).where(and(eq(tickets.userId, userId), eq(tickets.status, 'open')));
+    }).from(tickets).where(and(eq(tickets.userId, userId), eq(tickets.status, 'open')));```text
 
     return {
       suppliersCount: suppliersResult?.count || 0,

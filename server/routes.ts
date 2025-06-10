@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user as any;
 
       let accessLevel;
-      if (user.accessLevel === 'Basic') {
+      if (user.groupId === 1) { // Basic group
         accessLevel = 'Public';
       }
 
@@ -252,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = req.user as any;
       let accessLevel;
-      if (user.accessLevel === 'Basic') {
+      if (user.groupId === 1) { // Basic group
         accessLevel = 'Public';
       }
 
@@ -272,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = req.user as any;
       // Check access level
-      if (material.accessLevel === 'Restricted' && user.accessLevel === 'Basic') {
+      if (material.accessLevel === 'Restricted' && user.groupId === 1) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
@@ -330,62 +330,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Cadastro endpoints
-  app.get('/api/material-types', async (req, res) => {
+  app.put('/api/admin/materials/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
-      res.json([
-        { id: 1, name: 'PDF', description: 'Documentos PDF', isActive: true, createdAt: new Date() },
-        { id: 2, name: 'Vídeo', description: 'Conteúdo em vídeo', isActive: true, createdAt: new Date() },
-        { id: 3, name: 'Texto', description: 'Conteúdo textual', isActive: true, createdAt: new Date() }
-      ]);
+      const materialId = parseInt(req.params.id);
+      const updates = insertMaterialSchema.partial().parse(req.body);
+      const material = await storage.updateMaterial(materialId, updates);
+      res.json(material);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to load material types' });
+      res.status(400).json({ message: 'Failed to update material' });
     }
   });
 
-  app.get('/api/software-types', async (req, res) => {
+  app.patch('/api/admin/materials/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
-      res.json([
-        { id: 1, name: 'CRM', description: 'Customer Relationship Management', isActive: true, createdAt: new Date() },
-        { id: 2, name: 'ERP', description: 'Enterprise Resource Planning', isActive: true, createdAt: new Date() }
-      ]);
+      const materialId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      const material = await storage.updateMaterial(materialId, { isActive });
+      res.json(material);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to load software types' });
+      res.status(400).json({ message: 'Failed to update material status' });
     }
   });
 
-  app.get('/api/supplier-types', async (req, res) => {
+  app.delete('/api/admin/materials/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
-      res.json([
-        { id: 1, name: 'Nacional', description: 'Fornecedores nacionais', isActive: true, createdAt: new Date() },
-        { id: 2, name: 'Internacional', description: 'Fornecedores internacionais', isActive: true, createdAt: new Date() }
-      ]);
+      const materialId = parseInt(req.params.id);
+      await storage.deleteMaterial(materialId);
+      res.json({ message: 'Material deleted successfully' });
     } catch (error) {
-      res.status(500).json({ message: 'Failed to load supplier types' });
+      res.status(500).json({ message: 'Failed to delete material' });
     }
   });
 
-  app.get('/api/product-categories', async (req, res) => {
-    try {
-      res.json([
-        { id: 1, name: 'Eletrônicos', description: 'Produtos eletrônicos', isActive: true, createdAt: new Date() },
-        { id: 2, name: 'Roupas', description: 'Vestuário e acessórios', isActive: true, createdAt: new Date() }
-      ]);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to load product categories' });
-    }
-  });
-
-  app.get('/api/partner-categories', async (req, res) => {
-    try {
-      res.json([
-        { id: 1, name: 'Tecnologia', description: 'Parceiros de tecnologia', isActive: true, createdAt: new Date() },
-        { id: 2, name: 'Marketing', description: 'Parceiros de marketing', isActive: true, createdAt: new Date() }
-      ]);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to load partner categories' });
-    }
-  });
+  
 
   // Admin routes - require auth and admin role
   app.get('/api/admin/stats', requireAuth, requireAdmin, async (req, res) => {
@@ -1039,52 +1016,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generic PUT and DELETE routes for cadastros
-  const cadastroTypes = ['material-types', 'software-types', 'supplier-types', 'product-categories', 'partner-categories'];
-
-  cadastroTypes.forEach(type => {
-    app.put(`/api/${type}/:id`, requireAuth, requireAdmin, async (req, res) => {
-      try {
-        const id = parseInt(req.params.id);
-        const data = req.body;
-
-        // In a real implementation, this would update the database
-        res.json({ 
-          id, 
-          ...data, 
-          updatedAt: new Date() 
-        });
-      } catch (error) {
-        res.status(500).json({ message: `Failed to update ${type}` });
-      }
-    });
-
-    app.delete(`/api/${type}/:id`, requireAuth, requireAdmin, async (req, res) => {
-      try {
-        const id = parseInt(req.params.id);
-
-        // In a real implementation, this would delete from the database
-        res.json({ success: true });
-      } catch (error) {
-        res.status(500).json({ message: `Failed to delete ${type}` });
-      }
-    });
-
-    app.post(`/api/${type}`, requireAuth, requireAdmin, async (req, res) => {
-      try {
-        const data = req.body;
-
-        // In a real implementation, this would insert into the database
-        res.json({ 
-          id: Date.now(), // Simple ID generation
-          ...data, 
-          createdAt: new Date() 
-        });
-      } catch (error) {
-        res.status(500).json({ message: `Failed to create ${type}` });
-      }
-    });
-  });
+  
 
   // Middleware to ensure all API routes return JSON and handle errors
   app.use('/api', (req: express.Request, res: express.Response, next: express.NextFunction) => {
