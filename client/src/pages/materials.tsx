@@ -50,7 +50,7 @@ const categoryOptions = [
 
 function MaterialCard({ material }: { material: Material }) {
   const { user } = useAuth();
-  const canAccess = material.accessLevel === "Public" || (user && user.accessLevel !== "Basic");
+  const canAccess = material.accessLevel === "Public" || (user && user.groupId !== null);
   const Icon = formatIcons[material.type as keyof typeof formatIcons] || FileText;
 
   return (
@@ -100,7 +100,7 @@ function MaterialCard({ material }: { material: Material }) {
 
 function MaterialListItem({ material }: { material: Material }) {
   const { user } = useAuth();
-  const canAccess = material.accessLevel === "Public" || (user && user.accessLevel !== "Basic");
+  const canAccess = material.accessLevel === "Public" || (user && user.groupId !== null);
   const Icon = formatIcons[material.type as keyof typeof formatIcons] || FileText;
 
   return (
@@ -116,9 +116,9 @@ function MaterialListItem({ material }: { material: Material }) {
           </p>
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="text-xs">
-              {material.category.length > 15 
+              {material.category && material.category.length > 15 
                 ? material.category.substring(0, 15) + "..." 
-                : material.category}
+                : material.category || "Geral"}
             </Badge>
             <Badge variant={canAccess ? "default" : "secondary"} className="text-xs">
               {material.accessLevel === "Public" ? (
