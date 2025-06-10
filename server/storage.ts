@@ -787,6 +787,64 @@ export class DatabaseStorage implements IStorage {
     await db.delete(templateTags).where(eq(templateTags.id, id));
   }
 
+  // Template-Tag relations
+  async linkTemplateToTags(templateId: number, tagIds: number[]): Promise<void> {
+    // Primeiro remove todas as ligações existentes
+    await db.delete(templateTagRelations).where(eq(templateTagRelations.templateId, templateId));
+    
+    // Depois adiciona as novas ligações
+    if (tagIds.length > 0) {
+      await db.insert(templateTagRelations).values(
+        tagIds.map(tagId => ({ templateId, tagId }))
+      );
+    }
+  }
+
+  async getTemplateWithTags(templateId: number): Promise<any> {
+    const template = await db.select().from(templates).where(eq(templates.id, templateId));
+    if (!template[0]) return null;
+
+    const tags = await db
+      .select({
+        id: templateTags.id,
+        name: templateTags.name,
+        color: templateTags.color,
+      })
+      .from(templateTagRelations)
+      .innerJoin(templateTags, eq(templateTagRelations.tagId, templateTags.id))
+      .where(eq(templateTagRelations.templateId, templateId));
+
+    return {
+      ...template[0],
+      tags,
+    };
+  }
+
+  async getAllTemplatesWithTags(): Promise<any[]> {
+    const allTemplates = await db.select().from(templates).orderBy(desc(templates.createdAt));
+    
+    const templatesWithTags = await Promise.all(
+      allTemplates.map(async (template) => {
+        const tags = await db
+          .select({
+            id: templateTags.id,
+            name: templateTags.name,
+            color: templateTags.color,
+          })
+          .from(templateTagRelations)
+          .innerJoin(templateTags, eq(templateTagRelations.tagId, templateTags.id))
+          .where(eq(templateTagRelations.templateId, template.id));
+
+        return {
+          ...template,
+          tags,
+        };
+      })
+    );
+
+    return templatesWithTags;
+  }
+
   async createNews(newsItem: InsertNews): Promise<News> {
     const [created] = await db.insert(news).values(newsItem).returning();
     return created;

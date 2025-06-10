@@ -19,7 +19,7 @@ export default function AdminTemplates() {
   const { data: templates, isLoading } = useQuery({
     queryKey: ["/api/admin/templates"],
     queryFn: async () => {
-      const response = await fetch("/api/admin/templates");
+      const response = await fetch("/api/admin/templates?include_tags=true");
       if (!response.ok) throw new Error("Failed to fetch templates");
       return response.json() as Template[];
     },
@@ -138,6 +138,7 @@ export default function AdminTemplates() {
                   <tr className="border-b">
                     <th className="text-left py-3 px-4 font-medium">Título</th>
                     <th className="text-left py-3 px-4 font-medium">Categoria</th>
+                    <th className="text-left py-3 px-4 font-medium">Tags</th>
                     <th className="text-center py-3 px-4 font-medium">Nº de Cópias</th>
                     <th className="text-center py-3 px-4 font-medium">Status</th>
                     <th className="text-center py-3 px-4 font-medium">Ações</th>
@@ -156,6 +157,29 @@ export default function AdminTemplates() {
                       </td>
                       <td className="py-3 px-4">
                         <Badge variant="outline">{template.category}</Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-wrap gap-1">
+                          {template.tags && template.tags.length > 0 ? (
+                            template.tags.slice(0, 3).map((tag: any) => (
+                              <Badge 
+                                key={tag.id} 
+                                variant="secondary"
+                                style={{ backgroundColor: tag.color + '20', color: tag.color }}
+                                className="text-xs"
+                              >
+                                {tag.name}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-muted-foreground text-xs">Sem tags</span>
+                          )}
+                          {template.tags && template.tags.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{template.tags.length - 3}
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-center">
                         <span className="font-medium">{template.copyCount}</span>

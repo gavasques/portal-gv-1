@@ -385,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { search, category, tags } = req.query;
       let templates;
-      
+
       if (search || category) {
         templates = await storage.searchTemplates(
           search as string || '', 
@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return tagList.some(tag => template.tags?.includes(tag));
         });
       }
-      
+
       res.json(templates);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch templates' });
@@ -436,8 +436,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Templates routes
   app.get('/api/admin/templates', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
-      const templates = await storage.getAllTemplatesAdmin();
-      res.json(templates);
+      const includeTags = req.query.include_tags === 'true';
+
+      if (includeTags) {
+        const templates = await storage.getAllTemplatesWithTags();
+        res.json(templates);
+      } else {
+        const templates = await storage.getAllTemplates();
+        res.json(templates);
+      }
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch templates' });
     }
@@ -445,25 +452,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/templates', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
-      const templateData = insertTemplateSchema.parse(req.body);
-      const template = await storage.createTemplate(templateData);
+      const { selectedTags, ...templateData } = req.body;
+      const validatedData = insertTemplateSchema.parse(templateData);
+      const template = await storage.createTemplate(validatedData);
+
+      // Vincular tags se fornecidas
+      if (selectedTags && Array.isArray(selectedTags) && selectedTags.length > 0) {
+        await storage.linkTemplateToTags(template.id, selectedTags);
+      }
+
       res.status(201).json(template);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: 'Invalid template data', errors: error.errors });
-      }
-      res.status(500).json({ message: 'Failed to create template' });
+      console.error('Error creating template:', error);
+      res.status(400).json({ message: 'Failed to create template' });
     }
   });
 
   app.put('/api/admin/templates/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
-      const templateId = parseInt(req.params.id);
-      const updates = req.body;
-      const template = await storage.updateTemplate(templateId, updates);
+      const { selectedTags, ...templateData } = req.body;
+      const validatedData = insertTemplateSchema.partial().parse(templateData);
+      const template = await storage.updateTemplate(parseInt(req.params.id), validatedData);
+
+      // Atualizar tags se fornecidas
+      if (selectedTags && Array.isArray(selectedTags)) {
+        await storage.linkTemplateToTags(template.id, selectedTags);
+      }
+
       res.json(template);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to update template' });
+      console.error('Error updating template:', error);
+      res.status(400).json({ message: 'Failed to update template' });
     }
   });
 
@@ -477,7 +496,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  
+  app.get('/api/admin/templates/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const includeTags = req.query.include_tags === 'true';
+
+      if (includeTags) {
+        const template = await storage.getTemplateWithTags(parseInt(req.params.id));
+        if (!template) {
+          return res.status(404).json({ message: 'Template not found' });
+        }
+        res.json(template);
+      } else {
+        const template = await storage.getTemplate(parseInt(req.params.id));
+        if (!template) {
+          return res.status(404).json({ message: 'Template not found' });
+        }
+        res.json(template);
+      }
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch template' });
+    }
+  });
+
+
 
   // Admin routes - require auth and admin role
   app.get('/api/admin/stats', requireAuth, requireAdmin, async (req, res) => {
@@ -791,9 +832,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { password } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
-      
+
       await storage.updateUser(parseInt(req.params.id), { password: hashedPassword });
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -802,7 +843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json({ message: 'Password updated successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to update password' });
@@ -815,7 +856,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
-      
+
       // Create auth token for magic link
       const token = await storage.createAuthToken({
         token: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
@@ -823,7 +864,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: 'magic_link',
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
       });
-      
+
       // In production, send email with magic link
       // For now, just log the activity
       await storage.logUserActivity({
@@ -833,7 +874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json({ message: 'Magic link sent successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to send magic link' });
@@ -844,7 +885,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = parseInt(req.params.id);
       await storage.deleteUser(userId);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -853,7 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json({ message: 'User deleted successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to delete user' });
@@ -951,9 +992,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const groupId = parseInt(req.params.id);
       const { permissionIds } = req.body;
-      
+
       await storage.updateGroupPermissions(groupId, permissionIds);
-      
+
       // Log activity
       await storage.logUserActivity({
         userId: (req.user as any).id,
@@ -962,7 +1003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-      
+
       res.json({ message: 'Group permissions updated successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Failed to update group permissions' });
@@ -1226,8 +1267,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Template Tags API Routes
-  app.get('/api/template-tags', async (req, res) => {
+  // Template Tags management
+  app.get('/api/template-tags', requireAuth, async (req, res) => {
+    try {
+      const tags = await storage.getTemplateTags();
+      res.json(tags);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch template tags' });
+    }
+  });
+
+  // Template Tags management (Admin only)
+  app.get('/api/admin/template-tags', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const tags = await storage.getTemplateTags();
       res.json(tags);
@@ -1269,7 +1320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', (req: express.Request, res: express.Response, next: express.NextFunction) => {
     // Set JSON content type for all API routes
     res.setHeader('Content-Type', 'application/json');
-    
+
     // Override res.send to ensure JSON responses
     const originalSend = res.send;
     res.send = function(data) {
@@ -1279,7 +1330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       return originalSend.call(this, data);
     };
-    
+
     next();
   });
 
@@ -1291,7 +1342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Content-Type', 'application/json');
       const statusCode = err.status || err.statusCode || 500;
       const message = err.message || 'Internal server error';
-      
+
       res.status(statusCode).json({ 
         message,
         error: process.env.NODE_ENV === 'development' ? err.stack : undefined
