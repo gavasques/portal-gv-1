@@ -241,7 +241,7 @@ export default function AdminMaterials() {
               </DialogTitle>
             </DialogHeader>
             <MaterialForm 
-              material={editingMaterial || undefined} 
+              material={editingMaterial ?? undefined} 
               onSubmit={async (data) => {
                 try {
                   const url = editingMaterial 

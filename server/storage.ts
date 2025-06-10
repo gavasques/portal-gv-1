@@ -686,6 +686,10 @@ export class DatabaseStorage implements IStorage {
     return material;
   }
 
+  async deleteMaterial(id: number): Promise<void> {
+    await db.delete(materials).where(eq(materials.id, id));
+  }
+
   async searchMaterials(query: string, category?: string, accessLevel?: string): Promise<Material[]> {
     let whereClause = and(
       or(like(materials.title, `%${query}%`), like(materials.description, `%${query}%`)),

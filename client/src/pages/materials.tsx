@@ -22,14 +22,20 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import type { Material } from "@/lib/types";
+import type { Material } from "@shared/schema";
 
 const formatIcons = {
-  pdf: Download,
-  text: FileText,
-  video: Video,
-  link: ExternalLink,
-  embed: ExternalLink
+  artigo_texto: FileText,
+  documento_pdf: Download,
+  fluxograma_miro: Globe,
+  embed_iframe: Globe,
+  video_youtube: Video,
+  video_panda: Video,
+  audio: Video,
+  planilha_excel: Download,
+  arquivo_word: Download,
+  link_pasta: ExternalLink,
+  link_documento: ExternalLink
 };
 
 const categoryOptions = [
