@@ -154,6 +154,13 @@ export interface IStorage {
   updateMaterialType(id: number, updates: Partial<MaterialType>): Promise<MaterialType>;
   deleteMaterialType(id: number): Promise<void>;
 
+  // Material Categories
+  getMaterialCategories(limit?: number, offset?: number): Promise<MaterialCategory[]>;
+  getMaterialCategory(id: number): Promise<MaterialCategory | undefined>;
+  createMaterialCategory(materialCategory: InsertMaterialCategory): Promise<MaterialCategory>;
+  updateMaterialCategory(id: number, updates: Partial<MaterialCategory>): Promise<MaterialCategory>;
+  deleteMaterialCategory(id: number): Promise<void>;
+
   // Software Types
   getSoftwareTypes(limit?: number, offset?: number): Promise<SoftwareType[]>;
   getSoftwareType(id: number): Promise<SoftwareType | undefined>;
@@ -1026,6 +1033,37 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMaterialType(id: number): Promise<void> {
     await db.delete(materialTypes).where(eq(materialTypes.id, id));
+  }
+
+  // Cadastros - Material Categories
+  async getMaterialCategories(limit = 50, offset = 0): Promise<MaterialCategory[]> {
+    return await db.select().from(materialCategories)
+      .orderBy(desc(materialCategories.createdAt))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async getMaterialCategory(id: number): Promise<MaterialCategory | undefined> {
+    const [materialCategory] = await db.select().from(materialCategories).where(eq(materialCategories.id, id));
+    return materialCategory || undefined;
+  }
+
+  async createMaterialCategory(materialCategory: InsertMaterialCategory): Promise<MaterialCategory> {
+    const [newMaterialCategory] = await db.insert(materialCategories).values(materialCategory).returning();
+    return newMaterialCategory;
+  }
+
+  async updateMaterialCategory(id: number, updates: Partial<MaterialCategory>): Promise<MaterialCategory> {
+    const [updatedMaterialCategory] = await db
+      .update(materialCategories)
+      .set(updates)
+      .where(eq(materialCategories.id, id))
+      .returning();
+    return updatedMaterialCategory;
+  }
+
+  async deleteMaterialCategory(id: number): Promise<void> {
+    await db.delete(materialCategories).where(eq(materialCategories.id, id));
   }
 
   // Cadastros - Software Types

@@ -52,16 +52,7 @@ interface MaterialFormProps {
   isLoading?: boolean;
 }
 
-const categories = [
-  "Fornecedores",
-  "Estratégias de E-commerce", 
-  "Ferramentas",
-  "Cases de Sucesso",
-  "Marketing Digital",
-  "Logística",
-  "Finanças",
-  "Geral"
-];
+// Categories are now loaded dynamically from the API
 
 const materialTypes = [
   { value: "artigo_texto", label: "Artigo/Texto", icon: FileText },

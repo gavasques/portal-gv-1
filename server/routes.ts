@@ -7,7 +7,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
-import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema } from "@shared/schema";
+import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema } from "@shared/schema";
 import { users, tickets, materials, templates } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
@@ -629,6 +629,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ message: 'Failed to delete material type' });
+    }
+  });
+
+  // Cadastros - Material Categories routes
+  app.get("/api/material-categories", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const materialCategories = await storage.getMaterialCategories(limit, offset);
+      res.json(materialCategories);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch material categories' });
+    }
+  });
+
+  app.post("/api/material-categories", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const validatedData = insertMaterialCategorySchema.parse(req.body);
+      const materialCategory = await storage.createMaterialCategory(validatedData);
+      res.status(201).json(materialCategory);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid material category data' });
+    }
+  });
+
+  app.put("/api/material-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertMaterialCategorySchema.partial().parse(req.body);
+      const materialCategory = await storage.updateMaterialCategory(id, validatedData);
+      res.json(materialCategory);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update material category' });
+    }
+  });
+
+  app.delete("/api/material-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteMaterialCategory(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete material category' });
     }
   });
 
