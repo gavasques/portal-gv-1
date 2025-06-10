@@ -9,15 +9,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { insertMaterialSchema } from "@shared/schema";
+import { FileText, Upload, Link, Video, FileAudio, FileSpreadsheet, File, Globe } from "lucide-react";
 import type { Material } from "@shared/schema";
 
-const materialFormSchema = insertMaterialSchema.extend({
-  type: z.enum(["text", "pdf", "video", "embed"]),
+const materialFormSchema = z.object({
+  title: z.string().min(1, "Título é obrigatório"),
+  description: z.string().optional(),
+  type: z.enum([
+    "artigo_texto", 
+    "documento_pdf", 
+    "fluxograma_miro", 
+    "embed_iframe", 
+    "video_youtube", 
+    "video_panda", 
+    "audio", 
+    "planilha_excel", 
+    "arquivo_word", 
+    "link_pasta", 
+    "link_documento"
+  ]),
+  content: z.string().optional(),
+  url: z.string().optional(),
+  embedCode: z.string().optional(),
+  fileName: z.string().optional(),
   accessLevel: z.enum(["Public", "Restricted"]),
   category: z.string().min(1, "Categoria é obrigatória"),
+  tags: z.array(z.string()).optional(),
+  isActive: z.boolean().optional(),
 });
 
 type MaterialFormData = z.infer<typeof materialFormSchema>;
@@ -40,6 +59,20 @@ const categories = [
   "Geral"
 ];
 
+const materialTypes = [
+  { value: "artigo_texto", label: "Artigo/Texto", icon: FileText },
+  { value: "documento_pdf", label: "Documento PDF", icon: File },
+  { value: "fluxograma_miro", label: "Fluxograma Miro", icon: Globe },
+  { value: "embed_iframe", label: "Embed/Iframe", icon: Globe },
+  { value: "video_youtube", label: "Vídeo YouTube", icon: Video },
+  { value: "video_panda", label: "Vídeo Panda", icon: Video },
+  { value: "audio", label: "Áudio", icon: FileAudio },
+  { value: "planilha_excel", label: "Planilha Excel", icon: FileSpreadsheet },
+  { value: "arquivo_word", label: "Arquivo Word", icon: File },
+  { value: "link_pasta", label: "Link de Pasta", icon: Link },
+  { value: "link_documento", label: "Link de Documento", icon: Link },
+];
+
 export default function MaterialForm({ material, onSubmit, onCancel, isLoading }: MaterialFormProps) {
   const [activeTab, setActiveTab] = useState("basic");
   
@@ -48,10 +81,12 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
     defaultValues: {
       title: material?.title || "",
       description: material?.description || "",
-      type: material?.type || "text",
+      type: (material?.type as MaterialFormData["type"]) || "artigo_texto",
       content: material?.content || "",
-      fileUrl: material?.fileUrl || "",
-      accessLevel: material?.accessLevel || "Public",
+      url: material?.url || "",
+      embedCode: material?.embedCode || "",
+      fileName: material?.fileName || "",
+      accessLevel: (material?.accessLevel as MaterialFormData["accessLevel"]) || "Public",
       category: material?.category || "",
       tags: material?.tags || [],
       isActive: material?.isActive ?? true,
@@ -65,6 +100,145 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
       await onSubmit(data);
     } catch (error) {
       console.error("Error submitting form:", error);
+    }
+  };
+
+  const renderContentFields = () => {
+    switch (watchedType) {
+      case "artigo_texto":
+        return (
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Conteúdo do Artigo</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value || ""}
+                    placeholder="Digite o conteúdo completo do artigo..."
+                    className="min-h-[200px]"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      
+      case "documento_pdf":
+      case "planilha_excel":
+      case "arquivo_word":
+      case "audio":
+        return (
+          <>
+            <FormField
+              control={form.control}
+              name="fileName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome do Arquivo</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} placeholder="Nome do arquivo para download" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL do Arquivo</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} placeholder="https://exemplo.com/arquivo.pdf" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        );
+      
+      case "video_youtube":
+        return (
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL do YouTube</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ""} placeholder="https://www.youtube.com/watch?v=..." />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      
+      case "video_panda":
+        return (
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL do Vídeo Panda</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ""} placeholder="URL do vídeo no Panda Video" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      
+      case "fluxograma_miro":
+      case "embed_iframe":
+        return (
+          <FormField
+            control={form.control}
+            name="embedCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Código de Incorporação</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value || ""}
+                    placeholder="Cole aqui o código iframe de incorporação..."
+                    className="min-h-[120px]"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      
+      case "link_pasta":
+      case "link_documento":
+        return (
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL do Link</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ""} placeholder="https://drive.google.com/..." />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      
+      default:
+        return null;
     }
   };
 
@@ -86,208 +260,150 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
               </TabsList>
 
               <TabsContent value="basic" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Título</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Título</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Digite o título do material" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          value={field.value || ""}
+                          placeholder="Breve descrição do material"
+                          className="min-h-[80px]"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Material</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <Input placeholder="Digite o título do material" {...field} />
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo de material" />
+                          </SelectTrigger>
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Descrição</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Descreva o conteúdo do material"
-                            className="min-h-[100px]"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Material</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o tipo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="text">Artigo/Texto</SelectItem>
-                            <SelectItem value="pdf">Documento PDF</SelectItem>
-                            <SelectItem value="video">Vídeo</SelectItem>
-                            <SelectItem value="embed">Embed/Iframe</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Categoria</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione a categoria" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
+                        <SelectContent>
+                          {materialTypes.map((type) => {
+                            const Icon = type.icon;
+                            return (
+                              <SelectItem key={type.value} value={type.value}>
+                                <div className="flex items-center gap-2">
+                                  <Icon className="h-4 w-4" />
+                                  {type.label}
+                                </div>
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoria</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma categoria" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </TabsContent>
 
               <TabsContent value="content" className="space-y-4">
-                {watchedType === "text" && (
-                  <FormField
-                    control={form.control}
-                    name="content"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Conteúdo HTML</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Digite o conteúdo em HTML"
-                            className="min-h-[300px] font-mono"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {(watchedType === "pdf" || watchedType === "video") && (
-                  <FormField
-                    control={form.control}
-                    name="fileUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          {watchedType === "pdf" ? "URL do PDF" : "URL do Vídeo"}
-                        </FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder={`Digite a URL do ${watchedType === "pdf" ? "arquivo PDF" : "vídeo"}`}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {watchedType === "embed" && (
-                  <FormField
-                    control={form.control}
-                    name="content"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Código Embed/Iframe</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Cole o código iframe ou embed aqui"
-                            className="min-h-[200px] font-mono"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                <div className="mb-4">
+                  <h3 className="text-lg font-medium mb-2">Conteúdo do Material</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Configure o conteúdo baseado no tipo selecionado: {materialTypes.find(t => t.value === watchedType)?.label}
+                  </p>
+                </div>
+                
+                {renderContentFields()}
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="accessLevel"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nível de Acesso</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o nível de acesso" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Public">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary">Público</Badge>
-                                <span>Disponível para todos os usuários</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="Restricted">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="destructive">Restrito</Badge>
-                                <span>Apenas para usuários premium</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="isActive"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Material Ativo</FormLabel>
-                          <div className="text-sm text-muted-foreground">
-                            Controla se o material está visível para os usuários
-                          </div>
-                        </div>
+                <FormField
+                  control={form.control}
+                  name="accessLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nível de Acesso</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o nível de acesso" />
+                          </SelectTrigger>
                         </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                        <SelectContent>
+                          <SelectItem value="Public">Público</SelectItem>
+                          <SelectItem value="Restricted">Restrito</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Material Ativo</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          Controla se o material está visível para os usuários
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </TabsContent>
             </Tabs>
 
