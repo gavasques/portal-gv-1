@@ -1217,7 +1217,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  
+  // Template Tags API Routes
+  app.get('/api/template-tags', async (req, res) => {
+    try {
+      const tags = await storage.getTemplateTags();
+      res.json(tags);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch template tags' });
+    }
+  });
+
+  app.post('/api/admin/template-tags', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = insertTemplateTagSchema.parse(req.body);
+      const tag = await storage.createTemplateTag(validatedData);
+      res.status(201).json(tag);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create template tag' });
+    }
+  });
+
+  app.put('/api/admin/template-tags/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = insertTemplateTagSchema.partial().parse(req.body);
+      const tag = await storage.updateTemplateTag(parseInt(req.params.id), validatedData);
+      res.json(tag);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update template tag' });
+    }
+  });
+
+  app.delete('/api/admin/template-tags/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      await storage.deleteTemplateTag(parseInt(req.params.id));
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete template tag' });
+    }
+  });
 
   // Middleware to ensure all API routes return JSON and handle errors
   app.use('/api', (req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -1,7 +1,7 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, tickets, ticketFiles, ticketMessages,
   materials, news, reviews, userGroups, permissions, groupPermissions, userActivityLog, authTokens,
-  materialTypes, softwareTypes, supplierTypes, productCategories, partnerCategories
+  materialTypes, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -13,7 +13,8 @@ import type {
   UserGroup, InsertUserGroup, Permission, InsertPermission, GroupPermission, InsertGroupPermission,
   UserActivityLog, InsertUserActivityLog, AuthToken, InsertAuthToken,
   MaterialType, InsertMaterialType, SoftwareType, InsertSoftwareType, SupplierType, InsertSupplierType,
-  ProductCategory, InsertProductCategory, PartnerCategory, InsertPartnerCategory
+  ProductCategory, InsertProductCategory, PartnerCategory, InsertPartnerCategory,
+  TemplateTag, InsertTemplateTag
 } from "@shared/schema";
 export interface IStorage {
   // User management
@@ -97,6 +98,13 @@ export interface IStorage {
   createTemplate(template: InsertTemplate): Promise<Template>;
   updateTemplate(id: number, updates: Partial<Template>): Promise<Template>;
   searchTemplates(query: string, category?: string, language?: string): Promise<Template[]>;
+
+  // Template Tags
+  getTemplateTags(): Promise<TemplateTag[]>;
+  getTemplateTag(id: number): Promise<TemplateTag | undefined>;
+  createTemplateTag(tag: InsertTemplateTag): Promise<TemplateTag>;
+  updateTemplateTag(id: number, updates: Partial<TemplateTag>): Promise<TemplateTag>;
+  deleteTemplateTag(id: number): Promise<void>;
 
   // Tickets
   getTickets(userId?: number, limit?: number, offset?: number): Promise<Ticket[]>;
@@ -753,6 +761,30 @@ export class DatabaseStorage implements IStorage {
   async getTemplate(id: number): Promise<Template | undefined> {
     const [template] = await db.select().from(templates).where(eq(templates.id, id));
     return template || undefined;
+  }
+
+  // Template Tags implementation
+  async getTemplateTags(): Promise<TemplateTag[]> {
+    return await db.select().from(templateTags).where(eq(templateTags.isActive, true)).orderBy(templateTags.name);
+  }
+
+  async getTemplateTag(id: number): Promise<TemplateTag | undefined> {
+    const [tag] = await db.select().from(templateTags).where(eq(templateTags.id, id));
+    return tag || undefined;
+  }
+
+  async createTemplateTag(tag: InsertTemplateTag): Promise<TemplateTag> {
+    const [created] = await db.insert(templateTags).values(tag).returning();
+    return created;
+  }
+
+  async updateTemplateTag(id: number, updates: Partial<TemplateTag>): Promise<TemplateTag> {
+    const [tag] = await db.update(templateTags).set(updates).where(eq(templateTags.id, id)).returning();
+    return tag;
+  }
+
+  async deleteTemplateTag(id: number): Promise<void> {
+    await db.delete(templateTags).where(eq(templateTags.id, id));
   }
 
   async createNews(newsItem: InsertNews): Promise<News> {
