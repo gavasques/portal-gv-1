@@ -38,31 +38,31 @@ const renderPromptContent = (material: Material, toast: any) => {
 
   const formatMarkdownToHtml = (content: string) => {
     return content
-      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 text-blue-600">$1</h1>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mb-3 text-blue-500">$1</h2>')
-      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-medium mb-2 text-blue-400">$1</h3>')
+      .replace(/^# (.*$)/gm, '<h1 class="text-sm font-bold mb-2 text-blue-600">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-sm font-semibold mb-1.5 text-blue-500">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-xs font-medium mb-1 text-blue-400">$1</h3>')
       .replace(/^\*\*(.*)\*\*$/gm, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>')
       .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-      .replace(/^\- (.*$)/gm, '<li class="ml-4">$1</li>')
-      .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-4 list-decimal">$2</li>')
-      .replace(/\n\n/g, '<br><br>')
+      .replace(/^\- (.*$)/gm, '<li class="ml-3 mb-0.5 text-xs">$1</li>')
+      .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-3 mb-0.5 text-xs list-decimal">$2</li>')
+      .replace(/\n\n/g, '<br>')
       .replace(/\n/g, '<br>')
-      .replace(/\| (.*?) \|/g, '<td class="border px-3 py-2">$1</td>')
+      .replace(/\| (.*?) \|/g, '<td class="border px-2 py-1 text-xs">$1</td>')
       .replace(/^\|(.*)\|$/gm, '<tr>$1</tr>');
   };
 
   return (
     <Card className="border-l-4 border-l-blue-500">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Lightbulb className="h-8 w-8 text-blue-500" />
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Lightbulb className="h-6 w-6 text-blue-500" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
                 {material.title}
               </h3>
               {material.description && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {material.description}
                 </p>
               )}
@@ -72,17 +72,17 @@ const renderPromptContent = (material: Material, toast: any) => {
             variant="outline"
             size="sm"
             onClick={copyToClipboard}
-            className="shrink-0"
+            className="shrink-0 text-xs px-3 py-1.5"
           >
-            <Copy className="h-4 w-4 mr-2" />
-            Copiar Prompt
+            <Copy className="h-3 w-3 mr-1.5" />
+            Copiar
           </Button>
         </div>
         
         {material.content && (
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-3 border">
             <div 
-              className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed"
+              className="prose prose-xs max-w-none dark:prose-invert text-xs leading-snug"
               dangerouslySetInnerHTML={{ 
                 __html: formatMarkdownToHtml(material.content) 
               }}
@@ -90,8 +90,9 @@ const renderPromptContent = (material: Material, toast: any) => {
           </div>
         )}
         
-        <div className="mt-4 text-xs text-muted-foreground">
-          💡 Este prompt foi criado para otimizar seus resultados com IA. Copie e personalize conforme necessário.
+        <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+          <span>💡</span>
+          <span>Copie este prompt e personalize conforme necessário no ChatGPT ou Claude</span>
         </div>
       </CardContent>
     </Card>

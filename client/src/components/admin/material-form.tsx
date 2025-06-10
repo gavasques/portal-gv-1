@@ -17,20 +17,7 @@ import type { Material, MaterialCategory, MaterialType } from "@shared/schema";
 const materialFormSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
   description: z.string().optional(),
-  type: z.enum([
-    "artigo_texto", 
-    "documento_pdf", 
-    "fluxograma_miro", 
-    "embed_iframe", 
-    "video_youtube", 
-    "video_panda", 
-    "audio", 
-    "planilha_excel", 
-    "arquivo_word", 
-    "link_pasta", 
-    "link_documento",
-    "video_upload"
-  ]),
+  type: z.string().min(1, "Tipo é obrigatório"),
   content: z.string().optional(),
   url: z.string().optional(),
   embedCode: z.string().optional(),
@@ -121,7 +108,63 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
 
   const renderContentFields = () => {
     switch (watchedType) {
+      case "Prompt para IA":
+        return (
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Conteúdo do Prompt (Markdown)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      value={field.value || ""}
+                      placeholder={`# PROMPT #1 - TÍTULO DO PROMPT
+
+## Instruções ao PROMPT
+
+Escreva aqui as instruções detalhadas do prompt...
+
+### Informações Necessárias:
+- **Campo 1:** [INSERIR_VALOR]
+- **Campo 2:** [INSERIR_VALOR]
+
+### Critérios:
+**1. Critério Principal**
+- Detalhe específico
+- Outro detalhe
+
+**2. Objetivo**
+- Meta clara do prompt
+
+### Exemplo de Uso:
+Explique como usar este prompt no ChatGPT ou Claude...`}
+                      className="min-h-[400px] font-mono text-sm"
+                    />
+                  </FormControl>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p><strong>Guia de Formatação Markdown:</strong></p>
+                    <ul className="list-disc ml-4 space-y-0.5">
+                      <li># Título Principal</li>
+                      <li>## Seção</li>
+                      <li>### Subseção</li>
+                      <li>**Texto em negrito**</li>
+                      <li>- Item de lista</li>
+                      <li>[CAMPO_VARIAVEL] para campos personalizáveis</li>
+                    </ul>
+                    <p className="mt-2"><strong>Como usar:</strong> Copie este prompt e cole no ChatGPT, Claude ou outra IA. Substitua os campos [VARIAVEL] pelas informações específicas.</p>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
       case "artigo_texto":
+      case "Artigo/Texto":
         return (
           <FormField
             control={form.control}
