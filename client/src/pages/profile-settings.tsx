@@ -25,9 +25,9 @@ export default function ProfileSettings() {
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      fullName: user?.fullName || "",
-      cpf: user?.cpf || "",
-      phone: user?.phone || "",
+      fullName: "",
+      cpf: "",
+      phone: "",
     },
   });
 
@@ -35,9 +35,9 @@ export default function ProfileSettings() {
   useEffect(() => {
     if (user) {
       form.reset({
-        fullName: user.fullName || "",
-        cpf: user.cpf || "",
-        phone: user.phone || "",
+        fullName: (user as any).fullName || "",
+        cpf: (user as any).cpf || "",
+        phone: (user as any).phone || "",
       });
     }
   }, [user, form]);
@@ -72,9 +72,9 @@ export default function ProfileSettings() {
 
   const handleCancel = () => {
     form.reset({
-      fullName: user?.fullName || "",
-      cpf: user?.cpf || "",
-      phone: user?.phone || "",
+      fullName: (user as any)?.fullName || "",
+      cpf: (user as any)?.cpf || "",
+      phone: (user as any)?.phone || "",
     });
     setIsEditing(false);
   };
@@ -206,27 +206,27 @@ export default function ProfileSettings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-600">Email</label>
-                <p className="text-sm text-gray-900">{user?.email}</p>
+                <p className="text-sm text-gray-900">{(user as any)?.email}</p>
               </div>
               
               <div>
                 <label className="text-sm font-medium text-gray-600">Grupo</label>
                 <p className="text-sm text-gray-900">
-                  {user?.group?.displayName || "Grupo não definido"}
+                  {(user as any)?.group?.displayName || "Grupo não definido"}
                 </p>
               </div>
               
               <div>
                 <label className="text-sm font-medium text-gray-600">Status</label>
                 <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                  user?.status === 'active' 
+                  (user as any)?.status === 'active' 
                     ? 'bg-green-100 text-green-800' 
-                    : user?.status === 'pending'
+                    : (user as any)?.status === 'pending'
                     ? 'bg-yellow-100 text-yellow-800'
                     : 'bg-red-100 text-red-800'
                 }`}>
-                  {user?.status === 'active' ? 'Ativo' : 
-                   user?.status === 'pending' ? 'Pendente' : 'Inativo'}
+                  {(user as any)?.status === 'active' ? 'Ativo' : 
+                   (user as any)?.status === 'pending' ? 'Pendente' : 'Inativo'}
                 </span>
               </div>
               
@@ -234,7 +234,7 @@ export default function ProfileSettings() {
                 <label className="text-sm font-medium text-gray-600">Créditos IA</label>
                 <div className="flex items-center space-x-1">
                   <CreditCard className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm text-gray-900">{user?.aiCredits || 0}</span>
+                  <span className="text-sm text-gray-900">{(user as any)?.aiCredits || 0}</span>
                 </div>
               </div>
             </div>
