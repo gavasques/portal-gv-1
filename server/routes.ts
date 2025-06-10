@@ -672,6 +672,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/admin/users/:id/password', requireAuth, async (req, res) => {
+    try {
+      const { password } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      await storage.updateUser(parseInt(req.params.id), { password: hashedPassword });
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'CHANGE_PASSWORD',
+        details: { targetUserId: parseInt(req.params.id) },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json({ message: 'Password updated successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update password' });
+    }
+  });
+
+  app.post('/api/admin/users/:id/magic-link', requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser(parseInt(req.params.id));
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Create auth token for magic link
+      const token = await storage.createAuthToken({
+        token: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+        userId: user.id,
+        type: 'magic_link',
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      });
+      
+      // In production, send email with magic link
+      // For now, just log the activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'SEND_MAGIC_LINK',
+        details: { targetUserId: user.id, email: user.email },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json({ message: 'Magic link sent successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to send magic link' });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', requireAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await storage.deleteUser(userId);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'DELETE_USER',
+        details: { deletedUserId: userId },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete user' });
+    }
+  });
+
   app.post('/api/admin/users', requireAuth, async (req, res) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
@@ -756,6 +829,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(group);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch user group' });
+    }
+  });
+
+  app.put('/api/admin/groups/:id/permissions', requireAuth, async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.id);
+      const { permissionIds } = req.body;
+      
+      await storage.updateGroupPermissions(groupId, permissionIds);
+      
+      // Log activity
+      await storage.logUserActivity({
+        userId: (req.user as any).id,
+        action: 'UPDATE_GROUP_PERMISSIONS',
+        details: { groupId, permissionIds },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json({ message: 'Group permissions updated successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update group permissions' });
     }
   });
 

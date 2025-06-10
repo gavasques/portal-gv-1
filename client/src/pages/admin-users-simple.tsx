@@ -232,7 +232,7 @@ export default function AdminUsers() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">No Group</SelectItem>
+                            <SelectItem value="none">No Group</SelectItem>
                             {Array.isArray(userGroups) && userGroups.map((group: UserGroup) => (
                               <SelectItem key={group.id} value={group.id.toString()}>
                                 {group.name}

@@ -40,6 +40,7 @@ export const users = pgTable("users", {
   password: text("password"),
   fullName: text("full_name").notNull(),
   groupId: integer("group_id").references(() => userGroups.id).default(1), // Default to "Basic" group
+  status: text("status").notNull().default("active"), // active, inactive, pending
   aiCredits: integer("ai_credits").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   googleId: text("google_id"),

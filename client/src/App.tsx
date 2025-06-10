@@ -24,7 +24,8 @@ import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
 import AdminDashboard from "@/pages/admin-dashboard";
-import AdminUsers from "@/pages/admin-users-simple";
+import AdminUsers from "@/pages/admin-users-enhanced";
+import AdminPermissions from "@/pages/admin-permissions";
 import AdminGroups from "@/pages/admin-groups";
 import ResetPassword from "@/pages/reset-password";
 import { useAuth } from "./hooks/use-auth";
@@ -91,6 +92,7 @@ function Router() {
         <Route path="/admin/cadastros" component={AdminCadastros} />
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/groups" component={AdminGroups} />
+        <Route path="/admin/permissions" component={AdminPermissions} />
         <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
         <Route path="/admin/courses" component={() => <div>Admin Courses - Em desenvolvimento</div>} />
         <Route path="/admin/templates" component={() => <div>Admin Templates - Em desenvolvimento</div>} />
