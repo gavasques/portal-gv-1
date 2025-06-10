@@ -160,9 +160,15 @@ const adminMenuGroups = [
         accessLevels: ["admin"]
       },
       { 
+        label: "Permissões", 
+        href: "/admin/permissions", 
+        icon: Key,
+        accessLevels: ["admin"]
+      },
+      { 
         label: "Controle de Acesso", 
         href: "/admin/access", 
-        icon: Key,
+        icon: Lock,
         accessLevels: ["admin"]
       }
     ]

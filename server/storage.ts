@@ -23,6 +23,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User>;
   updateUserAiCredits(id: number, credits: number): Promise<User>;
+  deleteUser(id: number): Promise<void>;
   getUsers(limit?: number, offset?: number, groupId?: number, isActive?: boolean, search?: string): Promise<User[]>;
   getUsersWithGroups(limit?: number, offset?: number, groupId?: number, isActive?: boolean, search?: string): Promise<(User & { group: UserGroup | null })[]>;
   getUserPermissions(userId: number): Promise<Permission[]>;
@@ -45,6 +46,7 @@ export interface IStorage {
   // Group Permissions management
   getGroupPermissions(groupId: number): Promise<Permission[]>;
   setGroupPermissions(groupId: number, permissionIds: number[]): Promise<void>;
+  updateGroupPermissions(groupId: number, permissionIds: number[]): Promise<void>;
   addGroupPermission(groupId: number, permissionId: number): Promise<GroupPermission>;
   removeGroupPermission(groupId: number, permissionId: number): Promise<void>;
 
@@ -204,6 +206,16 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    // Delete related records first
+    await db.delete(userActivityLog).where(eq(userActivityLog.userId, id));
+    await db.delete(tickets).where(eq(tickets.userId, id));
+    await db.delete(mySuppliers).where(eq(mySuppliers.userId, id));
+    
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, id));
   }
 
   async getUsers(limit = 50, offset = 0, groupId?: number, isActive?: boolean, search?: string): Promise<User[]> {
@@ -367,6 +379,10 @@ export class DatabaseStorage implements IStorage {
       }));
       await db.insert(groupPermissions).values(values);
     }
+  }
+
+  async updateGroupPermissions(groupId: number, permissionIds: number[]): Promise<void> {
+    return this.setGroupPermissions(groupId, permissionIds);
   }
 
   async addGroupPermission(groupId: number, permissionId: number): Promise<GroupPermission> {
