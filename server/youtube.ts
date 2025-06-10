@@ -39,9 +39,12 @@ async function fetchLatestVideos(): Promise<YouTubeVideo[]> {
     return [];
   }
 
+  console.log(`Fetching videos for channel: ${CHANNEL_HANDLE}`);
+
   try {
     // First get channel ID
     const channelId = await getChannelId(CHANNEL_HANDLE);
+    console.log(`Channel ID found: ${channelId}`);
     if (!channelId) {
       console.error('Channel not found');
       return [];

@@ -1427,6 +1427,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // YouTube API routes
+  app.get('/api/youtube/videos', requireAuth, async (req, res) => {
+    try {
+      const { videos, lastUpdated } = getCachedVideos();
+      res.json({
+        videos,
+        lastUpdated,
+        count: videos.length
+      });
+    } catch (error) {
+      console.error('Error fetching YouTube videos:', error);
+      res.status(500).json({ message: 'Failed to fetch YouTube videos' });
+    }
+  });
+
+  // News API routes (placeholder for future implementation)
+  app.get('/api/news/latest', requireAuth, async (req, res) => {
+    try {
+      // For now, return empty array - can be implemented later with actual news API
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch news' });
+    }
+  });
+
   // Catch-all route for API 404s
   app.use('/api/*', (req: express.Request, res: express.Response) => {
     res.setHeader('Content-Type', 'application/json');
