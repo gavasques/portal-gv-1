@@ -80,15 +80,23 @@ function VideoCard({
   url?: string;
 }) {
   const formatPublishedDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    if (!dateString || dateString === 'Invalid Date') return 'Data não disponível';
     
-    if (diffInDays === 0) return 'hoje';
-    if (diffInDays === 1) return 'há 1 dia';
-    if (diffInDays < 7) return `há ${diffInDays} dias`;
-    if (diffInDays < 30) return `há ${Math.floor(diffInDays / 7)} semana${Math.floor(diffInDays / 7) > 1 ? 's' : ''}`;
-    return date.toLocaleDateString('pt-BR');
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Data não disponível';
+      
+      const now = new Date();
+      const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffInDays === 0) return 'hoje';
+      if (diffInDays === 1) return 'há 1 dia';
+      if (diffInDays < 7) return `há ${diffInDays} dias`;
+      if (diffInDays < 30) return `há ${Math.floor(diffInDays / 7)} semana${Math.floor(diffInDays / 7) > 1 ? 's' : ''}`;
+      return date.toLocaleDateString('pt-BR');
+    } catch (error) {
+      return 'Data não disponível';
+    }
   };
 
   const handleClick = () => {
@@ -100,11 +108,13 @@ function VideoCard({
   return (
     <div className="group cursor-pointer" onClick={handleClick}>
       <div className="relative rounded-lg overflow-hidden mb-3">
-        <img 
-          src={thumbnail} 
-          alt={title} 
-          className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-200"
-        />
+        <div className="w-full h-0 pb-[56.25%] relative">
+          <img 
+            src={thumbnail} 
+            alt={title} 
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          />
+        </div>
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
             <div className="w-0 h-0 border-l-[8px] border-l-white border-y-[6px] border-y-transparent ml-1"></div>
@@ -189,38 +199,43 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Latest YouTube Videos */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader className="border-b border-border">
-              <CardTitle className="flex items-center">
+      {/* YouTube Videos Section */}
+      <div>
+        <Card>
+          <CardHeader className="border-b border-border">
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
                 <div className="w-5 h-5 bg-red-500 rounded mr-2 flex items-center justify-center">
                   <div className="w-0 h-0 border-l-[6px] border-l-white border-y-[4px] border-y-transparent"></div>
                 </div>
                 Últimos Vídeos do Canal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {youtubeData?.videos && youtubeData.videos.length > 0 ? (
-                  youtubeData.videos.slice(0, 4).map((video: any) => (
-                    <VideoCard 
-                      key={video.id} 
-                      title={video.title}
-                      thumbnail={video.thumbnail}
-                      duration={video.duration}
-                      publishedAt={video.publishedAt}
-                      url={video.url}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-8">
-                    <p className="text-muted-foreground">Carregando vídeos do canal...</p>
-                  </div>
-                )}
               </div>
+              {youtubeData?.channelInfo?.subscriberCount && (
+                <div className="text-sm text-muted-foreground">
+                  {parseInt(youtubeData.channelInfo.subscriberCount).toLocaleString('pt-BR')} inscritos
+                </div>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {youtubeData?.videos && youtubeData.videos.length > 0 ? (
+                youtubeData.videos.map((video: any) => (
+                  <VideoCard 
+                    key={video.id} 
+                    title={video.title}
+                    thumbnail={video.thumbnail}
+                    duration={video.duration}
+                    publishedAt={video.publishedAt}
+                    url={video.url}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground">Carregando vídeos do canal...</p>
+                </div>
+              )}
+            </div>
               
               <div className="mt-6 text-center">
                 <Button 
@@ -236,42 +251,43 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* News and Quick Actions */}
-        <div className="space-y-6">
-          {/* Latest News */}
-          <Card>
-            <CardHeader className="border-b border-border">
-              <CardTitle>Últimas Notícias</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {news?.length ? (
-                  news.slice(0, 3).map((article) => (
-                    <div key={article.id} className="pb-4 border-b border-border last:border-b-0 last:pb-0">
-                      <h4 className="font-medium text-sm mb-2">{article.title}</h4>
-                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                        {article.content}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(article.createdAt).toLocaleDateString('pt-BR')}
-                        </span>
-                        <Badge variant={article.isImportant ? "destructive" : "secondary"}>
-                          {article.category}
-                        </Badge>
-                      </div>
+      {/* News and Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+        {/* Latest News */}
+        <Card>
+          <CardHeader className="border-b border-border">
+            <CardTitle>Últimas Notícias</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {news?.length ? (
+                news.slice(0, 3).map((article) => (
+                  <div key={article.id} className="pb-4 border-b border-border last:border-b-0 last:pb-0">
+                    <h4 className="font-medium text-sm mb-2">{article.title}</h4>
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                      {article.content}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(article.createdAt).toLocaleDateString('pt-BR')}
+                      </span>
+                      <Badge variant={article.isImportant ? "destructive" : "secondary"}>
+                        {article.category}
+                      </Badge>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground">Nenhuma notícia disponível</p>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">Nenhuma notícia disponível</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Quick Actions */}
+        {/* Quick Actions and AI Credits */}
+        <div className="space-y-6">
           <Card>
             <CardHeader className="border-b border-border">
               <CardTitle>Ações Rápidas</CardTitle>
