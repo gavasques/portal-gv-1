@@ -22,6 +22,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User>;
+  updateProfile(id: number, updates: { fullName?: string; cpf?: string; phone?: string }): Promise<User>;
   updateUserAiCredits(id: number, credits: number): Promise<User>;
   deleteUser(id: number): Promise<void>;
   getUsers(limit?: number, offset?: number, groupId?: number, isActive?: boolean, search?: string): Promise<User[]>;
@@ -239,7 +240,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
     return await query.limit(limit).offset(offset).orderBy(desc(users.createdAt));
@@ -737,6 +738,21 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTemplate(id: number): Promise<void> {
     await db.delete(templates).where(eq(templates.id, id));
+  }
+
+  // Interface compatibility methods
+  async getTemplates(limit = 50, offset = 0): Promise<Template[]> {
+    return await db.select()
+      .from(templates)
+      .where(eq(templates.status, 'published'))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(templates.createdAt));
+  }
+
+  async getTemplate(id: number): Promise<Template | undefined> {
+    const [template] = await db.select().from(templates).where(eq(templates.id, id));
+    return template || undefined;
   }
 
   async createNews(newsItem: InsertNews): Promise<News> {
