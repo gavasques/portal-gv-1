@@ -14,6 +14,8 @@ import Tools from "@/pages/tools";
 import MySuppliers from "@/pages/my-suppliers";
 import MyProducts from "@/pages/my-products";
 import Templates from "@/pages/templates";
+import TemplateView from "@/pages/template-view";
+import AdminTemplates from "@/pages/admin-templates";
 import AiAgents from "@/pages/ai-agents";
 import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
@@ -81,6 +83,7 @@ function Router() {
         <Route path="/my-suppliers" component={MySuppliers} />
         <Route path="/my-products" component={MyProducts} />
         <Route path="/templates" component={Templates} />
+        <Route path="/templates/:id" component={TemplateView} />
         <Route path="/ai-agents" component={AiAgents} />
         <Route path="/tickets" component={Tickets} />
         <Route path="/materials" component={Materials} />
@@ -97,7 +100,7 @@ function Router() {
         <Route path="/admin/permissions" component={AdminPermissions} />
         <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
         <Route path="/admin/courses" component={() => <div>Admin Courses - Em desenvolvimento</div>} />
-        <Route path="/admin/templates" component={() => <div>Admin Templates - Em desenvolvimento</div>} />
+        <Route path="/admin/templates" component={AdminTemplates} />
         <Route path="/admin/tickets" component={() => <div>Admin Tickets - Em desenvolvimento</div>} />
         <Route path="/admin/partners" component={() => <div>Admin Partners - Em desenvolvimento</div>} />
         <Route path="/admin/suppliers" component={() => <div>Admin Suppliers - Em desenvolvimento</div>} />

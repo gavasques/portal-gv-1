@@ -580,43 +580,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(products.id, id), eq(products.userId, userId)));
   }
 
-  async getTemplates(limit = 50, offset = 0): Promise<Template[]> {
-    return await db.select()
-      .from(templates)
-      .where(eq(templates.isPublic, true))
-      .limit(limit)
-      .offset(offset)
-      .orderBy(desc(templates.createdAt));
-  }
 
-  async getTemplate(id: number): Promise<Template | undefined> {
-    const [template] = await db.select().from(templates).where(eq(templates.id, id));
-    return template || undefined;
-  }
-
-  async createTemplate(template: InsertTemplate): Promise<Template> {
-    const [created] = await db.insert(templates).values(template).returning();
-    return created;
-  }
-
-  async updateTemplate(id: number, updates: Partial<Template>): Promise<Template> {
-    const [template] = await db.update(templates).set(updates).where(eq(templates.id, id)).returning();
-    return template;
-  }
-
-  async searchTemplates(query: string, category?: string, language?: string): Promise<Template[]> {
-    let whereClause = and(
-      or(like(templates.title, `%${query}%`), like(templates.content, `%${query}%`)),
-      eq(templates.isPublic, true)
-    );
-    if (category) {
-      whereClause = and(whereClause, eq(templates.category, category)) as any;
-    }
-    if (language) {
-      whereClause = and(whereClause, eq(templates.language, language)) as any;
-    }
-    return await db.select().from(templates).where(whereClause);
-  }
 
   async getTickets(userId?: number, limit = 50, offset = 0): Promise<Ticket[]> {
     if (userId) {
