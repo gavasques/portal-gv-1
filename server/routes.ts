@@ -213,6 +213,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile
+  app.put('/api/auth/profile', requireAuth, async (req, res) => {
+    try {
+      const { fullName, cpf, phone } = req.body;
+      const user = req.user as any;
+      const updatedUser = await storage.updateProfile(user.id, {
+        fullName,
+        cpf,
+        phone,
+      });
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      res.status(500).json({ message: 'Failed to update profile' });
+    }
+  });
+
   // Dashboard route
   app.get('/api/dashboard/metrics', requireAuth, async (req, res) => {
     try {

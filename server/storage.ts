@@ -200,6 +200,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async updateProfile(id: number, updates: { fullName?: string; cpf?: string; phone?: string }): Promise<User> {
+    const [user] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return user;
+  }
+
   async updateUserAiCredits(id: number, credits: number): Promise<User> {
     const [user] = await db.update(users)
       .set({ aiCredits: sql`${users.aiCredits} + ${credits}` })

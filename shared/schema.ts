@@ -43,6 +43,8 @@ export const users = pgTable("users", {
   status: text("status").notNull().default("active"), // active, inactive, pending
   aiCredits: integer("ai_credits").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
+  cpf: text("cpf"), // Optional CPF field
+  phone: text("phone"), // Optional phone field
   googleId: text("google_id"),
   profileImage: text("profile_image"),
   stripeCustomerId: text("stripe_customer_id"),
@@ -497,6 +499,13 @@ export const reviewsRelations = relations(reviews, ({ one }) => ({
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
+});
+
+// Profile update schema (for user self-editing)
+export const updateProfileSchema = createInsertSchema(users).pick({
+  fullName: true,
+  cpf: true,
+  phone: true,
 });
 
 export const insertPartnerSchema = createInsertSchema(partners).omit({
