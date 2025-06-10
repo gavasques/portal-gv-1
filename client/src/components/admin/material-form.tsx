@@ -441,7 +441,7 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
                                 <div className="flex flex-col">
                                   <span className="font-medium">{type.name}</span>
                                   <span className="text-xs text-muted-foreground">
-                                    {getFormatTypeLabel(type.formatType)}
+                                    {getFormatTypeLabel(type.formatType || 'text')}
                                   </span>
                                 </div>
                               </div>
