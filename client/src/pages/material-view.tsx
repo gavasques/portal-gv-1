@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import MaterialContentRenderer from "@/components/materials/material-content-renderer";
 import { 
   ChevronRight, 
   Download, 
@@ -20,7 +21,7 @@ import {
   ExternalLink,
   ArrowRight
 } from "lucide-react";
-import type { Material, Comment } from "@/lib/types";
+import type { Material } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
 const formatIcons = {
@@ -276,71 +277,7 @@ export default function MaterialView() {
       {canAccess ? (
         <Card>
           <CardContent className="p-6">
-            {material.type === "text" && material.content && (
-              <div 
-                className="prose max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: material.content }}
-              />
-            )}
-
-            {material.type === "pdf" && material.filePath && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Visualizar PDF</h3>
-                  <Button asChild>
-                    <a href={material.filePath} download target="_blank" rel="noopener noreferrer">
-                      <Download className="h-4 w-4 mr-2" />
-                      Baixar PDF
-                    </a>
-                  </Button>
-                </div>
-                <div className="border rounded-lg overflow-hidden bg-muted/30">
-                  <iframe
-                    src={material.filePath}
-                    className="w-full h-[600px]"
-                    title={material.title}
-                  />
-                </div>
-              </div>
-            )}
-
-            {material.type === "video" && material.url && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Vídeo</h3>
-                <div className="aspect-video rounded-lg overflow-hidden">
-                  <iframe
-                    src={material.url}
-                    className="w-full h-full"
-                    title={material.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            )}
-
-            {material.type === "link" && material.url && (
-              <div className="text-center py-8">
-                <ExternalLink className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-4">Link Externo</h3>
-                <Button asChild size="lg">
-                  <a href={material.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Abrir Link
-                  </a>
-                </Button>
-              </div>
-            )}
-
-            {material.type === "embed" && material.content && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Conteúdo Interativo</h3>
-                <div 
-                  className="border rounded-lg overflow-hidden"
-                  dangerouslySetInnerHTML={{ __html: material.content }}
-                />
-              </div>
-            )}
+            <MaterialContentRenderer material={material} />
           </CardContent>
         </Card>
       ) : (

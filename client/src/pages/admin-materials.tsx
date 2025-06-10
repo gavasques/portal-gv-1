@@ -23,7 +23,7 @@ import {
   Globe,
   Lock
 } from "lucide-react";
-import type { Material } from "@/lib/types";
+import type { Material } from "@shared/schema";
 import MaterialForm from "@/components/admin/material-form";
 
 const formatIcons = {
@@ -241,8 +241,40 @@ export default function AdminMaterials() {
               </DialogTitle>
             </DialogHeader>
             <MaterialForm 
-              material={editingMaterial} 
-              onClose={handleFormClose}
+              material={editingMaterial || undefined} 
+              onSubmit={async (data) => {
+                try {
+                  const url = editingMaterial 
+                    ? `/api/admin/materials/${editingMaterial.id}` 
+                    : '/api/admin/materials';
+                  const method = editingMaterial ? 'PATCH' : 'POST';
+                  
+                  const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                  });
+                  
+                  if (!response.ok) throw new Error('Failed to save material');
+                  
+                  queryClient.invalidateQueries({ queryKey: ['/api/admin/materials'] });
+                  handleFormClose();
+                  
+                  toast({
+                    title: editingMaterial ? "Material atualizado" : "Material criado",
+                    description: editingMaterial 
+                      ? "O material foi atualizado com sucesso." 
+                      : "O novo material foi criado com sucesso."
+                  });
+                } catch (error) {
+                  toast({
+                    title: "Erro",
+                    description: "Não foi possível salvar o material.",
+                    variant: "destructive"
+                  });
+                }
+              }}
+              onCancel={handleFormClose}
             />
           </DialogContent>
         </Dialog>
