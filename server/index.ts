@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeYouTubeScheduler } from "./youtube";
+import { seedTemplates } from "./seed-templates";
 
 const app = express();
 app.use(express.json());
@@ -42,6 +43,15 @@ app.use((req, res, next) => {
 
   // Initialize YouTube scheduler
   initializeYouTubeScheduler();
+
+  // Seed templates if needed (only in development)
+  if (app.get("env") === "development") {
+    try {
+      await seedTemplates();
+    } catch (error) {
+      console.log("Templates may already exist, skipping seed...");
+    }
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
