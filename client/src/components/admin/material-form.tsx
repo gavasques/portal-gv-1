@@ -27,12 +27,16 @@ const materialFormSchema = z.object({
     "planilha_excel", 
     "arquivo_word", 
     "link_pasta", 
-    "link_documento"
+    "link_documento",
+    "video_upload"
   ]),
   content: z.string().optional(),
   url: z.string().optional(),
   embedCode: z.string().optional(),
   fileName: z.string().optional(),
+  filePath: z.string().optional(),
+  mimeType: z.string().optional(),
+  fileSize: z.number().optional(),
   accessLevel: z.enum(["Public", "Restricted"]),
   category: z.string().min(1, "Categoria é obrigatória"),
   tags: z.array(z.string()).optional(),
@@ -66,6 +70,7 @@ const materialTypes = [
   { value: "embed_iframe", label: "Embed/Iframe", icon: Globe },
   { value: "video_youtube", label: "Vídeo YouTube", icon: Video },
   { value: "video_panda", label: "Vídeo Panda", icon: Video },
+  { value: "video_upload", label: "Vídeo Upload", icon: Upload },
   { value: "audio", label: "Áudio", icon: FileAudio },
   { value: "planilha_excel", label: "Planilha Excel", icon: FileSpreadsheet },
   { value: "arquivo_word", label: "Arquivo Word", icon: File },
@@ -112,15 +117,18 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Conteúdo do Artigo</FormLabel>
+                <FormLabel>Conteúdo do Artigo (HTML)</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     value={field.value || ""}
-                    placeholder="Digite o conteúdo completo do artigo..."
-                    className="min-h-[200px]"
+                    placeholder="Cole aqui o conteúdo HTML do artigo..."
+                    className="min-h-[300px] font-mono text-sm"
                   />
                 </FormControl>
+                <div className="text-xs text-muted-foreground">
+                  Você pode colar HTML formatado que será exibido aos alunos
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -128,38 +136,148 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
         );
       
       case "documento_pdf":
-      case "planilha_excel":
-      case "arquivo_word":
-      case "audio":
         return (
-          <>
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+              <div className="text-center">
+                <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Upload de Arquivo PDF</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Selecione um arquivo PDF para upload
+                </p>
+                <Input type="file" accept=".pdf" className="max-w-sm mx-auto" />
+              </div>
+            </div>
             <FormField
               control={form.control}
               name="fileName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome do Arquivo</FormLabel>
+                  <FormLabel>Nome de Exibição</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value || ""} placeholder="Nome do arquivo para download" />
+                    <Input {...field} value={field.value || ""} placeholder="Nome do arquivo para exibição" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
+        );
+
+      case "planilha_excel":
+        return (
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+              <div className="text-center">
+                <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Upload de Planilha Excel</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Selecione um arquivo .xls ou .xlsx
+                </p>
+                <Input type="file" accept=".xls,.xlsx" className="max-w-sm mx-auto" />
+              </div>
+            </div>
             <FormField
               control={form.control}
-              name="url"
+              name="fileName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL do Arquivo</FormLabel>
+                  <FormLabel>Nome de Exibição</FormLabel>
                   <FormControl>
-                    <Input {...field} value={field.value || ""} placeholder="https://exemplo.com/arquivo.pdf" />
+                    <Input {...field} value={field.value || ""} placeholder="Nome da planilha para exibição" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </>
+          </div>
+        );
+
+      case "arquivo_word":
+        return (
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+              <div className="text-center">
+                <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Upload de Documento Word</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Selecione um arquivo .doc ou .docx
+                </p>
+                <Input type="file" accept=".doc,.docx" className="max-w-sm mx-auto" />
+              </div>
+            </div>
+            <FormField
+              control={form.control}
+              name="fileName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome de Exibição</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} placeholder="Nome do documento para exibição" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
+      case "audio":
+        return (
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+              <div className="text-center">
+                <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Upload de Arquivo de Áudio</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Selecione um arquivo .mp3 ou .wav
+                </p>
+                <Input type="file" accept=".mp3,.wav" className="max-w-sm mx-auto" />
+              </div>
+            </div>
+            <FormField
+              control={form.control}
+              name="fileName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome de Exibição</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} placeholder="Nome do áudio para exibição" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
+      case "video_upload":
+        return (
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+              <div className="text-center">
+                <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Upload de Vídeo</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Selecione um arquivo de vídeo .mp4, .mov ou .avi
+                </p>
+                <Input type="file" accept=".mp4,.mov,.avi" className="max-w-sm mx-auto" />
+              </div>
+            </div>
+            <FormField
+              control={form.control}
+              name="fileName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome de Exibição</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} placeholder="Nome do vídeo para exibição" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         );
       
       case "video_youtube":

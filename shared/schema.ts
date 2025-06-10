@@ -314,13 +314,14 @@ export const materials = pgTable("materials", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  type: text("type").notNull(), // artigo_texto, documento_pdf, fluxograma_miro, embed_iframe, video_youtube, video_panda, audio, planilha_excel, arquivo_word, link_pasta, link_documento
-  content: text("content"), // For text content, embed codes, or URLs
-  filePath: text("file_path"), // For file uploads (PDF, Excel, Word, Audio)
+  type: text("type").notNull(), // artigo_texto, documento_pdf, fluxograma_miro, embed_iframe, video_youtube, video_panda, audio, planilha_excel, arquivo_word, link_pasta, link_documento, video_upload
+  content: text("content"), // For text content (HTML), embed codes, or URLs
+  filePath: text("file_path"), // For file uploads (PDF, Excel, Word, Audio, Video)
   url: text("url"), // For external links and videos
   embedCode: text("embed_code"), // For iframe embeds (Miro, external systems)
   fileName: text("file_name"), // Original filename for downloads
   fileSize: integer("file_size"), // File size in bytes
+  mimeType: text("mime_type"), // MIME type of uploaded files
   accessLevel: text("access_level").notNull().default("Public"), // Public, Restricted
   category: text("category"),
   tags: text("tags").array(),

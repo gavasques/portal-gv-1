@@ -27,9 +27,10 @@ const getYouTubeVideoId = (url: string): string | null => {
 const renderTextContent = (content: string) => {
   return (
     <div className="prose prose-sm max-w-none dark:prose-invert">
-      <div className="whitespace-pre-wrap text-sm leading-relaxed">
-        {content}
-      </div>
+      <div 
+        className="text-sm leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
     </div>
   );
 };
