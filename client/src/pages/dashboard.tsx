@@ -137,7 +137,7 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  const { data: youtubeData } = useQuery<{videos: any[], lastUpdated: string, cacheStatus: string}>({
+  const { data: youtubeData } = useQuery<{videos: any[], lastUpdated: string, channelInfo: any, count: number}>({
     queryKey: ['/api/youtube/videos'],
     enabled: !!user,
   });

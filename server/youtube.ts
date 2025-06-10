@@ -10,7 +10,13 @@ interface YouTubeVideo {
   url: string;
 }
 
+interface ChannelInfo {
+  subscriberCount: string;
+  title: string;
+}
+
 let cachedVideos: YouTubeVideo[] = [];
+let cachedChannelInfo: ChannelInfo | null = null;
 let lastUpdated: Date | null = null;
 
 const CHANNEL_HANDLE = 'guilhermeavasques';
@@ -33,6 +39,27 @@ async function getChannelId(handle: string): Promise<string | null> {
   }
 }
 
+async function getChannelInfo(channelId: string): Promise<ChannelInfo | null> {
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/channels?key=${API_KEY}&id=${channelId}&part=statistics,snippet`
+    );
+    const data = await response.json();
+    
+    if (data.items && data.items.length > 0) {
+      const channel = data.items[0];
+      return {
+        subscriberCount: channel.statistics.subscriberCount,
+        title: channel.snippet.title
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching channel info:', error);
+    return null;
+  }
+}
+
 async function fetchLatestVideos(): Promise<YouTubeVideo[]> {
   if (!API_KEY) {
     console.error('YouTube API key not provided');
@@ -50,9 +77,15 @@ async function fetchLatestVideos(): Promise<YouTubeVideo[]> {
       return [];
     }
 
+    // Get channel info
+    const channelInfo = await getChannelInfo(channelId);
+    if (channelInfo) {
+      cachedChannelInfo = channelInfo;
+    }
+
     // Get latest videos
     const videosResponse = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet&order=date&maxResults=10&type=video`
+      `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet&order=date&maxResults=9&type=video`
     );
     const videosData = await videosResponse.json();
 
@@ -139,6 +172,6 @@ export function initializeYouTubeScheduler(): void {
   console.log('YouTube scheduler initialized - updates at 11:00 and 20:00 daily');
 }
 
-export function getCachedVideos(): { videos: YouTubeVideo[], lastUpdated: Date | null } {
-  return { videos: cachedVideos, lastUpdated };
+export function getCachedVideos(): { videos: YouTubeVideo[], lastUpdated: Date | null, channelInfo: ChannelInfo | null } {
+  return { videos: cachedVideos, lastUpdated, channelInfo: cachedChannelInfo };
 }

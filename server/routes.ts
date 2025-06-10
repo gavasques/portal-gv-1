@@ -1430,10 +1430,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // YouTube API routes
   app.get('/api/youtube/videos', requireAuth, async (req, res) => {
     try {
-      const { videos, lastUpdated } = getCachedVideos();
+      const { videos, lastUpdated, channelInfo } = getCachedVideos();
       res.json({
         videos,
         lastUpdated,
+        channelInfo,
         count: videos.length
       });
     } catch (error) {
