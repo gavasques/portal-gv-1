@@ -274,6 +274,9 @@ export const templateTagRelations = pgTable("template_tag_relations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export type TemplateTagRelation = typeof templateTagRelations.$inferSelect;
+export type InsertTemplateTagRelation = typeof templateTagRelations.$inferInsert;
+
 export const templates = pgTable("templates", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),

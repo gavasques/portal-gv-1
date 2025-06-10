@@ -496,7 +496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/templates/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+  app.get('/api/admin/templates/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
       const includeTags = req.query.include_tags === 'true';
 
@@ -1278,7 +1278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Template Tags management (Admin only)
-  app.get('/api/admin/template-tags', requireAuth, requireRole(['admin']), async (req, res) => {
+  app.get('/api/admin/template-tags', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
       const tags = await storage.getTemplateTags();
       res.json(tags);
@@ -1287,7 +1287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/admin/template-tags', requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post('/api/admin/template-tags', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
       const validatedData = insertTemplateTagSchema.parse(req.body);
       const tag = await storage.createTemplateTag(validatedData);
@@ -1297,7 +1297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/admin/template-tags/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+  app.put('/api/admin/template-tags/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
       const validatedData = insertTemplateTagSchema.partial().parse(req.body);
       const tag = await storage.updateTemplateTag(parseInt(req.params.id), validatedData);
@@ -1307,7 +1307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/admin/template-tags/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+  app.delete('/api/admin/template-tags/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
     try {
       await storage.deleteTemplateTag(parseInt(req.params.id));
       res.status(204).send();

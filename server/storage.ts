@@ -1,7 +1,7 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, tickets, ticketFiles, ticketMessages,
   materials, news, reviews, userGroups, permissions, groupPermissions, userActivityLog, authTokens,
-  materialTypes, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags
+  materialTypes, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags, templateTagRelations
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -745,6 +745,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteTemplate(id: number): Promise<void> {
+    // First delete template tag relations
+    await db.delete(templateTagRelations).where(eq(templateTagRelations.templateId, id));
+    // Then delete the template
     await db.delete(templates).where(eq(templates.id, id));
   }
 
@@ -789,14 +792,19 @@ export class DatabaseStorage implements IStorage {
 
   // Template-Tag relations
   async linkTemplateToTags(templateId: number, tagIds: number[]): Promise<void> {
-    // Primeiro remove todas as ligações existentes
-    await db.delete(templateTagRelations).where(eq(templateTagRelations.templateId, templateId));
-    
-    // Depois adiciona as novas ligações
-    if (tagIds.length > 0) {
-      await db.insert(templateTagRelations).values(
-        tagIds.map(tagId => ({ templateId, tagId }))
-      );
+    try {
+      // Primeiro remove todas as ligações existentes
+      await db.delete(templateTagRelations).where(eq(templateTagRelations.templateId, templateId));
+      
+      // Depois adiciona as novas ligações
+      if (tagIds.length > 0) {
+        await db.insert(templateTagRelations).values(
+          tagIds.map(tagId => ({ templateId, tagId }))
+        );
+      }
+    } catch (error) {
+      console.error('Error linking template to tags:', error);
+      throw error;
     }
   }
 
@@ -821,28 +829,61 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllTemplatesWithTags(): Promise<any[]> {
-    const allTemplates = await db.select().from(templates).orderBy(desc(templates.createdAt));
-    
-    const templatesWithTags = await Promise.all(
-      allTemplates.map(async (template) => {
-        const tags = await db
-          .select({
-            id: templateTags.id,
-            name: templateTags.name,
-            color: templateTags.color,
-          })
-          .from(templateTagRelations)
-          .innerJoin(templateTags, eq(templateTagRelations.tagId, templateTags.id))
-          .where(eq(templateTagRelations.templateId, template.id));
-
-        return {
-          ...template,
-          tags,
-        };
+    // Use a single query with LEFT JOIN to get templates and their tags
+    const results = await db
+      .select({
+        id: templates.id,
+        title: templates.title,
+        category: templates.category,
+        purpose: templates.purpose,
+        usageInstructions: templates.usageInstructions,
+        content: templates.content,
+        variableTips: templates.variableTips,
+        status: templates.status,
+        copyCount: templates.copyCount,
+        createdAt: templates.createdAt,
+        updatedAt: templates.updatedAt,
+        tagId: templateTags.id,
+        tagName: templateTags.name,
+        tagColor: templateTags.color,
       })
-    );
+      .from(templates)
+      .leftJoin(templateTagRelations, eq(templates.id, templateTagRelations.templateId))
+      .leftJoin(templateTags, eq(templateTagRelations.tagId, templateTags.id))
+      .orderBy(desc(templates.createdAt));
 
-    return templatesWithTags;
+    // Group results by template
+    const templatesMap = new Map();
+    
+    results.forEach((row) => {
+      if (!templatesMap.has(row.id)) {
+        templatesMap.set(row.id, {
+          id: row.id,
+          title: row.title,
+          category: row.category,
+          purpose: row.purpose,
+          usageInstructions: row.usageInstructions,
+          content: row.content,
+          variableTips: row.variableTips,
+          status: row.status,
+          copyCount: row.copyCount,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          tags: [],
+        });
+      }
+      
+      // Add tag if it exists
+      if (row.tagId) {
+        templatesMap.get(row.id).tags.push({
+          id: row.tagId,
+          name: row.tagName,
+          color: row.tagColor,
+        });
+      }
+    });
+
+    return Array.from(templatesMap.values());
   }
 
   async createNews(newsItem: InsertNews): Promise<News> {

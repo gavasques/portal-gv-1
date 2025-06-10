@@ -16,13 +16,18 @@ export default function AdminTemplates() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: templates, isLoading } = useQuery({
+  const { data: templates, isLoading, error } = useQuery({
     queryKey: ["/api/admin/templates"],
     queryFn: async () => {
       const response = await fetch("/api/admin/templates?include_tags=true");
-      if (!response.ok) throw new Error("Failed to fetch templates");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch templates");
+      }
       return response.json() as Template[];
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const deleteMutation = useMutation({
@@ -105,6 +110,40 @@ export default function AdminTemplates() {
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Gestão de Templates</h1>
+            <p className="text-muted-foreground">
+              Gerencie a biblioteca de templates de comunicação
+            </p>
+          </div>
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Criar Novo Template
+          </Button>
+        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="text-red-500 mb-4">
+              <FileText className="h-12 w-12 mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Erro ao carregar templates</h3>
+              <p className="text-muted-foreground">{error.message}</p>
+            </div>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+            >
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
