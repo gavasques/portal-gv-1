@@ -259,13 +259,17 @@ export const products = pgTable("products", {
 export const templates = pgTable("templates", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  category: text("category").notNull(),
+  category: text("category").notNull(), // Fornecedores, Amazon, Ferramentas, Negociação, Marketing
+  purpose: text("purpose").notNull(), // Brief description for listing
+  usageInstructions: text("usage_instructions").notNull(), // When and how to use
+  content: text("content").notNull(), // Template body with variables
+  variableTips: text("variable_tips"), // Tips about placeholders
+  status: text("status").notNull().default("published"), // published, draft
+  copyCount: integer("copy_count").notNull().default(0), // Usage counter
   language: text("language").notNull().default("pt"),
-  subject: text("subject"),
-  content: text("content").notNull(),
   tags: text("tags").array(),
-  isPublic: boolean("is_public").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const aiUsageHistory = pgTable("ai_usage_history", {

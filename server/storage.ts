@@ -718,6 +718,63 @@ export class DatabaseStorage implements IStorage {
     return newsItem || undefined;
   }
 
+  // Template operations
+  async getAllTemplates(): Promise<Template[]> {
+    return await db.select().from(templates).where(eq(templates.status, 'published')).orderBy(desc(templates.createdAt));
+  }
+
+  async getTemplateById(id: number): Promise<Template | undefined> {
+    const [template] = await db.select().from(templates).where(eq(templates.id, id));
+    return template;
+  }
+
+  async getTemplatesByCategory(category: string): Promise<Template[]> {
+    return await db.select().from(templates)
+      .where(and(eq(templates.category, category), eq(templates.status, 'published')))
+      .orderBy(desc(templates.createdAt));
+  }
+
+  async searchTemplates(query: string, category?: string): Promise<Template[]> {
+    let whereClause = and(
+      or(like(templates.title, `%${query}%`), like(templates.purpose, `%${query}%`)),
+      eq(templates.status, 'published')
+    );
+
+    if (category) {
+      whereClause = and(whereClause, eq(templates.category, category)) as any;
+    }
+
+    return await db.select().from(templates).where(whereClause).orderBy(desc(templates.createdAt));
+  }
+
+  async incrementTemplateCopyCount(id: number): Promise<void> {
+    await db.update(templates)
+      .set({ copyCount: sql`${templates.copyCount} + 1` })
+      .where(eq(templates.id, id));
+  }
+
+  // Admin template operations
+  async getAllTemplatesAdmin(): Promise<Template[]> {
+    return await db.select().from(templates).orderBy(desc(templates.createdAt));
+  }
+
+  async createTemplate(template: InsertTemplate): Promise<Template> {
+    const [created] = await db.insert(templates).values(template).returning();
+    return created;
+  }
+
+  async updateTemplate(id: number, updates: Partial<Template>): Promise<Template> {
+    const [updated] = await db.update(templates)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(templates.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTemplate(id: number): Promise<void> {
+    await db.delete(templates).where(eq(templates.id, id));
+  }
+
   async createNews(newsItem: InsertNews): Promise<News> {
     const [created] = await db.insert(news).values(newsItem).returning();
     return created;

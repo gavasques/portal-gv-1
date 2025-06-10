@@ -380,6 +380,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Templates API routes
+  app.get('/api/templates', requireAuth, async (req, res) => {
+    try {
+      const { search, category } = req.query;
+      let templates;
+      
+      if (search || category) {
+        templates = await storage.searchTemplates(
+          search as string || '', 
+          category as string
+        );
+      } else {
+        templates = await storage.getAllTemplates();
+      }
+      
+      res.json(templates);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch templates' });
+    }
+  });
+
+  app.get('/api/templates/:id', requireAuth, async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const template = await storage.getTemplateById(templateId);
+      if (!template) {
+        return res.status(404).json({ message: 'Template not found' });
+      }
+      res.json(template);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch template' });
+    }
+  });
+
+  app.post('/api/templates/:id/copy', requireAuth, async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      await storage.incrementTemplateCopyCount(templateId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to track copy' });
+    }
+  });
+
+  // Admin Templates routes
+  app.get('/api/admin/templates', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const templates = await storage.getAllTemplatesAdmin();
+      res.json(templates);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch templates' });
+    }
+  });
+
+  app.post('/api/admin/templates', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const templateData = insertTemplateSchema.parse(req.body);
+      const template = await storage.createTemplate(templateData);
+      res.status(201).json(template);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid template data', errors: error.errors });
+      }
+      res.status(500).json({ message: 'Failed to create template' });
+    }
+  });
+
+  app.put('/api/admin/templates/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const updates = req.body;
+      const template = await storage.updateTemplate(templateId, updates);
+      res.json(template);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update template' });
+    }
+  });
+
+  app.delete('/api/admin/templates/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      await storage.deleteTemplate(templateId);
+      res.json({ message: 'Template deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete template' });
+    }
+  });
+
   
 
   // Admin routes - require auth and admin role

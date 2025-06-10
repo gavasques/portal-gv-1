@@ -1,0 +1,56 @@
+Ok, vamos desenvolver completamente a Área de Templates.
+
+Esta seção será uma ferramenta prática e de alto valor, economizando tempo dos alunos e ajudando-os a se comunicar de forma mais profissional. A estrutura será dividida em duas partes: a visão do aluno e a área de gestão do administrador.
+
+Parte 1: Área Geral (Visão do Aluno)
+Esta é a interface que o aluno usará para encontrar e utilizar os modelos de comunicação.
+
+Tela 1.1: Biblioteca de Templates (Listagem Geral)
+O ponto de entrada onde todos os templates são exibidos e podem ser encontrados.
+
+Objetivo Principal: Permitir que os alunos encontrem rapidamente o modelo de texto exato para a situação que precisam, seja para contatar um fornecedor, responder a um cliente ou enviar um e-mail para a Amazon.
+Estrutura e Componentes:
+Cabeçalho: Título "Biblioteca de Templates" com um subtítulo como "Comunicação profissional pronta para copiar e colar."
+Barra de Ferramentas:
+Busca: Um campo de busca para pesquisar por título ou finalidade (ex: "negociar preço", "primeiro contato").
+Filtro por Categoria: Um menu suspenso para filtrar os templates por categorias como Fornecedores, Amazon, Ferramentas, Negociação, Marketing.
+Controles de Visualização: Ícones para alternar entre Lista (Padrão) e Cards.
+Área de Listagem:
+Visualização em Lista (Padrão): Uma tabela com as colunas: Título do Template, Categoria, Finalidade (uma breve descrição) e um botão de ação "Ver Template".
+Visualização em Cards: Uma grade de cards, onde cada um possui um ícone representativo, o título e a finalidade.
+Paginação: Controles na base da lista para navegar entre as páginas.
+Tela 1.2: Página do Template (Página de Uso)
+A tela onde o aluno visualiza e copia um template específico.
+
+Objetivo Principal: Apresentar o texto do template de forma clara e limpa, com explicações sobre seu uso e um botão de "copiar" para máxima agilidade.
+Estrutura e Componentes:
+Cabeçalho: Navegação "breadcrumb" (ex: Templates > Fornecedores > Primeiro Contato).
+Componente 1: Contexto do Template:
+Título do Template em destaque.
+Uma seção chamada "Quando e como usar", explicando o cenário ideal para aquele texto e o objetivo a ser alcançado.
+Componente 2: O Template (Caixa de Cópia):
+Um bloco de texto com design diferenciado contendo o corpo do template.
+As partes que o aluno deve alterar estarão em destaque, como [NOME_DA_EMPRESA] ou [SEU_NOME].
+Botão "Copiar Texto": A ação principal da página. Um clique copia todo o conteúdo do bloco para a área de transferência do usuário, exibindo uma mensagem de confirmação como "Copiado! ✅".
+Componente 3: Dicas e Variáveis:
+Uma seção abaixo explicando o que significa cada [variável] e dando dicas de como preenchê-la para obter o melhor resultado.
+Parte 2: Área de Administração (Visão do Admin)
+Esta é a interface no painel ADM para você e sua equipe gerenciarem a biblioteca.
+
+Tela 2.1: Gestão de Templates (Listagem no ADM)
+Objetivo: Ter uma visão geral de todos os templates, com acesso rápido para editar, deletar e ver estatísticas de uso.
+Estrutura e Componentes:
+Cabeçalho: Título "Gestão de Templates" e um botão + Criar Novo Template.
+Tabela de Templates:
+Colunas: Título do Template, Categoria, Nº de Cópias (um contador de uso), Status (Publicado/Rascunho), Ações (Editar/Excluir).
+Tela 2.2: Formulário de Criação/Edição de Template
+Objetivo: Um formulário simples e direto para adicionar ou modificar templates na biblioteca.
+Estrutura e Componentes:
+Campo "Título do Template": Texto.
+Campo "Categoria": Menu suspenso para selecionar a categoria.
+Campo "Finalidade": Descrição curta para a listagem.
+Campo "Instruções de Uso": Caixa de texto para explicar o contexto.
+Campo "Corpo do Template": A caixa de texto principal onde o template é escrito.
+Campo "Dicas sobre Variáveis": Caixa de texto para explicar os placeholders.
+Opções de Status: Publicar ou Salvar como Rascunho.
+Botão de Ação: Salvar Template.
