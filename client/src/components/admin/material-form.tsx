@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { FileText, Upload, Link, Video, FileAudio, FileSpreadsheet, File, Globe } from "lucide-react";
-import type { Material } from "@shared/schema";
+import type { Material, MaterialCategory } from "@shared/schema";
 
 const materialFormSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -71,6 +72,16 @@ const materialTypes = [
 
 export default function MaterialForm({ material, onSubmit, onCancel, isLoading }: MaterialFormProps) {
   const [activeTab, setActiveTab] = useState("basic");
+
+  // Load material categories dynamically
+  const { data: categories = [] } = useQuery<MaterialCategory[]>({
+    queryKey: ['/api/material-categories'],
+    queryFn: async () => {
+      const response = await fetch('/api/material-categories');
+      if (!response.ok) throw new Error('Failed to fetch material categories');
+      return response.json();
+    },
+  });
   
   const form = useForm<MaterialFormData>({
     resolver: zodResolver(materialFormSchema),
@@ -446,9 +457,9 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
+                          {categories.filter(cat => cat.isActive).map((category) => (
+                            <SelectItem key={category.id} value={category.name}>
+                              {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
