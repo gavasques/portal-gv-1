@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Download, Video, FileIcon, FileAudio, FileSpreadsheet, FileText, Globe } from "lucide-react";
+import { ExternalLink, Download, Video, FileIcon, FileAudio, FileSpreadsheet, FileText, Globe, Lightbulb, Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { Material } from "@shared/schema";
 
 interface MaterialContentRendererProps {
@@ -21,6 +22,81 @@ const renderTextContent = (content: string) => {
         dangerouslySetInnerHTML={{ __html: content }}
       />
     </div>
+  );
+};
+
+const renderPromptContent = (material: Material) => {
+  const { toast } = useToast();
+
+  const copyToClipboard = () => {
+    if (material.content) {
+      navigator.clipboard.writeText(material.content);
+      toast({
+        title: "Prompt copiado!",
+        description: "O conteúdo do prompt foi copiado para a área de transferência.",
+      });
+    }
+  };
+
+  const formatMarkdownToHtml = (content: string) => {
+    return content
+      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 text-blue-600">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mb-3 text-blue-500">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-medium mb-2 text-blue-400">$1</h3>')
+      .replace(/^\*\*(.*)\*\*$/gm, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+      .replace(/^\- (.*$)/gm, '<li class="ml-4">$1</li>')
+      .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-4 list-decimal">$2</li>')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>')
+      .replace(/\| (.*?) \|/g, '<td class="border px-3 py-2">$1</td>')
+      .replace(/^\|(.*)\|$/gm, '<tr>$1</tr>');
+  };
+
+  return (
+    <Card className="border-l-4 border-l-blue-500">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Lightbulb className="h-8 w-8 text-blue-500" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {material.title}
+              </h3>
+              {material.description && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {material.description}
+                </p>
+              )}
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyToClipboard}
+            className="shrink-0"
+          >
+            <Copy className="h-4 w-4 mr-2" />
+            Copiar Prompt
+          </Button>
+        </div>
+        
+        {material.content && (
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border">
+            <div 
+              className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed"
+              dangerouslySetInnerHTML={{ 
+                __html: formatMarkdownToHtml(material.content) 
+              }}
+            />
+          </div>
+        )}
+        
+        <div className="mt-4 text-xs text-muted-foreground">
+          💡 Este prompt foi criado para otimizar seus resultados com IA. Copie e personalize conforme necessário.
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
