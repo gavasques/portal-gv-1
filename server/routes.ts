@@ -383,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Templates API routes
   app.get('/api/templates', requireAuth, async (req, res) => {
     try {
-      const { search, category } = req.query;
+      const { search, category, tags } = req.query;
       let templates;
       
       if (search || category) {
@@ -393,6 +393,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       } else {
         templates = await storage.getAllTemplates();
+      }
+
+      // Filter by tags if provided
+      if (tags) {
+        const tagList = (tags as string).split(',').map(tag => tag.trim());
+        templates = templates.filter(template => {
+          if (!template.tags) return false;
+          return tagList.some(tag => template.tags?.includes(tag));
+        });
       }
       
       res.json(templates);

@@ -48,7 +48,7 @@ export default function Templates() {
       
       const response = await fetch(`/api/templates?${params}`);
       if (!response.ok) throw new Error("Failed to fetch templates");
-      return response.json() as Template[];
+      return response.json();
     },
   });
 
@@ -57,7 +57,7 @@ export default function Templates() {
     queryFn: async () => {
       const response = await fetch("/api/template-tags");
       if (!response.ok) throw new Error("Failed to fetch template tags");
-      return response.json() as TemplateTag[];
+      return response.json();
     },
   });
 
@@ -177,7 +177,7 @@ export default function Templates() {
               )}
             </div>
             <div className="flex flex-wrap gap-2">
-              {templateTags.map((tag) => {
+              {templateTags.map((tag: any) => {
                 const isSelected = selectedTags.includes(tag.name);
                 
                 return (
@@ -207,7 +207,7 @@ export default function Templates() {
       {templates && templates.length > 0 ? (
         viewMode === "list" ? (
           <div className="space-y-4">
-            {templates.map((template) => (
+            {templates.map((template: any) => (
               <Card key={template.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -231,7 +231,7 @@ export default function Templates() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((template) => (
+            {templates.map((template: any) => (
               <Card key={template.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
