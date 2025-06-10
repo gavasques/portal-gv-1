@@ -25,9 +25,7 @@ const renderTextContent = (content: string) => {
   );
 };
 
-const renderPromptContent = (material: Material) => {
-  const { toast } = useToast();
-
+const renderPromptContent = (material: Material, toast: any) => {
   const copyToClipboard = () => {
     if (material.content) {
       navigator.clipboard.writeText(material.content);
@@ -380,24 +378,34 @@ const renderExternalLink = (material: Material) => {
 };
 
 export default function MaterialContentRenderer({ material }: MaterialContentRendererProps) {
+  const { toast } = useToast();
+  
   const renderContent = () => {
     switch (material.type) {
+      case "Prompt para IA":
+        return renderPromptContent(material, toast);
+      
       case "artigo_texto":
+      case "Artigo/Texto":
         return material.content ? renderTextContent(material.content) : (
           <p className="text-muted-foreground">Conteúdo não disponível</p>
         );
       
       case "documento_pdf":
+      case "PDF":
         return renderPDFViewer(material);
       
       case "planilha_excel":
       case "arquivo_word":
+      case "Apresentação PowerPoint":
         return renderFileDownload(material);
       
       case "audio":
+      case "Áudio/Podcast":
         return renderAudioPlayer(material);
       
       case "video_upload":
+      case "Vídeo":
         return renderVideoPlayer(material);
       
       case "video_youtube":
@@ -412,6 +420,7 @@ export default function MaterialContentRenderer({ material }: MaterialContentRen
       
       case "fluxograma_miro":
       case "embed_iframe":
+      case "Código Embed":
         return material.embedCode ? (
           <div 
             className="w-full"
@@ -423,6 +432,8 @@ export default function MaterialContentRenderer({ material }: MaterialContentRen
       
       case "link_pasta":
       case "link_documento":
+      case "iFrame Externo":
+      case "Link":
         return material.url ? renderExternalLink(material) : (
           <p className="text-muted-foreground">Link não disponível</p>
         );

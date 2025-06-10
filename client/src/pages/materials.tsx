@@ -20,22 +20,34 @@ import {
   Lock,
   Globe,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Lightbulb,
+  FileAudio,
+  Presentation
 } from "lucide-react";
 import type { Material } from "@shared/schema";
 
 const formatIcons = {
-  artigo_texto: FileText,
-  documento_pdf: Download,
-  fluxograma_miro: Globe,
-  embed_iframe: Globe,
-  video_youtube: Video,
-  video_panda: Video,
-  audio: Video,
-  planilha_excel: Download,
-  arquivo_word: Download,
-  link_pasta: ExternalLink,
-  link_documento: ExternalLink
+  "Prompt para IA": Lightbulb,
+  "artigo_texto": FileText,
+  "Artigo/Texto": FileText,
+  "documento_pdf": Download,
+  "PDF": Download,
+  "fluxograma_miro": Globe,
+  "embed_iframe": Globe,
+  "Código Embed": Globe,
+  "video_youtube": Video,
+  "video_panda": Video,
+  "Vídeo": Video,
+  "audio": FileAudio,
+  "Áudio/Podcast": FileAudio,
+  "planilha_excel": Download,
+  "arquivo_word": Download,
+  "Apresentação PowerPoint": Presentation,
+  "link_pasta": ExternalLink,
+  "link_documento": ExternalLink,
+  "iFrame Externo": ExternalLink,
+  "Link": ExternalLink
 };
 
 const categoryOptions = [
@@ -158,6 +170,10 @@ export default function Materials() {
     }],
   });
 
+  const { data: materialTypes } = useQuery<{id: number, name: string}[]>({
+    queryKey: ['/api/material-types'],
+  });
+
   const filteredMaterials = materials?.filter(material => {
     const matchesSearch = !searchQuery || 
       material.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -223,11 +239,11 @@ export default function Materials() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="pdf">PDF</SelectItem>
-                    <SelectItem value="text">Artigo</SelectItem>
-                    <SelectItem value="video">Vídeo</SelectItem>
-                    <SelectItem value="link">Link</SelectItem>
-                    <SelectItem value="embed">Embed</SelectItem>
+                    {materialTypes?.map(type => (
+                      <SelectItem key={type.id} value={type.name}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
