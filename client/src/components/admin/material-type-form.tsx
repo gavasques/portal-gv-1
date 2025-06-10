@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -123,6 +123,19 @@ export default function MaterialTypeForm({ materialType, onSubmit, onCancel, isL
       isActive: materialType?.isActive ?? true,
     },
   });
+
+  // Update form when materialType changes
+  React.useEffect(() => {
+    if (materialType) {
+      form.reset({
+        name: materialType.name,
+        description: materialType.description || "",
+        formatType: materialType.formatType as any,
+        displayConfig: materialType.displayConfig as any || {},
+        isActive: materialType.isActive,
+      });
+    }
+  }, [materialType, form]);
 
   const watchedFormatType = form.watch("formatType");
   const selectedOption = formatTypeOptions.find(opt => opt.value === watchedFormatType);

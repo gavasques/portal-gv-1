@@ -497,20 +497,29 @@ export default function AdminCadastros() {
               Adicionar
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className={activeTab === "material-types" ? "max-w-4xl max-h-[90vh] overflow-y-auto" : ""}>
             <DialogHeader>
               <DialogTitle>
                 {editingItem ? `Editar ${getCurrentEntityName()}` : `Novo ${getCurrentEntityName()}`}
               </DialogTitle>
             </DialogHeader>
-            <GenericForm
-              schema={getCurrentSchema()}
-              editingItem={editingItem}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              isLoading={operations.isCreating || operations.isUpdating}
-              entityName={getCurrentEntityName()}
-            />
+            {activeTab === "material-types" ? (
+              <MaterialTypeForm
+                materialType={editingItem}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                isLoading={operations.isCreating || operations.isUpdating}
+              />
+            ) : (
+              <GenericForm
+                schema={getCurrentSchema()}
+                editingItem={editingItem}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                isLoading={operations.isCreating || operations.isUpdating}
+                entityName={getCurrentEntityName()}
+              />
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -556,38 +565,15 @@ export default function AdminCadastros() {
           </div>
 
           <TabsContent value="material-types">
-            {activeTab === "material-types" && isFormOpen ? (
-              <Dialog open={isFormOpen} onOpenChange={(open) => {
-                setIsFormOpen(open);
-                if (!open) {
-                  setEditingItem(null);
-                }
-              }}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingItem ? "Editar Tipo de Material" : "Novo Tipo de Material"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <MaterialTypeForm
-                    materialType={editingItem}
-                    onSubmit={handleSubmit}
-                    onCancel={handleCancel}
-                    isLoading={operations.isCreating || operations.isUpdating}
-                  />
-                </DialogContent>
-              </Dialog>
-            ) : (
-              <ItemGrid
-                items={operations.items}
-                isLoading={operations.isLoading}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                searchQuery={searchQuery}
-                icon={FileType}
-                entityName="tipo de material"
-              />
-            )}
+            <ItemGrid
+              items={operations.items}
+              isLoading={operations.isLoading}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              searchQuery={searchQuery}
+              icon={FileType}
+              entityName="tipo de material"
+            />
           </TabsContent>
 
           <TabsContent value="material-categories">
