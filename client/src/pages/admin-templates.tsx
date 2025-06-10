@@ -221,7 +221,7 @@ export default function AdminTemplates() {
                         </div>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className="font-medium">{template.copyCount}</span>
+                        <span className="font-medium">{template.copyCount || 0}</span>
                       </td>
                       <td className="py-3 px-4 text-center">
                         {getStatusBadge(template.status)}

@@ -722,7 +722,10 @@ export class DatabaseStorage implements IStorage {
 
   async incrementTemplateCopyCount(id: number): Promise<void> {
     await db.update(templates)
-      .set({ copyCount: sql`${templates.copyCount} + 1` })
+      .set({ 
+        copyCount: sql`COALESCE(${templates.copyCount}, 0) + 1`,
+        updatedAt: new Date()
+      })
       .where(eq(templates.id, id));
   }
 

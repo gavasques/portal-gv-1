@@ -30,7 +30,8 @@ Atenciosamente,
     variableTips: "[NOME_FORNECEDOR] - Nome da empresa ou pessoa\n[SEU_NOME] - Seu nome completo\n[SUA_EMPRESA] - Nome da sua empresa\n[CATEGORIA_PRODUTO] - Tipo de produto que deseja importar",
     status: "published",
     language: "pt-BR",
-    tags: ["fornecedor", "primeiro-contato", "importação"]
+    tags: ["fornecedor", "primeiro-contato", "importação"],
+    copyCount: 0
   },
   {
     title: "Negociação de Preços e Condições",

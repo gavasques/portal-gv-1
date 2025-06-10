@@ -274,8 +274,7 @@ export const templateTagRelations = pgTable("template_tag_relations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export type TemplateTagRelation = typeof templateTagRelations.$inferSelect;
-export type InsertTemplateTagRelation = typeof templateTagRelations.$inferInsert;
+
 
 export const templates = pgTable("templates", {
   id: serial("id").primaryKey(),
@@ -719,7 +718,7 @@ export type InsertProductCategory = z.infer<typeof insertProductCategorySchema>;
 export type PartnerCategory = typeof partnerCategories.$inferSelect;
 export type InsertPartnerCategory = z.infer<typeof insertPartnerCategorySchema>;
 
-// Template tag types
+// Template tag types (moved to end to avoid duplicates)
 export type TemplateTag = typeof templateTags.$inferSelect;
 export type InsertTemplateTag = z.infer<typeof insertTemplateTagSchema>;
 export type TemplateTagRelation = typeof templateTagRelations.$inferSelect;

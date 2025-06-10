@@ -32,7 +32,18 @@ export default function TemplateView() {
       await apiRequest(`/api/templates/${id}/copy`, { method: "POST" });
     },
     onSuccess: () => {
+      // Invalida as queries para atualizar a contagem
       queryClient.invalidateQueries({ queryKey: ["/api/templates"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/templates", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/templates"] });
+    },
+    onError: (error) => {
+      console.error('Error tracking copy:', error);
+      toast({
+        title: "Erro ao rastrear cópia",
+        description: "Não foi possível registrar a cópia do template",
+        variant: "destructive",
+      });
     },
   });
 
@@ -131,7 +142,7 @@ export default function TemplateView() {
               <Badge variant="secondary" className="mb-4">{template.category}</Badge>
             </div>
             <div className="text-right text-sm text-muted-foreground">
-              <div>{template.copyCount} cópias</div>
+              <div>{template.copyCount || 0} cópias</div>
             </div>
           </div>
         </CardHeader>

@@ -180,7 +180,9 @@ export default function AdminMaterials() {
       if (!response.ok) throw new Error('Failed to delete material');
     },
     onSuccess: () => {
+      // Invalidate both admin and student material caches
       queryClient.invalidateQueries({ queryKey: ['/api/admin/materials'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/materials'] });
       toast({
         title: "Material excluído",
         description: "O material foi removido com sucesso."

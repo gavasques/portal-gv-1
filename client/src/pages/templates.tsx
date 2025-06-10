@@ -45,7 +45,7 @@ export default function Templates() {
       if (searchQuery) params.append("search", searchQuery);
       if (selectedCategory !== "Todos") params.append("category", selectedCategory);
       if (selectedTags.length > 0) params.append("tags", selectedTags.join(","));
-      
+
       const response = await fetch(`/api/templates?${params}`);
       if (!response.ok) throw new Error("Failed to fetch templates");
       return response.json();
@@ -127,7 +127,7 @@ export default function Templates() {
               className="pl-10"
             />
           </div>
-          
+
           <Select value={selectedCategory} onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Categoria" />
@@ -179,7 +179,7 @@ export default function Templates() {
             <div className="flex flex-wrap gap-2">
               {templateTags.map((tag: any) => {
                 const isSelected = selectedTags.includes(tag.name);
-                
+
                 return (
                   <button
                     key={tag.id}
@@ -244,12 +244,15 @@ export default function Templates() {
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
                     {template.purpose}
                   </p>
-                  <div className="flex justify-end">
+                  <div className="flex justify-between items-center">
                     <Button size="sm" asChild>
                       <Link href={`/templates/${template.id}`}>
                         Ver Template
                       </Link>
                     </Button>
+                    <div className="text-xs text-muted-foreground">
+                      {template.copyCount || 0} cópias
+                    </div>
                   </div>
                 </CardContent>
               </Card>

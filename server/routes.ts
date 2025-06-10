@@ -426,9 +426,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/templates/:id/copy', requireAuth, async (req, res) => {
     try {
       const templateId = parseInt(req.params.id);
+      
+      // Verifica se o template existe
+      const template = await storage.getTemplate(templateId);
+      if (!template) {
+        return res.status(404).json({ message: 'Template not found' });
+      }
+      
+      // Incrementa a contagem
       await storage.incrementTemplateCopyCount(templateId);
-      res.json({ success: true });
+      
+      // Log da atividade do usuário
+      const user = req.user as any;
+      await storage.logUserActivity({
+        userId: user.id,
+        action: 'COPY_TEMPLATE',
+        details: { 
+          templateId, 
+          templateTitle: template.title,
+          category: template.category 
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      res.json({ success: true, message: 'Copy tracked successfully' });
     } catch (error) {
+      console.error('Error tracking template copy:', error);
       res.status(500).json({ message: 'Failed to track copy' });
     }
   });
