@@ -116,46 +116,91 @@ export default function Templates() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Buscar templates..."
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Categoria" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="space-y-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Buscar templates..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <div className="flex border rounded-lg p-1">
-          <Button
-            variant={viewMode === "list" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("list")}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === "cards" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("cards")}
-          >
-            <Grid className="h-4 w-4" />
-          </Button>
+          <div className="flex border rounded-lg p-1">
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("list")}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "cards" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("cards")}
+            >
+              <Grid className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
+
+        {/* Tag Filter Cards */}
+        {templateTags && templateTags.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-muted-foreground">Filtrar por tags:</h3>
+              {(selectedTags.length > 0 || searchQuery || selectedCategory !== "Todos") && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearAllFilters}
+                  className="text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Limpar filtros
+                </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {templateTags.map((tag) => {
+                const isSelected = selectedTags.includes(tag.name);
+                
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagToggle(tag.name)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all hover:scale-105 border ${
+                      isSelected 
+                        ? 'text-white shadow-md border-transparent' 
+                        : 'text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
+                    }`}
+                    style={{
+                      backgroundColor: isSelected ? tag.color : undefined,
+                    }}
+                  >
+                    {tag.name}
+                    {isSelected && <X className="h-3 w-3 ml-1 inline" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -172,13 +217,10 @@ export default function Templates() {
                         <Badge variant="secondary">{template.category}</Badge>
                       </div>
                       <p className="text-muted-foreground mb-4">{template.purpose}</p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{template.copyCount} cópias</span>
-                      </div>
                     </div>
                     <Button asChild>
                       <Link href={`/templates/${template.id}`}>
-                        <Eye className="h-4 w-4 mr-2" />
+                        <FileText className="h-4 w-4 mr-2" />
                         Ver Template
                       </Link>
                     </Button>
@@ -202,10 +244,7 @@ export default function Templates() {
                   <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
                     {template.purpose}
                   </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {template.copyCount} cópias
-                    </span>
+                  <div className="flex justify-end">
                     <Button size="sm" asChild>
                       <Link href={`/templates/${template.id}`}>
                         Ver Template
