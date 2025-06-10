@@ -619,7 +619,15 @@ export default function AdminUsersEnhanced() {
                           <Button
                             size="sm"
                             onClick={() => {
-                              const userData = { ...user, status: 'active' };
+                              const userData = { 
+                                id: user.id,
+                                email: user.email,
+                                fullName: user.fullName,
+                                isActive: user.isActive,
+                                groupId: user.groupId,
+                                status: 'active' as const,
+                                aiCredits: user.aiCredits
+                              };
                               updateUserMutation.mutate(userData);
                             }}
                           >

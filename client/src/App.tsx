@@ -28,6 +28,7 @@ import AdminUsers from "@/pages/admin-users-enhanced";
 import AdminPermissions from "@/pages/admin-permissions";
 import AdminGroups from "@/pages/admin-groups";
 import ResetPassword from "@/pages/reset-password";
+import ProfileSettings from "@/pages/profile-settings";
 import { useAuth } from "./hooks/use-auth";
 import Sidebar from "./components/layout/sidebar";
 import Topbar from "./components/layout/topbar";
@@ -87,6 +88,7 @@ function Router() {
         <Route path="/simulators" component={Simulators} />
         <Route path="/courses" component={Courses} />
         <Route path="/settings" component={Settings} />
+        <Route path="/profile" component={ProfileSettings} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/materials" component={AdminMaterials} />
         <Route path="/admin/cadastros" component={AdminCadastros} />

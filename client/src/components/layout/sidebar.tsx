@@ -156,14 +156,8 @@ const adminMenuGroups = [
       },
       { 
         label: "Grupos de Usuários", 
-        href: "/admin/groups", 
-        icon: Shield,
-        accessLevels: ["admin"]
-      },
-      { 
-        label: "Permissões", 
         href: "/admin/permissions", 
-        icon: Key,
+        icon: Shield,
         accessLevels: ["admin"]
       },
       { 
