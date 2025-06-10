@@ -19,7 +19,8 @@ import {
   FileText,
   Video,
   ExternalLink,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft
 } from "lucide-react";
 import type { Material } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -180,6 +181,7 @@ export default function MaterialView() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [viewTracked, setViewTracked] = useState(false);
   
   const materialId = params?.id ? parseInt(params.id) : null;
 
@@ -188,23 +190,30 @@ export default function MaterialView() {
     enabled: !!materialId,
   });
 
-  const { data: comments = [] } = useQuery<Comment[]>({
-    queryKey: [`/api/materials/${materialId}/comments`],
-    enabled: !!materialId,
-  });
+  // Comments functionality temporarily disabled
+  const comments: any[] = [];
 
-  // Track view when component mounts
+  // Track view only once when component mounts and material is loaded
   useEffect(() => {
-    if (materialId && material) {
-      fetch(`/api/materials/${materialId}/view`, { method: 'POST' })
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: [`/api/materials/${materialId}`] });
-        })
-        .catch(() => {
-          // Silent fail for view tracking
-        });
+    if (materialId && material && !viewTracked) {
+      const sessionKey = `viewed_material_${materialId}`;
+      const hasViewedInSession = sessionStorage.getItem(sessionKey);
+      
+      if (!hasViewedInSession) {
+        fetch(`/api/materials/${materialId}/view`, { method: 'POST' })
+          .then(() => {
+            sessionStorage.setItem(sessionKey, 'true');
+            setViewTracked(true);
+            // Don't invalidate queries to avoid loop
+          })
+          .catch(() => {
+            // Silent fail for view tracking
+          });
+      } else {
+        setViewTracked(true);
+      }
     }
-  }, [materialId, material, queryClient]);
+  }, [materialId, material, viewTracked]);
 
   if (isLoading || !material) {
     return (
@@ -218,22 +227,40 @@ export default function MaterialView() {
     );
   }
 
-  const canAccess = material.accessLevel === "Public" || (user && user.accessLevel !== "Basic");
+  const canAccess = material.accessLevel === "public" || (user && user.groupId !== null);
   const Icon = formatIcons[material.type as keyof typeof formatIcons] || FileText;
-  const isBasicUser = user?.accessLevel === "Basic";
+  const isBasicUser = user?.groupId === null;
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
-        <Link href="/materials" className="hover:text-foreground">
-          Biblioteca
-        </Link>
-        <ChevronRight className="h-4 w-4" />
-        <span className="hover:text-foreground">{material.category}</span>
-        <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground font-medium">{material.title}</span>
-      </nav>
+      {/* Back Button & Breadcrumb */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <Link href="/materials">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Link>
+        </Button>
+        <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <Link href="/materials" className="hover:text-foreground transition-colors">
+            Biblioteca
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <Link 
+            href={`/materials?category=${encodeURIComponent(material.category || '')}`} 
+            className="hover:text-foreground transition-colors"
+          >
+            {material.category}
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-foreground font-medium">{material.title}</span>
+        </nav>
+      </div>
 
       {/* Material Header */}
       <div className="space-y-4">
