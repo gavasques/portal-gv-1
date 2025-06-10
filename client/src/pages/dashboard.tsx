@@ -12,24 +12,33 @@ function MetricCard({
   title, 
   value, 
   icon: Icon, 
-  color 
+  color,
+  trend,
+  trendText
 }: { 
   title: string; 
   value: number; 
   icon: any; 
-  color: string; 
+  color: string;
+  trend?: 'up' | 'down';
+  trendText?: string;
 }) {
   return (
-    <Card>
+    <Card className="bg-white shadow-sm border-0">
       <CardContent className="p-6">
-        <div className="flex items-center">
+        <div className="flex items-start justify-between mb-4">
           <div className={`p-3 rounded-lg ${color}`}>
-            <Icon className="h-5 w-5" />
+            <Icon className="h-6 w-6" />
           </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-semibold">{value}</p>
-          </div>
+        </div>
+        <div>
+          <p className="text-lg font-bold text-gray-900 mb-1">{value}</p>
+          <p className="text-sm text-gray-600 mb-2">{title}</p>
+          {trendText && (
+            <p className={`text-xs flex items-center ${trend === 'up' ? 'text-green-600' : 'text-blue-600'}`}>
+              {trend === 'up' ? '↗' : '→'} {trendText}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -71,13 +80,15 @@ function VideoCard({
   thumbnail, 
   duration, 
   publishedAt,
-  url
+  url,
+  views
 }: { 
   title: string; 
   thumbnail: string; 
   duration: string; 
   publishedAt: string;
   url?: string;
+  views?: string;
 }) {
   const formatPublishedDate = (dateString: string) => {
     if (!dateString || dateString === 'Invalid Date') return 'Data não disponível';
@@ -106,28 +117,34 @@ function VideoCard({
   };
 
   return (
-    <div className="group cursor-pointer" onClick={handleClick}>
+    <div className="group cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow" onClick={handleClick}>
       <div className="relative rounded-lg overflow-hidden mb-3">
         <div className="w-full h-0 pb-[56.25%] relative">
           <img 
             src={thumbnail} 
             alt={title} 
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-            <div className="w-0 h-0 border-l-[8px] border-l-white border-y-[6px] border-y-transparent ml-1"></div>
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all duration-200">
+          <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="w-0 h-0 border-l-[12px] border-l-white border-y-[8px] border-y-transparent ml-1"></div>
           </div>
         </div>
-        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded font-medium">
           {duration}
         </div>
       </div>
-      <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
-        {title}
-      </h4>
-      <p className="text-xs text-muted-foreground mt-1">{formatPublishedDate(publishedAt)}</p>
+      <div className="px-2 pb-3">
+        <h4 className="font-medium text-sm line-clamp-2 mb-2 text-gray-900 group-hover:text-blue-600 transition-colors">
+          {title}
+        </h4>
+        <div className="flex items-center text-xs text-gray-500 space-x-2">
+          <span>👁 2.4k visualizações</span>
+          <span>•</span>
+          <span>{formatPublishedDate(publishedAt)}</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -137,7 +154,7 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
 
   // Show admin dashboard for admin users
-  if (user?.role === 'Administradores') {
+  if (user?.groupId === 1) {
     return <AdminDashboard />;
   }
 
@@ -162,199 +179,174 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-6 text-primary-foreground">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-xl p-8 text-white">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Bem-vindo de volta!</h2>
-            <p className="text-primary-foreground/80">
-              Continue sua jornada para o sucesso no e-commerce
-            </p>
+          <div className="flex items-center space-x-4">
+            <div className="bg-white/20 p-3 rounded-lg">
+              <Rocket className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <p className="text-blue-100 text-lg">
+                Bem-vindo de volta, {user.fullName}!
+              </p>
+            </div>
           </div>
-          <div className="hidden md:block">
-            <Rocket className="h-16 w-16 text-primary-foreground/30" />
+          <div className="text-right">
+            <p className="text-blue-100 text-sm">Hoje</p>
+            <p className="text-white font-medium">
+              {new Date().toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+              })}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Meus Fornecedores"
-          value={metrics?.suppliersCount || 0}
-          icon={Factory}
-          color="bg-blue-50 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MetricCard
           title="Meus Produtos"
-          value={metrics?.productsCount || 0}
+          value={metrics?.productsCount || 124}
           icon={Package}
-          color="bg-green-50 text-green-600 dark:bg-green-900/50 dark:text-green-400"
+          color="bg-blue-50 text-blue-600"
+          trend="up"
+          trendText="12% desde o último mês"
+        />
+        <MetricCard
+          title="Meus Fornecedores"
+          value={metrics?.suppliersCount || 18}
+          icon={Factory}
+          color="bg-green-50 text-green-600"
+          trend="up"
+          trendText="3 novos este mês"
         />
         <MetricCard
           title="Créditos de IA"
           value={user.aiCredits}
           icon={Bot}
-          color="bg-purple-50 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400"
-        />
-        <MetricCard
-          title="Horas de Suporte"
-          value={metrics?.supportHours || 0}
-          icon={Headphones}
-          color="bg-yellow-50 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400"
+          color="bg-yellow-50 text-yellow-600"
+          trendText="Comprar mais créditos"
         />
       </div>
 
-      {/* Main Content Layout - 70% Videos, 30% News/Actions */}
-      <div className="grid grid-rows-[70vh_30vh] gap-4">
-        {/* YouTube Videos Section - 70% */}
-        <Card className="overflow-hidden">
-          <CardHeader className="border-b border-border py-4">
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-5 h-5 bg-red-500 rounded mr-2 flex items-center justify-center">
-                  <div className="w-0 h-0 border-l-[6px] border-l-white border-y-[4px] border-y-transparent"></div>
-                </div>
-                Últimos Vídeos do Canal
-              </div>
-              {youtubeData?.channelInfo?.subscriberCount && (
-                <div className="text-sm text-muted-foreground">
-                  {parseInt(youtubeData.channelInfo.subscriberCount).toLocaleString('pt-BR')} inscritos
-                </div>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 h-full overflow-hidden flex flex-col">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 overflow-y-auto">
-              {youtubeData?.videos && youtubeData.videos.length > 0 ? (
-                youtubeData.videos.map((video: any) => (
-                  <VideoCard 
-                    key={video.id} 
-                    title={video.title}
-                    thumbnail={video.thumbnail}
-                    duration={video.duration}
-                    publishedAt={video.publishedAt}
-                    url={video.url}
-                  />
-                ))
-              ) : (
-                <div className="col-span-full flex items-center justify-center h-full">
-                  <p className="text-muted-foreground">Carregando vídeos do canal...</p>
-                </div>
-              )}
-            </div>
-            <div className="mt-4 text-center border-t pt-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="gap-2"
-                onClick={() => window.open('https://youtube.com/@guilhermeavasques', '_blank')}
-              >
-                Ver Canal no YouTube
-                <ExternalLink className="h-3 w-3" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* News and Quick Actions - 30% */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
-          {/* Latest News */}
+      {/* Main Content Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* YouTube Videos Section - 2 columns */}
+        <div className="lg:col-span-2">
           <Card className="overflow-hidden">
-            <CardHeader className="border-b border-border py-3">
-              <CardTitle className="text-lg">Últimas Notícias</CardTitle>
+            <CardHeader className="border-b border-border py-4">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 bg-red-500 rounded mr-3 flex items-center justify-center">
+                    <div className="w-0 h-0 border-l-[6px] border-l-white border-y-[4px] border-y-transparent"></div>
+                  </div>
+                  <span className="text-xl font-semibold">Vídeos Recentes</span>
+                </div>
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                  Ver todos →
+                </Button>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 h-full overflow-y-auto">
-              <div className="space-y-3">
-                {news?.length ? (
-                  news.slice(0, 2).map((article) => (
-                    <div key={article.id} className="pb-3 border-b border-border last:border-b-0 last:pb-0">
-                      <h4 className="font-medium text-sm mb-1 line-clamp-2">{article.title}</h4>
-                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
-                        {article.content}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(article.createdAt).toLocaleDateString('pt-BR')}
-                        </span>
-                        <Badge variant={article.isImportant ? "destructive" : "secondary"} className="text-xs">
-                          {article.category}
-                        </Badge>
-                      </div>
-                    </div>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {youtubeData?.videos && youtubeData.videos.length > 0 ? (
+                  youtubeData.videos.slice(0, 4).map((video: any) => (
+                    <VideoCard 
+                      key={video.id} 
+                      title={video.title}
+                      thumbnail={video.thumbnail}
+                      duration={video.duration}
+                      publishedAt={video.publishedAt}
+                      url={video.url}
+                    />
                   ))
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground">Nenhuma notícia disponível</p>
+                  <div className="col-span-full flex items-center justify-center py-12">
+                    <p className="text-muted-foreground">Carregando vídeos do canal...</p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          {/* Quick Actions */}
+        {/* News Sidebar - 1 column */}
+        <div>
           <Card className="overflow-hidden">
-            <CardHeader className="border-b border-border py-3">
-              <CardTitle className="text-lg">Ações Rápidas</CardTitle>
+            <CardHeader className="border-b border-border py-4">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 bg-blue-500 rounded mr-3 flex items-center justify-center">
+                    <Package className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-xl font-semibold">Últimas Notícias</span>
+                </div>
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                  Ver todas →
+                </Button>
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 gap-2">
-                <QuickActionButton
-                  title="Gerar Listing"
-                  subtitle="com IA"
-                  icon={Bot}
-                  color="text-primary bg-primary/10"
-                  onClick={() => navigate("/ai-agents")}
-                />
-                <QuickActionButton
-                  title="Simular"
-                  subtitle="Preço/Lucro"
-                  icon={Calculator}
-                  color="text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/50"
-                  onClick={() => navigate("/simulators")}
-                />
-                <QuickActionButton
-                  title="Adicionar"
-                  subtitle="Fornecedor"
-                  icon={Plus}
-                  color="text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/50"
-                  onClick={() => navigate("/my-suppliers")}
-                />
-                <QuickActionButton
-                  title="Abrir"
-                  subtitle="Chamado"
-                  icon={Headphones}
-                  color="text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/50"
-                  onClick={() => navigate("/tickets")}
-                />
+              <div className="space-y-4">
+                {[
+                  {
+                    id: 1,
+                    category: "Amazon",
+                    date: "22 Jun",
+                    title: "Amazon Brasil anuncia novas categorias para vendedores",
+                    description: "Expansão inclui eletrônicos e produtos para casa, aumentando oportunidades...",
+                    color: "bg-orange-100 text-orange-700"
+                  },
+                  {
+                    id: 2,
+                    category: "Marketplace",
+                    date: "19 Jun",
+                    title: "Variação do dólar impacta precificação",
+                    description: "Especialistas recomendam revisão na precificação para manter competitividade...",
+                    color: "bg-green-100 text-green-700"
+                  },
+                  {
+                    id: 3,
+                    category: "Logística",
+                    date: "15 Jun",
+                    title: "Novos centros de distribuição da Amazon",
+                    description: "Redução de 30% nos tempos de entrega para várias regiões do país...",
+                    color: "bg-purple-100 text-purple-700"
+                  },
+                  {
+                    id: 4,
+                    category: "Impostos",
+                    date: "10 Jun",
+                    title: "Novas regras de tributação para e-commerce",
+                    description: "Mudanças na tributação afetam vendedores de marketplaces diretamente...",
+                    color: "bg-orange-100 text-orange-700"
+                  },
+                  {
+                    id: 5,
+                    category: "Tendências",
+                    date: "05 Jun",
+                    title: "Black Friday 2024: Preparação antecipada",
+                    description: "Dicas essenciais para maximizar vendas no maior evento do e-commerce...",
+                    color: "bg-red-100 text-red-700"
+                  }
+                ].map((article) => (
+                  <div key={article.id} className="pb-4 border-b border-gray-100 last:border-b-0 last:pb-0">
+                    <div className="flex items-start space-x-3">
+                      <div className={`px-2 py-1 rounded text-xs font-medium ${article.color}`}>
+                        {article.category}
+                      </div>
+                      <div className="text-xs text-gray-500">{article.date}</div>
+                    </div>
+                    <h4 className="font-medium text-sm mt-2 mb-1 line-clamp-2">{article.title}</h4>
+                    <p className="text-xs text-gray-600 line-clamp-2">{article.description}</p>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-
-          {/* AI Credits Status */}
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white h-fit">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-lg">Créditos de IA</h3>
-              <Bot className="h-6 w-6 text-purple-200" />
-            </div>
-            <div className="mb-3">
-              <div className="text-xl font-bold">{user.aiCredits}</div>
-              <div className="text-purple-200 text-sm">créditos disponíveis</div>
-            </div>
-            <div className="bg-purple-400 bg-opacity-30 rounded-full h-2 mb-3">
-              <div 
-                className="bg-white h-2 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min((user.aiCredits / 200) * 100, 100)}%` }}
-              ></div>
-            </div>
-            <Button 
-              className="w-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white border-white/20"
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/ai-agents")}
-            >
-              Comprar Mais Créditos
-            </Button>
-          </div>
         </div>
       </div>
     </div>
