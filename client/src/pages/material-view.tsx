@@ -1,29 +1,23 @@
 import { useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useRoute, Link } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
 import MaterialContentRenderer from "@/components/materials/material-content-renderer";
 import { 
   ChevronRight, 
-  Download, 
   Eye, 
   Globe, 
   Lock, 
-  MessageSquare, 
-  Send,
+  ArrowLeft,
   FileText,
   Video,
-  ExternalLink,
-  ArrowRight,
-  ArrowLeft
+  Download,
+  ExternalLink
 } from "lucide-react";
 import type { Material } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
 
 const formatIcons = {
   pdf: Download,
@@ -33,154 +27,9 @@ const formatIcons = {
   embed: ExternalLink
 };
 
-function CTABanner() {
-  return (
-    <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold mb-2">Acesso Limitado</h3>
-            <p className="mb-4 opacity-90">
-              Este é um material exclusivo para alunos. Faça upgrade do seu plano para acessar 
-              este e centenas de outros conteúdos exclusivos.
-            </p>
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm">
-                Ver Planos
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-              <Button variant="outline" size="sm" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-                Saiba Mais
-              </Button>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <Lock className="h-16 w-16 opacity-30" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function CommentSection({ materialId, comments }: { materialId: number; comments: Comment[] }) {
-  const [newComment, setNewComment] = useState("");
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const { mutate: addComment, isPending } = useMutation({
-    mutationFn: async (content: string) => {
-      const response = await fetch(`/api/materials/${materialId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-      if (!response.ok) throw new Error('Failed to add comment');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/materials/${materialId}/comments`] });
-      setNewComment("");
-      toast({
-        title: "Comentário adicionado",
-        description: "Seu comentário foi publicado com sucesso."
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Erro",
-        description: "Não foi possível adicionar o comentário.",
-        variant: "destructive"
-      });
-    }
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim() && user) {
-      addComment(newComment.trim());
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <MessageSquare className="h-5 w-5 mr-2" />
-          Comentários ({comments.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Add Comment Form */}
-        {user ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Textarea
-              placeholder="Compartilhe seus insights sobre este material..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              rows={3}
-            />
-            <div className="flex justify-end">
-              <Button type="submit" disabled={!newComment.trim() || isPending}>
-                <Send className="h-4 w-4 mr-2" />
-                Publicar Comentário
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <div className="text-center py-6 border border-dashed rounded-lg">
-            <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-muted-foreground mb-3">Faça login para comentar</p>
-            <Link href="/login">
-              <Button variant="outline" size="sm">Fazer Login</Button>
-            </Link>
-          </div>
-        )}
-
-        {/* Comments List */}
-        <div className="space-y-4">
-          {comments.length === 0 ? (
-            <div className="text-center py-8">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-medium mb-2">Nenhum comentário ainda</h3>
-              <p className="text-sm text-muted-foreground">
-                Seja o primeiro a comentar sobre este material
-              </p>
-            </div>
-          ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="border-b border-border pb-4 last:border-b-0">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-medium">
-                    {comment.user?.fullName?.charAt(0) || comment.user?.email.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-sm">
-                        {comment.user?.fullName || comment.user?.email.split('@')[0]}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(comment.createdAt).toLocaleDateString('pt-BR')}
-                      </span>
-                    </div>
-                    <p className="text-sm leading-relaxed">{comment.content}</p>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function MaterialView() {
   const [, params] = useRoute("/materials/:id");
   const { user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [viewTracked, setViewTracked] = useState(false);
   
   const materialId = params?.id ? parseInt(params.id) : null;
@@ -190,10 +39,7 @@ export default function MaterialView() {
     enabled: !!materialId,
   });
 
-  // Comments functionality temporarily disabled
-  const comments: any[] = [];
-
-  // Track view only once when component mounts and material is loaded
+  // Track view only once per session
   useEffect(() => {
     if (materialId && material && !viewTracked) {
       const sessionKey = `viewed_material_${materialId}`;
@@ -204,7 +50,6 @@ export default function MaterialView() {
           .then(() => {
             sessionStorage.setItem(sessionKey, 'true');
             setViewTracked(true);
-            // Don't invalidate queries to avoid loop
           })
           .catch(() => {
             // Silent fail for view tracking
@@ -229,7 +74,6 @@ export default function MaterialView() {
 
   const canAccess = material.accessLevel === "public" || (user && user.groupId !== null);
   const Icon = formatIcons[material.type as keyof typeof formatIcons] || FileText;
-  const isBasicUser = user?.groupId === null;
 
   return (
     <div className="space-y-6">
@@ -269,7 +113,7 @@ export default function MaterialView() {
             <div className="flex items-center space-x-3">
               <Icon className="h-6 w-6 text-primary" />
               <Badge variant={canAccess ? "default" : "secondary"}>
-                {material.accessLevel === "Public" ? (
+                {material.accessLevel === "public" ? (
                   <>
                     <Globe className="h-3 w-3 mr-1" />
                     Público
@@ -297,9 +141,6 @@ export default function MaterialView() {
         </div>
       </div>
 
-      {/* CTA Banner for Basic Users on Restricted Content */}
-      {isBasicUser && material.accessLevel !== "Public" && <CTABanner />}
-
       {/* Main Content */}
       {canAccess ? (
         <Card>
@@ -319,9 +160,6 @@ export default function MaterialView() {
           </CardContent>
         </Card>
       )}
-
-      {/* Comments Section */}
-      <CommentSection materialId={material.id} comments={comments} />
     </div>
   );
 }
