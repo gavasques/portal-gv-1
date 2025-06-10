@@ -22,7 +22,8 @@ import {
   Shield,
   UserCheck,
   Database,
-  Key
+  Key,
+  ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -168,7 +169,7 @@ const adminMenuGroups = [
       { 
         label: "Controle de Acesso", 
         href: "/admin/access", 
-        icon: Lock,
+        icon: ShieldCheck,
         accessLevels: ["admin"]
       }
     ]
