@@ -753,7 +753,7 @@ export class DatabaseStorage implements IStorage {
 
     const [ticketsResult] = await db.select({
       count: sql<number>`COUNT(*)`,
-    }).from(tickets).where(and(eq(tickets.userId, userId), eq(tickets.status, 'open')));```text
+    }).from(tickets).where(and(eq(tickets.userId, userId), eq(tickets.status, 'open')));
 
     return {
       suppliersCount: suppliersResult?.count || 0,
@@ -775,10 +775,14 @@ export class DatabaseStorage implements IStorage {
       .from(authTokens)
       .where(and(
         eq(authTokens.token, token),
-        eq(authTokens.used, false),
-        sql`${authTokens.expiresAt} > NOW()`
+        eq(authTokens.used, false)
       ));
-    return authToken || undefined;
+    
+    // Check expiration in JavaScript
+    if (authToken && authToken.expiresAt > new Date()) {
+      return authToken;
+    }
+    return undefined;
   }
 
   async markTokenAsUsed(token: string): Promise<void> {
@@ -791,7 +795,10 @@ export class DatabaseStorage implements IStorage {
   async cleanupExpiredTokens(): Promise<void> {
     await db
       .delete(authTokens)
-      .where(sql`${authTokens.expiresAt} < NOW() OR ${authTokens.used} = true`);
+      .where(or(
+        sql`expires_at < NOW()`,
+        eq(authTokens.used, true)
+      ));
   }
 
   // Cadastros - Material Types
