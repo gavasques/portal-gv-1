@@ -85,6 +85,15 @@ export const materialTypes = pgTable("material_types", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Material categories management
+export const materialCategories = pgTable("material_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const softwareTypes = pgTable("software_types", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
@@ -639,6 +648,11 @@ export const insertMaterialTypeSchema = createInsertSchema(materialTypes).omit({
   createdAt: true,
 });
 
+export const insertMaterialCategorySchema = createInsertSchema(materialCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertSoftwareTypeSchema = createInsertSchema(softwareTypes).omit({
   id: true,
   createdAt: true,
@@ -709,6 +723,8 @@ export type InsertUserActivityLog = z.infer<typeof insertUserActivityLogSchema>;
 // Cadastros types
 export type MaterialType = typeof materialTypes.$inferSelect;
 export type InsertMaterialType = z.infer<typeof insertMaterialTypeSchema>;
+export type MaterialCategory = typeof materialCategories.$inferSelect;
+export type InsertMaterialCategory = z.infer<typeof insertMaterialCategorySchema>;
 export type SoftwareType = typeof softwareTypes.$inferSelect;
 export type InsertSoftwareType = z.infer<typeof insertSoftwareTypeSchema>;
 export type SupplierType = typeof supplierTypes.$inferSelect;

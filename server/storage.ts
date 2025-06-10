@@ -1,7 +1,7 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, tickets, ticketFiles, ticketMessages,
   materials, news, reviews, userGroups, permissions, groupPermissions, userActivityLog, authTokens,
-  materialTypes, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags, templateTagRelations
+  materialTypes, materialCategories, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags, templateTagRelations
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -12,7 +12,7 @@ import type {
   Ticket, InsertTicket, Material, InsertMaterial, News, InsertNews, Review, InsertReview,
   UserGroup, InsertUserGroup, Permission, InsertPermission, GroupPermission, InsertGroupPermission,
   UserActivityLog, InsertUserActivityLog, AuthToken, InsertAuthToken,
-  MaterialType, InsertMaterialType, SoftwareType, InsertSoftwareType, SupplierType, InsertSupplierType,
+  MaterialType, InsertMaterialType, MaterialCategory, InsertMaterialCategory, SoftwareType, InsertSoftwareType, SupplierType, InsertSupplierType,
   ProductCategory, InsertProductCategory, PartnerCategory, InsertPartnerCategory,
   TemplateTag, InsertTemplateTag
 } from "@shared/schema";
