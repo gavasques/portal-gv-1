@@ -1,1 +1,1 @@
-export { default } from "./admin-permissions-fixed";
+export { default } from "./admin-permissions-improved";

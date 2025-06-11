@@ -282,22 +282,23 @@ export default function AdminPermissions() {
         <p className="text-muted-foreground">Configure permissões de grupos e níveis de acesso</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Groups List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Users className="h-5 w-5 mr-2" />
-                Grupos de Usuários
-              </div>
-              <Dialog open={isCreateGroupOpen} onOpenChange={setIsCreateGroupOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Novo Grupo
-                  </Button>
-                </DialogTrigger>
+      <div className="grid grid-cols-12 gap-6">
+        {/* Groups List - Sidebar */}
+        <div className="col-span-12 lg:col-span-3">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  Grupos de Usuários
+                </div>
+                <Dialog open={isCreateGroupOpen} onOpenChange={setIsCreateGroupOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Novo
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Criar Novo Grupo</DialogTitle>
