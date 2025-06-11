@@ -10,7 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Edit, Trash2, Package, Settings, Search, FileType, Layers, Code, Truck, ShoppingCart, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Edit, Trash2, Package, Settings, Search, FileType, Layers, Code, Truck, ShoppingCart, Users, ChevronDown } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -524,119 +525,150 @@ export default function AdminCadastros() {
         </Dialog>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="material-types" className="flex items-center gap-2">
-            <FileType className="h-4 w-4" />
-            Tipos de Materiais
-          </TabsTrigger>
-          <TabsTrigger value="material-categories" className="flex items-center gap-2">
-            <Layers className="h-4 w-4" />
-            Categorias de Materiais
-          </TabsTrigger>
-          <TabsTrigger value="software-types" className="flex items-center gap-2">
-            <Code className="h-4 w-4" />
-            Tipos de Softwares
-          </TabsTrigger>
-          <TabsTrigger value="supplier-types" className="flex items-center gap-2">
-            <Truck className="h-4 w-4" />
-            Tipos de Fornecedores
-          </TabsTrigger>
-          <TabsTrigger value="product-categories" className="flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4" />
-            Categorias de Produtos
-          </TabsTrigger>
-          <TabsTrigger value="partner-categories" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Categorias de Parceiros
-          </TabsTrigger>
-        </TabsList>
-
-        <div className="mt-6">
-          {/* Search */}
-          <div className="relative max-w-sm mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+      <Card className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold">Área de Cadastros</h2>
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-[280px]">
+                <div className="flex items-center gap-2">
+                  {activeTab === "material-types" && <FileType className="h-4 w-4" />}
+                  {activeTab === "material-categories" && <Layers className="h-4 w-4" />}
+                  {activeTab === "software-types" && <Code className="h-4 w-4" />}
+                  {activeTab === "supplier-types" && <Truck className="h-4 w-4" />}
+                  {activeTab === "product-categories" && <ShoppingCart className="h-4 w-4" />}
+                  {activeTab === "partner-categories" && <Users className="h-4 w-4" />}
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="material-types">
+                  <div className="flex items-center gap-2">
+                    <FileType className="h-4 w-4" />
+                    Tipos de Materiais
+                  </div>
+                </SelectItem>
+                <SelectItem value="material-categories">
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-4 w-4" />
+                    Categorias de Materiais
+                  </div>
+                </SelectItem>
+                <SelectItem value="software-types">
+                  <div className="flex items-center gap-2">
+                    <Code className="h-4 w-4" />
+                    Tipos de Softwares
+                  </div>
+                </SelectItem>
+                <SelectItem value="supplier-types">
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    Tipos de Fornecedores
+                  </div>
+                </SelectItem>
+                <SelectItem value="product-categories">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Categorias de Produtos
+                  </div>
+                </SelectItem>
+                <SelectItem value="partner-categories">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Categorias de Parceiros
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          <TabsContent value="material-types">
-            <ItemGrid
-              items={operations.items}
-              isLoading={operations.isLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              searchQuery={searchQuery}
-              icon={FileType}
-              entityName="tipo de material"
-            />
-          </TabsContent>
-
-          <TabsContent value="material-categories">
-            <ItemGrid
-              items={operations.items}
-              isLoading={operations.isLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              searchQuery={searchQuery}
-              icon={Layers}
-              entityName="categoria de material"
-            />
-          </TabsContent>
-
-          <TabsContent value="software-types">
-            <ItemGrid
-              items={operations.items}
-              isLoading={operations.isLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              searchQuery={searchQuery}
-              icon={Code}
-              entityName="tipo de software"
-            />
-          </TabsContent>
-
-          <TabsContent value="supplier-types">
-            <ItemGrid
-              items={operations.items}
-              isLoading={operations.isLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              searchQuery={searchQuery}
-              icon={Truck}
-              entityName="tipo de fornecedor"
-            />
-          </TabsContent>
-
-          <TabsContent value="product-categories">
-            <ItemGrid
-              items={operations.items}
-              isLoading={operations.isLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              searchQuery={searchQuery}
-              icon={ShoppingCart}
-              entityName="categoria de produto"
-            />
-          </TabsContent>
-
-          <TabsContent value="partner-categories">
-            <ItemGrid
-              items={operations.items}
-              isLoading={operations.isLoading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              searchQuery={searchQuery}
-              icon={Users}
-              entityName="categoria de parceiro"
-            />
-          </TabsContent>
         </div>
-      </Tabs>
+      </Card>
+
+      <div className="space-y-6">
+        {/* Search */}
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Buscar..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Content based on selected tab */}
+        {activeTab === "material-types" && (
+          <ItemGrid
+            items={operations.items}
+            isLoading={operations.isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchQuery={searchQuery}
+            icon={FileType}
+            entityName="tipo de material"
+          />
+        )}
+
+        {activeTab === "material-categories" && (
+          <ItemGrid
+            items={operations.items}
+            isLoading={operations.isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchQuery={searchQuery}
+            icon={Layers}
+            entityName="categoria de material"
+          />
+        )}
+
+        {activeTab === "software-types" && (
+          <ItemGrid
+            items={operations.items}
+            isLoading={operations.isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchQuery={searchQuery}
+            icon={Code}
+            entityName="tipo de software"
+          />
+        )}
+
+        {activeTab === "supplier-types" && (
+          <ItemGrid
+            items={operations.items}
+            isLoading={operations.isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchQuery={searchQuery}
+            icon={Truck}
+            entityName="tipo de fornecedor"
+          />
+        )}
+
+        {activeTab === "product-categories" && (
+          <ItemGrid
+            items={operations.items}
+            isLoading={operations.isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchQuery={searchQuery}
+            icon={ShoppingCart}
+            entityName="categoria de produto"
+          />
+        )}
+
+        {activeTab === "partner-categories" && (
+          <ItemGrid
+            items={operations.items}
+            isLoading={operations.isLoading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchQuery={searchQuery}
+            icon={Users}
+            entityName="categoria de parceiro"
+          />
+        )}
+      </div>
     </div>
   );
 }
