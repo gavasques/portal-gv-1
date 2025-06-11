@@ -267,8 +267,8 @@ export default function AdminPartners() {
     updatePartnerMutation.mutate({ id: partnerId, data: formData });
   };
 
-  const renderStars = (rating: number) => {
-    const safeRating = rating || 0;
+  const renderStars = (rating: number | string | undefined) => {
+    const safeRating = Number(rating) || 0;
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
@@ -665,7 +665,7 @@ export default function AdminPartners() {
                       <div className="flex items-center justify-center space-x-1">
                         {renderStars(partner.averageRating)}
                         <span className="text-sm text-muted-foreground ml-2">
-                          {(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0})
+                          {Number(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0})
                         </span>
                       </div>
                     </TableCell>
