@@ -145,6 +145,53 @@ export const partners = pgTable("partners", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const partnerContacts = pgTable("partner_contacts", {
+  id: serial("id").primaryKey(),
+  partnerId: integer("partner_id").notNull().references(() => partners.id),
+  name: text("name").notNull(),
+  position: text("position"),
+  email: text("email"),
+  phone: text("phone"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const partnerReviews = pgTable("partner_reviews", {
+  id: serial("id").primaryKey(),
+  partnerId: integer("partner_id").notNull().references(() => partners.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  rating: integer("rating").notNull(),
+  comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const partnerComments = pgTable("partner_comments", {
+  id: serial("id").primaryKey(),
+  partnerId: integer("partner_id").notNull().references(() => partners.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  parentId: integer("parent_id").references(() => partnerComments.id),
+  likes: integer("likes").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const partnerCommentLikes = pgTable("partner_comment_likes", {
+  id: serial("id").primaryKey(),
+  commentId: integer("comment_id").notNull().references(() => partnerComments.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const partnerFiles = pgTable("partner_files", {
+  id: serial("id").primaryKey(),
+  partnerId: integer("partner_id").notNull().references(() => partners.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  filePath: text("file_path").notNull(),
+  fileType: text("file_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const suppliers = pgTable("suppliers", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -429,17 +476,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   reviews: many(reviews),
 }));
 
-export const partnersRelations = relations(partners, ({ one, many }) => ({
-  category: one(partnerCategories, {
-    fields: [partners.categoryId],
-    references: [partnerCategories.id],
-  }),
-  reviews: many(reviews),
-}));
 
-export const partnerCategoriesRelations = relations(partnerCategories, ({ many }) => ({
-  partners: many(partners),
-}));
 
 export const suppliersRelations = relations(suppliers, ({ many, one }) => ({
   branches: many(supplierBranches),
@@ -592,6 +629,75 @@ export const templateTagRelationsRelations = relations(templateTagRelations, ({ 
 
 export const templatesRelations = relations(templates, ({ many }) => ({
   tagRelations: many(templateTagRelations),
+}));
+
+// Partner relations
+export const partnerCategoriesRelations = relations(partnerCategories, ({ many }) => ({
+  partners: many(partners),
+}));
+
+export const partnersRelations = relations(partners, ({ one, many }) => ({
+  category: one(partnerCategories, {
+    fields: [partners.categoryId],
+    references: [partnerCategories.id],
+  }),
+  contacts: many(partnerContacts),
+  reviews: many(partnerReviews),
+  comments: many(partnerComments),
+  files: many(partnerFiles),
+}));
+
+export const partnerContactsRelations = relations(partnerContacts, ({ one }) => ({
+  partner: one(partners, {
+    fields: [partnerContacts.partnerId],
+    references: [partners.id],
+  }),
+}));
+
+export const partnerReviewsRelations = relations(partnerReviews, ({ one }) => ({
+  partner: one(partners, {
+    fields: [partnerReviews.partnerId],
+    references: [partners.id],
+  }),
+  user: one(users, {
+    fields: [partnerReviews.userId],
+    references: [users.id],
+  }),
+}));
+
+export const partnerCommentsRelations = relations(partnerComments, ({ one, many }) => ({
+  partner: one(partners, {
+    fields: [partnerComments.partnerId],
+    references: [partners.id],
+  }),
+  user: one(users, {
+    fields: [partnerComments.userId],
+    references: [users.id],
+  }),
+  parent: one(partnerComments, {
+    fields: [partnerComments.parentId],
+    references: [partnerComments.id],
+  }),
+  replies: many(partnerComments),
+  likes: many(partnerCommentLikes),
+}));
+
+export const partnerCommentLikesRelations = relations(partnerCommentLikes, ({ one }) => ({
+  comment: one(partnerComments, {
+    fields: [partnerCommentLikes.commentId],
+    references: [partnerComments.id],
+  }),
+  user: one(users, {
+    fields: [partnerCommentLikes.userId],
+    references: [users.id],
+  }),
+}));
+
+export const partnerFilesRelations = relations(partnerFiles, ({ one }) => ({
+  partner: one(partners, {
+    fields: [partnerFiles.partnerId],
+    references: [partners.id],
+  }),
 }));
 
 // Insert schemas
