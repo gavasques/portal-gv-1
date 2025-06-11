@@ -248,19 +248,21 @@ export default function Templates() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
             {paginatedTemplates.map((template: any) => (
-              <Card key={template.id} className="hover:shadow-md transition-shadow">
+              <Card key={template.id} className="hover:shadow-md transition-shadow h-full flex flex-col">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <FileText className="h-8 w-8 text-primary" />
                     <Badge variant="secondary">{template.category}</Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <CardTitle className="text-lg mb-2">{template.title}</CardTitle>
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                    {template.purpose}
-                  </p>
-                  <div className="flex justify-between items-center">
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <CardTitle className="text-lg mb-2">{template.title}</CardTitle>
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                      {template.purpose}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
                     <Button size="sm" asChild>
                       <Link href={`/templates/${template.id}`}>
                         Ver Template

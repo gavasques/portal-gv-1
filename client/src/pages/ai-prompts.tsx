@@ -214,53 +214,57 @@ export default function AiPrompts() {
           const isExpanded = expandedPrompt === prompt.id;
           
           return (
-            <Card key={prompt.id} className="transition-all duration-200 hover:shadow-md cursor-pointer h-fit" onClick={() => toggleExpand(prompt.id)}>
-              <CardHeader className="pb-3">
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2 min-w-0 flex-1">
-                      <Icon className="h-4 w-4 text-primary shrink-0" />
-                      <h3 className="font-semibold text-sm truncate">{prompt.title}</h3>
-                    </div>
-                    <div className="flex items-center space-x-1 shrink-0">
-                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                        <Eye className="h-3 w-3" />
-                        <span>{prompt.useCount}</span>
+            <Card key={prompt.id} className="transition-all duration-200 hover:shadow-md cursor-pointer flex flex-col h-full" onClick={() => toggleExpand(prompt.id)}>
+              <CardHeader className="pb-3 flex-1">
+                <div className="h-full flex flex-col justify-between space-y-3">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-2 min-w-0 flex-1">
+                        <Icon className="h-4 w-4 text-primary shrink-0" />
+                        <h3 className="font-semibold text-sm truncate">{prompt.title}</h3>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleExpand(prompt.id);
-                        }}
-                        className="h-6 w-6 p-0"
-                      >
-                        {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                      </Button>
+                      <div className="flex items-center space-x-1 shrink-0">
+                        <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                          <Eye className="h-3 w-3" />
+                          <span>{prompt.useCount}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleExpand(prompt.id);
+                          }}
+                          className="h-6 w-6 p-0"
+                        >
+                          {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                        </Button>
+                      </div>
                     </div>
+                    
+                    <div className="flex flex-wrap gap-1">
+                      <Badge className={`${categoryColors[prompt.category as keyof typeof categoryColors]} text-xs`}>
+                        {prompt.category}
+                      </Badge>
+                      {prompt.isFeatured && (
+                        <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs">
+                          Testado e Aprovado
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                      {prompt.description}
+                    </p>
                   </div>
                   
-                  {prompt.isFeatured && (
-                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs w-fit">
-                      ⭐ DESTACADO
-                    </Badge>
-                  )}
-                  
-                  <div className="flex flex-wrap gap-1">
-                    <Badge className={`${categoryColors[prompt.category as keyof typeof categoryColors]} text-xs`}>
-                      {prompt.category}
-                    </Badge>
+                  <div className="min-h-[24px] flex items-center">
                     {prompt.isFeatured && (
-                      <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs">
-                        Testado e Aprovado
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs w-fit">
+                        ⭐ DESTACADO
                       </Badge>
                     )}
                   </div>
-                  
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                    {prompt.description}
-                  </p>
                 </div>
               </CardHeader>
               
