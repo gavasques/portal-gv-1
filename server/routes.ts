@@ -1730,6 +1730,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin partners routes
+  app.get('/api/admin/partners', requireAuth, requireRole(['Administradores']), async (req: express.Request, res: express.Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const partners = await storage.getPartners(limit, offset);
+      res.json(partners);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load partners' });
+    }
+  });
+
+  app.post('/api/admin/partners', requireAuth, requireRole(['Administradores']), async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerData = insertPartnerSchema.parse(req.body);
+      const partner = await storage.createPartner(partnerData);
+      res.json(partner);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create partner' });
+    }
+  });
+
+  app.put('/api/admin/partners/:id', requireAuth, requireRole(['Administradores']), async (req: express.Request, res: express.Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertPartnerSchema.partial().parse(req.body);
+      const partner = await storage.updatePartner(id, updates);
+      res.json(partner);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update partner' });
+    }
+  });
+
+  app.delete('/api/admin/partners/:id', requireAuth, requireRole(['Administradores']), async (req: express.Request, res: express.Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePartner(id);
+      res.json({ message: 'Partner deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete partner' });
+    }
+  });
+
+  // Partner contacts routes
+  app.get('/api/partners/:id/contacts', async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const contacts = await storage.getPartnerContacts(partnerId);
+      res.json(contacts);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load contacts' });
+    }
+  });
+
+  // Partner reviews routes
+  app.get('/api/partners/:id/reviews', async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const reviews = await storage.getPartnerReviews(partnerId);
+      res.json(reviews);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load reviews' });
+    }
+  });
+
+  app.post('/api/partners/:id/reviews', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const userId = (req.user as any).id;
+      const { rating, comment } = req.body;
+      
+      const review = await storage.createPartnerReview({
+        partnerId,
+        userId,
+        rating,
+        comment
+      });
+      res.json(review);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create review' });
+    }
+  });
+
+  // Partner comments routes
+  app.get('/api/partners/:id/comments', async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const comments = await storage.getPartnerComments(partnerId);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load comments' });
+    }
+  });
+
+  app.post('/api/partners/:id/comments', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const userId = (req.user as any).id;
+      const { content, parentId } = req.body;
+      
+      const comment = await storage.createPartnerComment({
+        partnerId,
+        userId,
+        content,
+        parentId: parentId || null
+      });
+      res.json(comment);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create comment' });
+    }
+  });
+
+  app.post('/api/partners/:id/comments/:commentId/like', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const commentId = parseInt(req.params.commentId);
+      const userId = (req.user as any).id;
+      
+      const result = await storage.toggleCommentLike(commentId, userId);
+      res.json(result);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to like comment' });
+    }
+  });
+
+  // Partner files routes
+  app.get('/api/partners/:id/files', async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerId = parseInt(req.params.id);
+      const files = await storage.getPartnerFiles(partnerId);
+      res.json(files);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load files' });
+    }
+  });
+
   // Suppliers routes
   app.get('/api/suppliers', async (req: express.Request, res: express.Response) => {
     try {

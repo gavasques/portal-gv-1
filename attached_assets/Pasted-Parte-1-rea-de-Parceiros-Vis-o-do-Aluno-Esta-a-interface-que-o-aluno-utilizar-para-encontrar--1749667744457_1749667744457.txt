@@ -1,0 +1,53 @@
+Parte 1: Área de Parceiros (Visão do Aluno)
+Esta é a interface que o aluno utilizará para encontrar e interagir com os parceiros de serviço.
+
+Tela 1.1: Diretório de Parceiros (Listagem Geral)
+Objetivo: Permitir que os alunos encontrem e filtrem prestadores de serviço (contadores, fotógrafos, etc.) validados pela comunidade e pela equipe.
+Componentes:
+Cabeçalho: Título "Parceiros" e um subtítulo como "Serviços e profissionais para acelerar seu negócio."
+Barra de Ferramentas:
+Campo de Busca por nome ou serviço.
+Filtro suspenso por "Categoria de Serviço".
+Botão de alternância (toggle) para mostrar "Apenas com Selo de Verificação".
+Controles para alternar a visualização entre Lista (Padrão) e Cards.
+Área de Listagem:
+Visualização em Lista (Padrão): Tabela com colunas para Nome do Parceiro, Categoria, Avaliação Média e um botão de ação "Ver Perfil".
+Visualização em Cards: Grade de cards, cada um exibindo Logo, Nome, Categoria, Avaliação e o Selo de Verificação (se aplicável).
+Paginação: Barra na base da lista para navegar entre as páginas (25 ou 50 itens).
+Tela 1.2: Perfil do Parceiro (Página Interna com Abas)
+Objetivo: Apresentar um perfil completo e organizado do parceiro, com todas as informações necessárias para que o aluno tome uma decisão.
+
+Componentes:
+
+Cabeçalho Fixo do Perfil: Uma área sempre visível no topo da página contendo: Logo, Nome do Parceiro, Categoria principal, Selo "Verificado" e o link "< Voltar para a lista".
+Navegação por Abas: Uma barra de abas clicáveis abaixo do cabeçalho.
+Conteúdo de Cada Aba:
+
+Aba 1: Dados Gerais (Aba Padrão)
+Seção "Sobre a Empresa": Texto com a descrição completa dos serviços do parceiro.
+Card "Desconto Exclusivo para Alunos": Um card bem destacado com a descrição do benefício oferecido.
+Seção "Arquivos e Documentos": Lista de arquivos úteis (ex: "Tabela de Serviços.pdf") com botão para download.
+Aba 2: Contatos
+Uma lista clara com os múltiplos contatos do parceiro, cada um com Nome, Cargo, E-mail e Telefone.
+Aba 3: Avaliações e Comunidade
+Seção "Avaliações Formais": Onde o aluno pode dar uma nota de 1 a 5 estrelas e escrever uma avaliação obrigatória sobre o serviço. Inclui o feed com todas as avaliações de outros alunos.
+Seção "Comentários e Dúvidas": Um espaço para discussão mais informal, com um feed de comentários que permite "Gostar" (Like) e "Responder" (Reply), criando um fluxo de conversa.
+Parte 2: Área de Parceiros (Visão do Admin)
+Esta é a interface no painel de administração para gerenciar o conteúdo do diretório de parceiros.
+
+Tela 2.1: Gestão de Parceiros (Listagem no ADM)
+Objetivo: Permitir ao administrador ter uma visão completa de todos os parceiros, com acesso rápido para gerenciar e editar.
+Componentes:
+Cabeçalho: Título "Gestão de Parceiros" e um botão + Adicionar Novo Parceiro.
+Tabela de Gerenciamento:
+Colunas: Nome do Parceiro, Categoria, Selo de Verificação (um toggle para ativar/desativar), Avaliação Média, Status (toggle Publicado/Rascunho) e Ações (ícones para Editar/Excluir).
+Paginação: Na base da tabela.
+Tela 2.2: Formulário de Criação/Edição de Parceiro
+Objetivo: Um formulário completo para adicionar ou editar todas as informações de um parceiro.
+Componentes do Formulário:
+Campos Principais: Nome do Parceiro, Upload de Logo, Seleção de Categoria.
+Sistema de Abas para Organização:
+Aba "Geral": Campo para a descrição "Sobre a Empresa", campo de texto para o "Desconto Exclusivo", checkbox para ativar o "Selo de Verificação" e opções de Status (Publicar/Rascunho).
+Aba "Contatos": Uma área dinâmica onde o admin pode adicionar múltiplos contatos. Ao clicar em "+ Adicionar Contato", novos campos para Nome, Cargo, E-mail e Telefone aparecem.
+Aba "Arquivos": Interface para fazer o upload de múltiplos arquivos, permitindo dar um nome descritivo para cada um.
+Botão de Ação: Salvar Parceiro.

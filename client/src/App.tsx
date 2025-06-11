@@ -9,6 +9,8 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Partners from "@/pages/partners";
+import PartnerProfile from "@/pages/partner-profile";
+import AdminPartners from "@/pages/admin-partners";
 import Suppliers from "@/pages/suppliers";
 import Tools from "@/pages/tools";
 
@@ -81,6 +83,7 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/partners" component={Partners} />
+        <Route path="/partners/:id" component={PartnerProfile} />
         <Route path="/suppliers" component={Suppliers} />
         <Route path="/tools" component={Tools} />
         <Route path="/my-suppliers" component={MySuppliers} />
@@ -106,7 +109,7 @@ function Router() {
         <Route path="/admin/courses" component={() => <div>Admin Courses - Em desenvolvimento</div>} />
         <Route path="/admin/templates" component={AdminTemplates} />
         <Route path="/admin/tickets" component={() => <div>Admin Tickets - Em desenvolvimento</div>} />
-        <Route path="/admin/partners" component={() => <div>Admin Partners - Em desenvolvimento</div>} />
+        <Route path="/admin/partners" component={AdminPartners} />
         <Route path="/admin/suppliers" component={() => <div>Admin Suppliers - Em desenvolvimento</div>} />
         <Route path="/admin/settings" component={() => <div>Admin Settings - Em desenvolvimento</div>} />
         <Route component={NotFound} />

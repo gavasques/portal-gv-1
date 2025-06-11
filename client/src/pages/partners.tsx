@@ -1,243 +1,374 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
-import { ListViewToggle } from "@/components/common/list-view-toggle";
-import { SearchFilters } from "@/components/common/search-filters";
-import { RatingDisplay } from "@/components/common/rating-display";
-import { EmptyState } from "@/components/common/empty-state";
-import { LoadingSkeleton } from "@/components/common/loading-skeleton";
-import { Handshake, ExternalLink, Mail, Phone, Globe, Shield } from "lucide-react";
-import type { Partner } from "@shared/schema";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Star, Search, Grid, List, Verified, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Link } from 'wouter';
+
+interface Partner {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  logo?: string;
+  website?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  isVerified: boolean;
+  averageRating: number;
+  reviewCount: number;
+  exclusiveDiscount?: string;
+  status: 'published' | 'draft';
+  createdAt: string;
+}
 
 export default function Partners() {
-  const [view, setView] = useState<"list" | "grid">("grid");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
-  const { data: partners, isLoading } = useQuery<Partner[]>({
-    queryKey: ['/api/partners', { page, pageSize, search: searchQuery, ...filters }],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        limit: pageSize.toString(),
-        offset: ((page - 1) * pageSize).toString(),
-      });
-
-      if (searchQuery) {
-        params.append('q', searchQuery);
-        if (filters.category) {
-          params.append('category', filters.category);
-        }
-        const response = await fetch(`/api/partners/search?${params}`, { credentials: 'include' });
-        if (!response.ok) throw new Error('Failed to search partners');
-        return response.json();
-      }
-
-      const response = await fetch(`/api/partners?${params}`, { credentials: 'include' });
-      if (!response.ok) throw new Error('Failed to fetch partners');
-      return response.json();
-    },
+  // Fetch partners
+  const { data: partners = [], isLoading } = useQuery({
+    queryKey: ['/api/partners', { search: searchTerm, category: selectedCategory, verified: showVerifiedOnly, page: currentPage }],
+    queryFn: () => apiRequest('/api/partners')
   });
 
-  const handleSearch = (query: string, newFilters: Record<string, string>) => {
-    setSearchQuery(query);
-    setFilters(newFilters);
-    setPage(1);
+  // Filter partners based on search and filters
+  const filteredPartners = partners.filter((partner: Partner) => {
+    const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         partner.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || partner.category === selectedCategory;
+    const matchesVerified = !showVerifiedOnly || partner.isVerified;
+    const isPublished = partner.status === 'published';
+    
+    return matchesSearch && matchesCategory && matchesVerified && isPublished;
+  });
+
+  // Get unique categories
+  const categories = Array.from(new Set(partners.map((partner: Partner) => partner.category)));
+
+  // Pagination
+  const totalPages = Math.ceil(filteredPartners.length / itemsPerPage);
+  const paginatedPartners = filteredPartners.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`h-4 w-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+      />
+    ));
   };
 
-  const filterOptions = [
-    {
-      key: "category",
-      label: "Categoria",
-      options: [
-        { value: "Contabilidade", label: "Contabilidade" },
-        { value: "Jurídico", label: "Jurídico" },
-        { value: "Despachante", label: "Despachante" },
-        { value: "Fotografia", label: "Fotografia" },
-        { value: "Marketing", label: "Marketing" },
-      ],
-    },
-  ];
-
-  const columns = [
-    {
-      key: "name" as keyof Partner,
-      header: "Nome",
-      render: (value: string, partner: Partner) => (
-        <div className="flex items-center space-x-3">
-          {partner.logo ? (
-            <img src={partner.logo} alt={partner.name} className="h-8 w-8 rounded" />
-          ) : (
-            <div className="h-8 w-8 bg-primary/10 rounded flex items-center justify-center">
-              <Handshake className="h-4 w-4 text-primary" />
-            </div>
-          )}
-          <div>
-            <div className="font-medium">{value}</div>
-            {partner.isVerified && (
-              <Badge variant="secondary" className="text-xs">
-                <Shield className="h-3 w-3 mr-1" />
-                Verificado
-              </Badge>
-            )}
-          </div>
+  const renderListView = () => (
+    <div className="border rounded-lg overflow-hidden">
+      <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3">
+        <div className="grid grid-cols-12 gap-4 font-medium text-sm">
+          <div className="col-span-4">Parceiro</div>
+          <div className="col-span-2">Categoria</div>
+          <div className="col-span-3">Avaliação</div>
+          <div className="col-span-2">Status</div>
+          <div className="col-span-1">Ações</div>
         </div>
-      ),
-    },
-    {
-      key: "category" as keyof Partner,
-      header: "Categoria",
-      render: (value: string) => (
-        <Badge variant="outline">{value}</Badge>
-      ),
-    },
-    {
-      key: "description" as keyof Partner,
-      header: "Descrição",
-      render: (value: string) => (
-        <div className="max-w-xs truncate">{value}</div>
-      ),
-    },
-    {
-      key: "discountInfo" as keyof Partner,
-      header: "Desconto",
-      render: (value: string) => value ? (
-        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-          {value}
-        </Badge>
-      ) : (
-        <span className="text-muted-foreground">-</span>
-      ),
-    },
-  ];
-
-  const PartnerCard = ({ partner }: { partner: Partner }) => (
-    <Card className="card-hover">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            {partner.logo ? (
-              <img src={partner.logo} alt={partner.name} className="h-12 w-12 rounded-lg" />
-            ) : (
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Handshake className="h-6 w-6 text-primary" />
+      </div>
+      <div className="divide-y">
+        {paginatedPartners.map((partner: Partner) => (
+          <div key={partner.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800">
+            <div className="grid grid-cols-12 gap-4 items-center">
+              <div className="col-span-4 flex items-center space-x-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={partner.logo} alt={partner.name} />
+                  <AvatarFallback>{partner.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium flex items-center space-x-2">
+                    <span>{partner.name}</span>
+                    {partner.isVerified && <Verified className="h-4 w-4 text-blue-500" />}
+                  </div>
+                  <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                    {partner.description}
+                  </div>
+                </div>
               </div>
-            )}
+              <div className="col-span-2">
+                <Badge variant="secondary">{partner.category}</Badge>
+              </div>
+              <div className="col-span-3">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center">
+                    {renderStars(partner.averageRating)}
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {partner.averageRating.toFixed(1)} ({partner.reviewCount})
+                  </span>
+                </div>
+              </div>
+              <div className="col-span-2">
+                <div className="flex items-center space-x-2">
+                  {partner.isVerified && (
+                    <Badge variant="outline" className="text-blue-600 border-blue-200">
+                      Verificado
+                    </Badge>
+                  )}
+                  {partner.exclusiveDiscount && (
+                    <Badge variant="outline" className="text-green-600 border-green-200">
+                      Desconto
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <div className="col-span-1">
+                <Link href={`/partners/${partner.id}`}>
+                  <Button size="sm" variant="outline">
+                    Ver Perfil
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderCardsView = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {paginatedPartners.map((partner: Partner) => (
+        <Card key={partner.id} className="hover:shadow-lg transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={partner.logo} alt={partner.name} />
+                <AvatarFallback>{partner.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              {partner.isVerified && (
+                <Verified className="h-5 w-5 text-blue-500" />
+              )}
+            </div>
             <div>
               <CardTitle className="text-lg">{partner.name}</CardTitle>
-              <Badge variant="outline" className="mt-1">{partner.category}</Badge>
+              <CardDescription className="text-sm">
+                <Badge variant="secondary" className="mb-2">{partner.category}</Badge>
+              </CardDescription>
             </div>
-          </div>
-          {partner.isVerified && (
-            <Badge variant="secondary">
-              <Shield className="h-3 w-3 mr-1" />
-              Verificado
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground line-clamp-3">
-          {partner.description}
-        </p>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+              {partner.description}
+            </p>
+            
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-1">
+                {renderStars(partner.averageRating)}
+                <span className="text-sm text-muted-foreground ml-1">
+                  ({partner.reviewCount})
+                </span>
+              </div>
+            </div>
 
-        {partner.discountInfo && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <div className="text-sm font-medium text-green-800 dark:text-green-200">
-              Desconto Exclusivo
-            </div>
-            <div className="text-sm text-green-600 dark:text-green-300">
-              {partner.discountInfo}
-            </div>
-          </div>
-        )}
+            {partner.exclusiveDiscount && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4">
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="text-green-600 border-green-200">
+                    Desconto Exclusivo
+                  </Badge>
+                </div>
+                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  {partner.exclusiveDiscount}
+                </p>
+              </div>
+            )}
 
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="flex space-x-2">
-            {partner.website && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={partner.website} target="_blank" rel="noopener noreferrer">
-                  <Globe className="h-4 w-4 mr-2" />
-                  Site
-                </a>
+            <Link href={`/partners/${partner.id}`}>
+              <Button className="w-full">
+                Ver Perfil Completo
               </Button>
-            )}
-            {partner.email && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={`mailto:${partner.email}`}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  Email
-                </a>
-              </Button>
-            )}
-            {partner.phone && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={`tel:${partner.phone}`}>
-                  <Phone className="h-4 w-4 mr-2" />
-                  Telefone
-                </a>
-              </Button>
-            )}
-          </div>
-          <Button variant="ghost" size="sm">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            </Link>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex items-center justify-center space-x-2 mt-8">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Anterior
+        </Button>
+        
+        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          const page = currentPage <= 3 ? i + 1 : currentPage - 2 + i;
+          if (page > totalPages) return null;
+          
+          return (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentPage(page)}
+            >
+              {page}
+            </Button>
+          );
+        })}
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          Próximo
+        </Button>
+      </div>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="bg-gray-200 h-48 rounded-lg"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Parceiros</h1>
-          <p className="text-muted-foreground">
-            Encontre prestadores de serviços essenciais para seu negócio
-          </p>
-        </div>
-        <ListViewToggle view={view} onViewChange={setView} />
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold">Parceiros</h1>
+        <p className="text-muted-foreground">
+          Serviços e profissionais para acelerar seu negócio
+        </p>
       </div>
 
-      <SearchFilters
-        searchPlaceholder="Buscar parceiros..."
-        filters={filterOptions}
-        onSearch={handleSearch}
-      />
+      {/* Filters and Controls */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
+            {/* Search */}
+            <div className="lg:col-span-4">
+              <Label htmlFor="search">Buscar</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Nome ou serviço..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
 
-      {isLoading ? (
-        <LoadingSkeleton type={view} count={pageSize} />
-      ) : !partners || partners.length === 0 ? (
-        <EmptyState
-          icon={<Handshake className="h-12 w-12" />}
-          title="Nenhum parceiro encontrado"
-          description={
-            searchQuery
-              ? "Tente ajustar os filtros de busca para encontrar outros parceiros."
-              : "Ainda não há parceiros cadastrados no sistema."
-          }
-        />
-      ) : view === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {partners.map((partner) => (
-            <PartnerCard key={partner.id} partner={partner} />
-          ))}
-        </div>
+            {/* Category Filter */}
+            <div className="lg:col-span-3">
+              <Label>Categoria</Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas as categorias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Verified Filter */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="verified"
+                  checked={showVerifiedOnly}
+                  onCheckedChange={setShowVerifiedOnly}
+                />
+                <Label htmlFor="verified" className="text-sm">
+                  Apenas verificados
+                </Label>
+              </div>
+            </div>
+
+            {/* View Toggle */}
+            <div className="lg:col-span-3 flex justify-end space-x-2">
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'cards' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('cards')}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results Summary */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {filteredPartners.length} parceiro{filteredPartners.length !== 1 ? 's' : ''} encontrado{filteredPartners.length !== 1 ? 's' : ''}
+        </p>
+      </div>
+
+      {/* Content */}
+      {filteredPartners.length === 0 ? (
+        <Card>
+          <CardContent className="py-16 text-center">
+            <div className="text-muted-foreground">
+              <Search className="h-12 w-12 mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Nenhum parceiro encontrado</h3>
+              <p>Tente ajustar os filtros ou termo de busca.</p>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
-        <DataTable
-          data={partners}
-          columns={columns}
-          isLoading={isLoading}
-          currentPage={page}
-          pageSize={pageSize}
-          totalItems={partners.length}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-        />
+        <>
+          {viewMode === 'list' ? renderListView() : renderCardsView()}
+          {renderPagination()}
+        </>
       )}
     </div>
   );
