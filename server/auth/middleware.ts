@@ -1,17 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
+import { User } from '@shared/schema';
 
 export type UserRole = 'BASIC' | 'ALUNO' | 'ALUNO_PRO' | 'SUPORTE' | 'ADM';
 
-interface AuthenticatedUser {
-  id: number;
-  email: string;
-  fullName: string;
-  role: UserRole;
-  isActive: boolean;
-}
-
 export interface AuthenticatedRequest extends Request {
-  user?: AuthenticatedUser;
+  user?: User;
 }
 
 // Middleware to require authentication
