@@ -196,6 +196,12 @@ export default function Materials() {
       (featuredFilter === 'regular' && !material.isFeatured);
     
     return matchesSearch && matchesCategory && matchesFormat && matchesFeatured;
+  }).sort((a, b) => {
+    // Featured items always come first
+    if (a.isFeatured && !b.isFeatured) return -1;
+    if (!a.isFeatured && b.isFeatured) return 1;
+    // Then sort by title alphabetically
+    return a.title.localeCompare(b.title);
   }) || [];
 
   const totalPages = Math.ceil(filteredMaterials.length / itemsPerPage);

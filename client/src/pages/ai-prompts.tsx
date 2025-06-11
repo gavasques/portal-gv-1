@@ -98,6 +98,12 @@ export default function AiPrompts() {
     }
     
     return matchesSearch && matchesCategory;
+  }).sort((a, b) => {
+    // Featured items always come first
+    if (a.isFeatured && !b.isFeatured) return -1;
+    if (!a.isFeatured && b.isFeatured) return 1;
+    // Then sort by title alphabetically
+    return a.title.localeCompare(b.title);
   });
 
   // Pagination logic
