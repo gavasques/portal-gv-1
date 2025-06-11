@@ -8,7 +8,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 // Middleware to require authentication
-export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function requireAuth(req: any, res: Response, next: NextFunction) {
   if (!req.isAuthenticated() || !req.user) {
     return res.status(401).json({ message: 'Not authenticated' });
   }
@@ -22,7 +22,7 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
 
 // Middleware to require specific roles
 export function requireRole(allowedRoles: UserRole[]) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: any, res: Response, next: NextFunction) => {
     if (!req.isAuthenticated() || !req.user) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
@@ -44,21 +44,21 @@ export function requireRole(allowedRoles: UserRole[]) {
 }
 
 // Middleware to require admin role
-export function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function requireAdmin(req: any, res: Response, next: NextFunction) {
   return requireRole(['ADM'])(req, res, next);
 }
 
 // Middleware to require support or admin role
-export function requireSupport(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function requireSupport(req: any, res: Response, next: NextFunction) {
   return requireRole(['SUPORTE', 'ADM'])(req, res, next);
 }
 
 // Middleware to require student roles or higher
-export function requireStudent(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function requireStudent(req: any, res: Response, next: NextFunction) {
   return requireRole(['ALUNO', 'ALUNO_PRO', 'SUPORTE', 'ADM'])(req, res, next);
 }
 
 // Middleware to require premium student or higher
-export function requirePremium(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function requirePremium(req: any, res: Response, next: NextFunction) {
   return requireRole(['ALUNO_PRO', 'SUPORTE', 'ADM'])(req, res, next);
 }

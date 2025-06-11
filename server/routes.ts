@@ -1,15 +1,47 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import passport from "./auth/passport";
 import authRoutes from "./auth/routes";
-import { requireAuth, requireRole, requireAdmin, requireSupport, AuthenticatedRequest } from "./auth/middleware";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
 import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema, insertAiPromptSchema, insertAiPromptCategorySchema } from "@shared/schema";
 import { users, tickets, materials, templates, aiPrompts } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
+
+// Simple middleware functions
+function requireAuth(req: any, res: any, next: any) {
+  if (req.isAuthenticated() && req.user) {
+    return next();
+  }
+  res.status(401).json({ message: 'Authentication required' });
+}
+
+function requireRole(allowedRoles: string[]) {
+  return (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    if (allowedRoles.includes(req.user.role)) {
+      return next();
+    }
+    
+    res.status(403).json({ 
+      message: 'Access denied',
+      requiredRoles: allowedRoles 
+    });
+  };
+}
+
+function requireAdmin(req: any, res: any, next: any) {
+  return requireRole(['ADM'])(req, res, next);
+}
+
+function requireSupport(req: any, res: any, next: any) {
+  return requireRole(['SUPORTE', 'ADM'])(req, res, next);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -34,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
 
   // Users API
-  app.get("/api/users", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/users", requireAuth, async (req: any, res) => {
     try {
       const allUsers = await storage.getUsers();
       res.json(allUsers);
@@ -43,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/users", requireAdmin, async (req: any, res) => {
     try {
       const result = insertUserSchema.safeParse(req.body);
       if (!result.success) {
@@ -56,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/users/:id", requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.put("/api/users/:id", requireAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const result = insertUserSchema.partial().safeParse(req.body);
@@ -73,7 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/users/:id", requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.delete("/api/users/:id", requireAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteUser(id);
@@ -93,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/partners", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/partners", requireAuth, async (req: any, res) => {
     try {
       const result = insertPartnerSchema.safeParse(req.body);
       if (!result.success) {
@@ -106,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/partners/:id", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.put("/api/partners/:id", requireAuth, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const result = insertPartnerSchema.partial().safeParse(req.body);
@@ -123,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/partners/:id", requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.delete("/api/partners/:id", requireAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deletePartner(id);
@@ -143,7 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/partner-categories", requireAdmin, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/partner-categories", requireAdmin, async (req: any, res) => {
     try {
       const result = insertPartnerCategorySchema.safeParse(req.body);
       if (!result.success) {
@@ -167,7 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/partners/:id/comments", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/partners/:id/comments", requireAuth, async (req: any, res) => {
     try {
       const partnerId = parseInt(req.params.id);
       const { comment, rating } = req.body;
@@ -191,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Materials API
-  app.get("/api/materials", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/materials", requireAuth, async (req: any, res) => {
     try {
       const materials = await storage.getMaterials();
       res.json(materials);
@@ -200,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/materials", requireRole(['SUPORTE', 'ADM']), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/materials", requireRole(['SUPORTE', 'ADM']), async (req: any, res) => {
     try {
       const result = insertMaterialSchema.safeParse(req.body);
       if (!result.success) {
@@ -214,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Templates API
-  app.get("/api/templates", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/templates", requireAuth, async (req: any, res) => {
     try {
       const templates = await storage.getTemplates();
       res.json(templates);
@@ -223,7 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/templates", requireRole(['SUPORTE', 'ADM']), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/templates", requireRole(['SUPORTE', 'ADM']), async (req: any, res) => {
     try {
       const result = insertTemplateSchema.safeParse(req.body);
       if (!result.success) {
@@ -237,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Prompts API
-  app.get("/api/ai-prompts", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/ai-prompts", requireAuth, async (req: any, res) => {
     try {
       const prompts = await storage.getAiPrompts();
       res.json(prompts);
@@ -246,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/ai-prompts", requireRole(['SUPORTE', 'ADM']), async (req: AuthenticatedRequest, res) => {
+  app.post("/api/ai-prompts", requireRole(['SUPORTE', 'ADM']), async (req: any, res) => {
     try {
       const result = insertAiPromptSchema.safeParse(req.body);
       if (!result.success) {
@@ -260,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // YouTube Videos API
-  app.get("/api/youtube-videos", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/youtube-videos", requireAuth, async (req: any, res) => {
     try {
       const videos = await getCachedVideos();
       res.json(videos);
@@ -270,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Tickets API
-  app.get("/api/tickets", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/tickets", requireAuth, async (req: any, res) => {
     try {
       const tickets = await storage.getTickets();
       res.json(tickets);
@@ -279,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/tickets", requireAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/tickets", requireAuth, async (req: any, res) => {
     try {
       const result = insertTicketSchema.safeParse(req.body);
       if (!result.success) {

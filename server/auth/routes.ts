@@ -1,6 +1,5 @@
 import express from 'express';
 import passport from './passport';
-import { requireAuth, requireRole, AuthenticatedRequest } from './middleware';
 import { storage } from '../storage';
 import * as bcrypt from 'bcrypt';
 
@@ -97,7 +96,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 }
 
 // Get current user
-router.get('/me', (req: AuthenticatedRequest, res) => {
+router.get('/me', (req: any, res) => {
   if (!req.isAuthenticated() || !req.user) {
     return res.status(401).json({ message: 'Not authenticated' });
   }
@@ -121,16 +120,34 @@ router.post('/logout', (req, res) => {
   });
 });
 
+// Role-based middleware for auth routes
+function requireRole(allowedRoles: string[]) {
+  return (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    
+    if (allowedRoles.includes(req.user.role)) {
+      return next();
+    }
+    
+    res.status(403).json({ 
+      message: 'Access denied',
+      requiredRoles: allowedRoles 
+    });
+  };
+}
+
 // Protected routes for testing role-based access
-router.get('/admin-only', requireRole(['ADM']), (req: AuthenticatedRequest, res) => {
+router.get('/admin-only', requireRole(['ADM']), (req: any, res) => {
   res.json({ message: 'Admin access granted', user: req.user?.role });
 });
 
-router.get('/support-or-admin', requireRole(['SUPORTE', 'ADM']), (req: AuthenticatedRequest, res) => {
+router.get('/support-or-admin', requireRole(['SUPORTE', 'ADM']), (req: any, res) => {
   res.json({ message: 'Support/Admin access granted', user: req.user?.role });
 });
 
-router.get('/students-only', requireRole(['ALUNO', 'ALUNO_PRO', 'SUPORTE', 'ADM']), (req: AuthenticatedRequest, res) => {
+router.get('/students-only', requireRole(['ALUNO', 'ALUNO_PRO', 'SUPORTE', 'ADM']), (req: any, res) => {
   res.json({ message: 'Student access granted', user: req.user?.role });
 });
 
