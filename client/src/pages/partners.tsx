@@ -65,10 +65,11 @@ export default function Partners() {
   );
 
   const renderStars = (rating: number) => {
+    const safeRating = rating || 0;
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+        className={`h-4 w-4 ${i < Math.floor(safeRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
       />
     ));
   };
@@ -172,14 +173,14 @@ export default function Partners() {
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-1">
-                {renderStars(partner.averageRating)}
+                {renderStars(partner.averageRating || 0)}
                 <span className="text-sm text-muted-foreground ml-1">
-                  ({partner.reviewCount})
+                  ({partner.reviewCount || 0})
                 </span>
               </div>
             </div>
 
-            {partner.exclusiveDiscount && (
+            {partner.discountInfo && (
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4">
                 <div className="flex items-center space-x-2">
                   <Badge variant="outline" className="text-green-600 border-green-200">
@@ -187,7 +188,7 @@ export default function Partners() {
                   </Badge>
                 </div>
                 <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                  {partner.exclusiveDiscount}
+                  {partner.discountInfo}
                 </p>
               </div>
             )}
@@ -301,9 +302,9 @@ export default function Partners() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
-                  {categories.map((category: string) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
+                  {categories.map((category) => (
+                    <SelectItem key={String(category)} value={String(category)}>
+                      {String(category)}
                     </SelectItem>
                   ))}
                 </SelectContent>

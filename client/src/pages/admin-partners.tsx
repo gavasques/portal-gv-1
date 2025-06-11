@@ -37,12 +37,11 @@ interface Partner {
   website?: string;
   phone?: string;
   email?: string;
-  address?: string;
   isVerified: boolean;
-  averageRating: number;
-  reviewCount: number;
-  exclusiveDiscount?: string;
-  status: 'published' | 'draft';
+  discountInfo?: string;
+  averageRating?: number;
+  reviewCount?: number;
+  status?: string;
   createdAt: string;
 }
 
