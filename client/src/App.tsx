@@ -28,7 +28,6 @@ import Materials from "@/pages/materials";
 import MaterialView from "@/pages/material-view";
 import AdminMaterials from "@/pages/admin-materials";
 import AiPrompts from "@/pages/ai-prompts";
-import AdminAiPrompts from "@/pages/admin/ai-prompts";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
@@ -101,7 +100,7 @@ function Router() {
         <Route path="/admin/ai-prompts" component={AdminAiPrompts} />
         <Route path="/admin/cadastros" component={AdminCadastros} />
         <Route path="/admin/users" component={AdminUsers} />
-        <Route path="/admin/groups" component={AdminGroups} />
+        <Route path="/admin/groups" component={() => <div>Admin Groups - Em desenvolvimento</div>} />
         <Route path="/admin/permissions" component={AdminPermissions} />
         <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
         <Route path="/admin/courses" component={AdminCourses} />

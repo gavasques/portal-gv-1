@@ -232,7 +232,6 @@ export default function Courses() {
   const ctaTitle = pageContent?.ctaTitle || "Pronto para começar sua jornada?";
   const ctaDescription = pageContent?.ctaDescription || "Escolha o curso ideal para seu momento e comece a construir seu império no e-commerce hoje mesmo.";
 
-export default function Courses() {
   const CourseCard = ({ course }: { course: CourseData }) => (
     <Card className={`card-hover relative ${course.popular ? 'ring-2 ring-primary' : ''}`}>
       {course.popular && (
