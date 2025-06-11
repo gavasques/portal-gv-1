@@ -48,7 +48,7 @@ export default function Partners() {
   const filteredPartners = partners.filter((partner: Partner) => {
     const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          partner.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || partner.category.name === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || partner.category?.name === selectedCategory;
     const matchesVerified = !showVerifiedOnly || partner.isVerified;
     const isPublished = !partner.status || partner.status === 'published';
     
@@ -56,7 +56,7 @@ export default function Partners() {
   });
 
   // Get unique categories
-  const categories = Array.from(new Set(partners.map((partner: Partner) => partner.category.name)));
+  const categories = Array.from(new Set(partners.map((partner: Partner) => partner.category?.name).filter(Boolean)));
 
   // Pagination
   const totalPages = Math.ceil(filteredPartners.length / itemsPerPage);
@@ -106,7 +106,7 @@ export default function Partners() {
                 </div>
               </div>
               <div className="col-span-2">
-                <Badge variant="secondary">{partner.category.name}</Badge>
+                <Badge variant="secondary">{partner.category?.name || 'Categoria'}</Badge>
               </div>
               <div className="col-span-3">
                 <div className="flex items-center space-x-2">
@@ -147,58 +147,65 @@ export default function Partners() {
   );
 
   const renderCardsView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {paginatedPartners.map((partner: Partner) => (
-        <Card key={partner.id} className="hover:shadow-lg transition-shadow">
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={partner.logo} alt={partner.name} />
-                <AvatarFallback>{partner.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              {partner.isVerified && (
-                <Verified className="h-5 w-5 text-blue-500" />
-              )}
+        <Card key={partner.id} className="shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden">
+          <div className="h-48 bg-gray-100 relative">
+            {partner.logo ? (
+              <img src={partner.logo} alt={partner.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/20">
+                <span className="text-2xl font-bold text-primary">
+                  {partner.name.substring(0, 2).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <div className="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
+              <div className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500">
+                ♥
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-lg">{partner.name}</CardTitle>
-              <CardDescription className="text-sm">
-                <Badge variant="secondary" className="mb-2">{partner.category.name}</Badge>
-              </CardDescription>
+            {partner.isVerified && (
+              <div className="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                Verificado
+              </div>
+            )}
+          </div>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-gray-800 text-lg">{partner.name}</h3>
+              <div className="flex items-center">
+                {renderStars(partner.averageRating)}
+                <span className="text-sm font-medium ml-1">{Number(partner.averageRating || 0).toFixed(1)}</span>
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+            
+            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
               {partner.description}
             </p>
             
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-1">
-                {renderStars(partner.averageRating)}
-                <span className="text-sm text-muted-foreground ml-1">
-                  ({partner.reviewCount || 0})
-                </span>
-              </div>
+            <div className="flex flex-wrap gap-1 mb-4">
+              <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">
+                {partner.category?.name || 'Categoria'}
+              </Badge>
             </div>
-
-            {partner.discountInfo && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4">
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="text-green-600 border-green-200">
-                    Desconto Exclusivo
-                  </Badge>
-                </div>
-                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                  {partner.discountInfo}
-                </p>
-              </div>
-            )}
-
-            <Link href={`/partners/${partner.id}`}>
-              <Button className="w-full">
-                Ver Perfil Completo
+            
+            <div className="flex items-center text-sm text-gray-500 mb-4">
+              <MapPin className="h-4 w-4 mr-1" />
+              <span>Brasil</span>
+            </div>
+            
+            <div className="flex gap-2">
+              <Link href={`/partners/${partner.id}`} className="flex-1">
+                <Button className="w-full bg-primary text-white text-sm">
+                  Ver Detalhes
+                </Button>
+              </Link>
+              <Button variant="outline" size="sm" className="flex items-center">
+                <Mail className="h-4 w-4 mr-1" />
+                Contatar
               </Button>
-            </Link>
+            </div>
           </CardContent>
         </Card>
       ))}
@@ -267,42 +274,49 @@ export default function Partners() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Parceiros</h1>
-        <p className="text-muted-foreground">
-          Serviços e profissionais para acelerar seu negócio
-        </p>
+      {/* Breadcrumbs */}
+      <div className="flex items-center text-sm text-gray-500">
+        <Link href="/dashboard" className="hover:text-primary">Dashboard</Link>
+        <span className="mx-2">›</span>
+        <span className="text-gray-700 font-medium">Parceiros</span>
       </div>
 
-      {/* Filters and Controls */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end">
-            {/* Search */}
-            <div className="lg:col-span-4">
-              <Label htmlFor="search">Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Nome ou serviço..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Parceiros de Negócio</h1>
+          <p className="text-gray-600 mt-1">Encontre e conecte-se com parceiros verificados para impulsionar seu negócio</p>
+        </div>
+        <Button className="mt-4 md:mt-0 bg-primary text-white">
+          <span className="mr-2">+</span>
+          Adicionar Novo Parceiro
+        </Button>
+      </div>
 
-            {/* Category Filter */}
-            <div className="lg:col-span-3">
-              <Label>Categoria</Label>
+      {/* Filters Section */}
+      <Card className="shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Search Bar */}
+            <div className="relative flex-grow max-w-xl">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Buscar parceiros por nome, categoria ou serviço..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 border-gray-200 focus:ring-primary focus:border-primary"
+              />
+            </div>
+            
+            {/* Filters */}
+            <div className="flex flex-wrap gap-2">
+              {/* Category Filter */}
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as categorias" />
+                <SelectTrigger className="w-[140px] border-gray-200">
+                  <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={String(category)} value={String(category)}>
                       {String(category)}
@@ -310,38 +324,39 @@ export default function Partners() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
 
-            {/* Verified Filter */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center space-x-2">
+              {/* Verified Toggle */}
+              <div className="flex items-center space-x-2 px-3 py-2 border border-gray-200 rounded-lg">
                 <Switch
                   id="verified"
                   checked={showVerifiedOnly}
                   onCheckedChange={setShowVerifiedOnly}
+                  className="data-[state=checked]:bg-primary"
                 />
-                <Label htmlFor="verified" className="text-sm">
-                  Apenas verificados
+                <Label htmlFor="verified" className="text-sm text-gray-700">
+                  Verificados
                 </Label>
               </div>
-            </div>
 
-            {/* View Toggle */}
-            <div className="lg:col-span-3 flex justify-end space-x-2">
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'cards' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('cards')}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
+              {/* View Toggle */}
+              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={`rounded-none ${viewMode === 'list' ? 'bg-primary text-white' : 'text-gray-600'}`}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('cards')}
+                  className={`rounded-none ${viewMode === 'cards' ? 'bg-primary text-white' : 'text-gray-600'}`}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -349,7 +364,7 @@ export default function Partners() {
 
       {/* Results Summary */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-gray-600">
           {filteredPartners.length} parceiro{filteredPartners.length !== 1 ? 's' : ''} encontrado{filteredPartners.length !== 1 ? 's' : ''}
         </p>
       </div>
