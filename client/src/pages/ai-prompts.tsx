@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Search,
@@ -93,7 +94,7 @@ export default function AiPrompts() {
     let matchesCategory = true;
     if (selectedCategory === "DESTACADOS") {
       matchesCategory = prompt.isFeatured;
-    } else if (selectedCategory) {
+    } else if (selectedCategory && selectedCategory !== "all") {
       matchesCategory = prompt.category === selectedCategory;
     }
     
@@ -152,34 +153,24 @@ export default function AiPrompts() {
             className="pl-10"
           />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedCategory === "" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory("")}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Todas Categorias
-          </Button>
-          <Button
-            variant={selectedCategory === "DESTACADOS" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory("DESTACADOS")}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600"
-          >
-            ⭐ DESTACADOS
-          </Button>
-          {categories.map(category => (
-            <Button
-              key={category}
-              variant={selectedCategory === category ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(category)}
-              className="text-xs"
-            >
-              {category}
-            </Button>
-          ))}
+        <div className="flex gap-2 items-center">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-[240px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Todas Categorias" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas Categorias</SelectItem>
+              <SelectItem value="DESTACADOS" className="text-orange-600 font-medium">
+                ⭐ DESTACADOS
+              </SelectItem>
+              {categories.map(category => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
