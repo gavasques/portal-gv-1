@@ -180,7 +180,16 @@ export default function AdminPermissions() {
     }
   }, [selectedGroup, groupPermissions]);
 
-  // Group permissions by module
+  // Group permissions by category
+  const permissionsByCategory = Array.isArray(permissions) ? permissions.reduce((acc: Record<string, Permission[]>, permission: Permission) => {
+    if (!acc[permission.category]) {
+      acc[permission.category] = [];
+    }
+    acc[permission.category].push(permission);
+    return acc;
+  }, {}) : {};
+
+  // Group permissions by module within each category
   const permissionsByModule = Array.isArray(permissions) ? permissions.reduce((acc: Record<string, Permission[]>, permission: Permission) => {
     if (!acc[permission.module]) {
       acc[permission.module] = [];
@@ -579,26 +588,27 @@ export default function AdminPermissions() {
                   </TabsList>
 
                   <TabsContent value="all" className="space-y-6">
-                    {Object.entries(permissionsByModule).map(([module, modulePermissions]) => (
-                      <Card key={module}>
+                    {Object.entries(permissionsByCategory).map(([category, categoryPermissions]) => (
+                      <Card key={category}>
                         <CardHeader className="pb-3">
                           <CardTitle className="flex items-center text-lg">
-                            {getModuleIcon(module)}
-                            <span className="ml-2 capitalize">{module.replace('_', ' ')}</span>
+                            {getCategoryIcon(category)}
+                            <span className="ml-2">{getCategoryName(category)}</span>
                           </CardTitle>
                           <CardDescription>
-                            {getModuleDescription(module)}
+                            {getCategoryDescription(category)}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-3">
-                            {(modulePermissions as Permission[]).map((permission: Permission) => (
+                            {(categoryPermissions as Permission[]).map((permission: Permission) => (
                               <div key={permission.id} className="flex items-center justify-between p-3 border rounded-lg">
                                 <div className="flex-1">
                                   <div className="font-medium">{permission.name}</div>
                                   <div className="text-sm text-muted-foreground">{permission.description}</div>
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    Chave: {permission.key}
+                                    <Badge variant="outline" className="mr-2">{permission.module}</Badge>
+                                    {permission.key}
                                   </div>
                                 </div>
                                 <Checkbox
@@ -619,11 +629,11 @@ export default function AdminPermissions() {
                       <Card>
                         <CardHeader>
                           <CardTitle className="flex items-center">
-                            {getModuleIcon(module)}
+                            <Lock className="h-4 w-4" />
                             <span className="ml-2 capitalize">Permissões de {module.replace('_', ' ')}</span>
                           </CardTitle>
                           <CardDescription>
-                            {getModuleDescription(module)}
+                            Configurações específicas para o módulo {module.replace('_', ' ')}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>

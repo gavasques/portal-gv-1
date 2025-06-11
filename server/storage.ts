@@ -1594,7 +1594,16 @@ export class DatabaseStorage implements IStorage {
     const user = await this.getUser(userId);
     if (!user || !user.groupId) return [];
 
-    let query = db.select({
+    const whereConditions = [
+      eq(groupPermissions.groupId, user.groupId),
+      eq(permissions.isActive, true)
+    ];
+
+    if (module) {
+      whereConditions.push(eq(permissions.module, module));
+    }
+
+    return await db.select({
       id: permissions.id,
       key: permissions.key,
       name: permissions.name,
@@ -1604,24 +1613,7 @@ export class DatabaseStorage implements IStorage {
     })
     .from(groupPermissions)
     .innerJoin(permissions, eq(groupPermissions.permissionId, permissions.id))
-    .where(
-      and(
-        eq(groupPermissions.groupId, user.groupId),
-        eq(permissions.isActive, true)
-      )
-    );
-
-    if (module) {
-      query = query.where(
-        and(
-          eq(groupPermissions.groupId, user.groupId),
-          eq(permissions.isActive, true),
-          eq(permissions.module, module)
-        )
-      );
-    }
-
-    return await query;
+    .where(and(...whereConditions));
   }
 }
 
