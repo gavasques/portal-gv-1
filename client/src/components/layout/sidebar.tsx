@@ -190,12 +190,6 @@ const adminMenuGroups = [
         accessLevels: ["admin"]
       },
       { 
-        label: "Cursos", 
-        href: "/admin/courses", 
-        icon: GraduationCap,
-        accessLevels: ["admin", "suporte"]
-      },
-      { 
         label: "Templates", 
         href: "/admin/templates", 
         icon: FileText,
