@@ -64,8 +64,8 @@ export default function Partners() {
     currentPage * itemsPerPage
   );
 
-  const renderStars = (rating: number) => {
-    const safeRating = rating || 0;
+  const renderStars = (rating: number | string | undefined) => {
+    const safeRating = Number(rating) || 0;
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
@@ -110,10 +110,10 @@ export default function Partners() {
               <div className="col-span-3">
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center">
-                    {renderStars(partner.averageRating || 0)}
+                    {renderStars(partner.averageRating)}
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0})
+                    {Number(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0})
                   </span>
                 </div>
               </div>
@@ -173,7 +173,7 @@ export default function Partners() {
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-1">
-                {renderStars(partner.averageRating || 0)}
+                {renderStars(partner.averageRating)}
                 <span className="text-sm text-muted-foreground ml-1">
                   ({partner.reviewCount || 0})
                 </span>
