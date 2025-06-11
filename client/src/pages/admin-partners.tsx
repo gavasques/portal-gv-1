@@ -62,18 +62,7 @@ interface PartnerFile {
   url?: string;
 }
 
-const PARTNER_CATEGORIES = [
-  'Contabilidade',
-  'Fotografia',
-  'Design Gráfico',
-  'Marketing Digital',
-  'Advocacia',
-  'Consultoria',
-  'Logística',
-  'Desenvolvimento',
-  'Tradução',
-  'Outros'
-];
+
 
 export default function AdminPartners() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -84,13 +73,12 @@ export default function AdminPartners() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: '',
+    categoryId: 0,
     website: '',
     phone: '',
     email: '',
-    address: '',
     isVerified: false,
-    exclusiveDiscount: '',
+    discountInfo: '',
     status: 'published' as 'published' | 'draft'
   });
 
@@ -105,6 +93,12 @@ export default function AdminPartners() {
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ['/api/admin/partners'],
     queryFn: () => apiRequest('/api/admin/partners')
+  });
+
+  // Fetch partner categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ['/api/partner-categories'],
+    queryFn: () => apiRequest('/api/partner-categories')
   });
 
   // Create partner mutation
@@ -172,13 +166,12 @@ export default function AdminPartners() {
     setFormData({
       name: partner.name,
       description: partner.description,
-      category: partner.category,
+      categoryId: partner.categoryId,
       website: partner.website || '',
       phone: partner.phone || '',
       email: partner.email || '',
-      address: partner.address || '',
       isVerified: partner.isVerified,
-      exclusiveDiscount: partner.exclusiveDiscount || '',
+      discountInfo: partner.discountInfo || '',
       status: partner.status
     });
     setEditingPartner(partner);
