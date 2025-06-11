@@ -1683,6 +1683,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Initialize modular permissions system
+  app.post('/api/admin/initialize-permissions', requireAdmin, async (req: express.Request, res: express.Response) => {
+    try {
+      await storage.initializeModularPermissions();
+      res.json({ message: 'Permissions system initialized successfully' });
+    } catch (error) {
+      console.error('Error initializing permissions:', error);
+      res.status(500).json({ message: 'Failed to initialize permissions system' });
+    }
+  });
+
   // Catch-all route for API 404s
   app.use('/api/*', (req: express.Request, res: express.Response) => {
     res.setHeader('Content-Type', 'application/json');
