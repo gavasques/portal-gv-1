@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, Search, Grid, List, Verified, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Star, Search, Verified, MapPin, Phone, Mail, Globe } from 'lucide-react';
 import { Link } from 'wouter';
 
 interface Partner {
@@ -34,7 +34,7 @@ export default function Partners() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('cards');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
 
@@ -48,7 +48,8 @@ export default function Partners() {
   const filteredPartners = partners.filter((partner: Partner) => {
     const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          partner.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || partner.category?.name === selectedCategory;
+    const categoryName = typeof partner.category === 'string' ? partner.category : partner.category?.name;
+    const matchesCategory = selectedCategory === 'all' || categoryName === selectedCategory;
     const matchesVerified = !showVerifiedOnly || partner.isVerified;
     const isPublished = !partner.status || partner.status === 'published';
     
@@ -56,7 +57,9 @@ export default function Partners() {
   });
 
   // Get unique categories
-  const categories = Array.from(new Set(partners.map((partner: Partner) => partner.category?.name).filter(Boolean)));
+  const categories = Array.from(new Set(partners.map((partner: Partner) => {
+    return typeof partner.category === 'string' ? partner.category : partner.category?.name;
+  }).filter(Boolean)));
 
   // Pagination
   const totalPages = Math.ceil(filteredPartners.length / itemsPerPage);
@@ -75,76 +78,7 @@ export default function Partners() {
     ));
   };
 
-  const renderListView = () => (
-    <div className="border rounded-lg overflow-hidden">
-      <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3">
-        <div className="grid grid-cols-12 gap-4 font-medium text-sm">
-          <div className="col-span-4">Parceiro</div>
-          <div className="col-span-2">Categoria</div>
-          <div className="col-span-3">Avaliação</div>
-          <div className="col-span-2">Status</div>
-          <div className="col-span-1">Ações</div>
-        </div>
-      </div>
-      <div className="divide-y">
-        {paginatedPartners.map((partner: Partner) => (
-          <div key={partner.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800">
-            <div className="grid grid-cols-12 gap-4 items-center">
-              <div className="col-span-4 flex items-center space-x-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={partner.logo} alt={partner.name} />
-                  <AvatarFallback>{partner.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-medium flex items-center space-x-2">
-                    <span>{partner.name}</span>
-                    {partner.isVerified && <Verified className="h-4 w-4 text-blue-500" />}
-                  </div>
-                  <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                    {partner.description}
-                  </div>
-                </div>
-              </div>
-              <div className="col-span-2">
-                <Badge variant="secondary">{partner.category?.name || 'Categoria'}</Badge>
-              </div>
-              <div className="col-span-3">
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center">
-                    {renderStars(partner.averageRating)}
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {Number(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0})
-                  </span>
-                </div>
-              </div>
-              <div className="col-span-2">
-                <div className="flex items-center space-x-2">
-                  {partner.isVerified && (
-                    <Badge variant="outline" className="text-blue-600 border-blue-200">
-                      Verificado
-                    </Badge>
-                  )}
-                  {partner.discountInfo && (
-                    <Badge variant="outline" className="text-green-600 border-green-200">
-                      Desconto
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="col-span-1">
-                <Link href={`/partners/${partner.id}`}>
-                  <Button size="sm" variant="outline">
-                    Ver Perfil
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  
 
   const renderCardsView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -186,7 +120,7 @@ export default function Partners() {
             
             <div className="flex flex-wrap gap-1 mb-4">
               <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700">
-                {partner.category?.name || 'Categoria'}
+                {typeof partner.category === 'string' ? partner.category : partner.category?.name || 'Categoria'}
               </Badge>
             </div>
             
@@ -338,25 +272,7 @@ export default function Partners() {
                 </Label>
               </div>
 
-              {/* View Toggle */}
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className={`rounded-none ${viewMode === 'list' ? 'bg-primary text-white' : 'text-gray-600'}`}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('cards')}
-                  className={`rounded-none ${viewMode === 'cards' ? 'bg-primary text-white' : 'text-gray-600'}`}
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-              </div>
+              
             </div>
           </div>
         </CardContent>
@@ -382,7 +298,7 @@ export default function Partners() {
         </Card>
       ) : (
         <>
-          {viewMode === 'list' ? renderListView() : renderCardsView()}
+          {renderCardsView()}
           {renderPagination()}
         </>
       )}
