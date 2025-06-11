@@ -23,7 +23,7 @@ import {
   BookOpen,
   BarChart3
 } from "lucide-react";
-import type { AiPrompt, InsertAiPrompt } from "@shared/schema";
+import type { AiPrompt, InsertAiPrompt, AiPromptCategory } from "@shared/schema";
 import { insertAiPromptSchema } from "@shared/schema";
 
 export default function AdminAiPrompts() {
@@ -35,6 +35,10 @@ export default function AdminAiPrompts() {
 
   const { data: prompts = [], isLoading } = useQuery<AiPrompt[]>({
     queryKey: ['/api/admin/ai-prompts'],
+  });
+
+  const { data: aiPromptCategories = [] } = useQuery<AiPromptCategory[]>({
+    queryKey: ['/api/ai-prompt-categories'],
   });
 
   const createForm = useForm<InsertAiPrompt>({
@@ -119,13 +123,7 @@ export default function AdminAiPrompts() {
     prompt.description.toLowerCase().includes(search.toLowerCase())
   );
 
-  const categories = [
-    "Geração de Imagens e Conteúdo Visual",
-    "Pesquisa e Análise de Produtos", 
-    "Comunicação com Fornecedores",
-    "Estratégias de Marca e Marketing",
-    "Gestão Financeira e Operacional"
-  ];
+  // Categories are now fetched dynamically from the database
 
   const handleEdit = (prompt: AiPrompt) => {
     setEditingPrompt(prompt);

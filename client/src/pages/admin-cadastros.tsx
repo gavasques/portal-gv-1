@@ -420,6 +420,7 @@ export default function AdminCadastros() {
       case "supplier-types": return supplierTypes;
       case "product-categories": return productCategories;
       case "partner-categories": return partnerCategories;
+      case "ai-prompt-categories": return aiPromptCategories;
       default: return materialTypes;
     }
   };
@@ -432,6 +433,7 @@ export default function AdminCadastros() {
       case "supplier-types": return supplierTypeSchema;
       case "product-categories": return productCategorySchema;
       case "partner-categories": return partnerCategorySchema;
+      case "ai-prompt-categories": return aiPromptCategorySchema;
       default: return materialTypeSchema;
     }
   };
@@ -444,6 +446,7 @@ export default function AdminCadastros() {
       case "supplier-types": return "tipo de fornecedor";
       case "product-categories": return "categoria de produto";
       case "partner-categories": return "categoria de parceiro";
+      case "ai-prompt-categories": return "categoria de prompt IA";
       default: return "item";
     }
   };
@@ -456,6 +459,7 @@ export default function AdminCadastros() {
       case "supplier-types": return Truck;
       case "product-categories": return ShoppingCart;
       case "partner-categories": return Users;
+      case "ai-prompt-categories": return Brain;
       default: return Package;
     }
   };
