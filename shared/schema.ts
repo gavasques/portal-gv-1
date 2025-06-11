@@ -367,6 +367,17 @@ export const materials = pgTable("materials", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// AI Prompt Categories table
+export const aiPromptCategories = pgTable("ai_prompt_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  icon: text("icon"), // Lucide icon name
+  color: text("color").notNull().default("#6b7280"), // CSS color for UI
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const news = pgTable("news", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -709,6 +720,11 @@ export const insertPartnerCategorySchema = createInsertSchema(partnerCategories)
   createdAt: true,
 });
 
+export const insertAiPromptCategorySchema = createInsertSchema(aiPromptCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Template tag schemas
 export const insertTemplateTagSchema = createInsertSchema(templateTags).omit({
   id: true,
@@ -775,6 +791,8 @@ export type ProductCategory = typeof productCategories.$inferSelect;
 export type InsertProductCategory = z.infer<typeof insertProductCategorySchema>;
 export type PartnerCategory = typeof partnerCategories.$inferSelect;
 export type InsertPartnerCategory = z.infer<typeof insertPartnerCategorySchema>;
+export type AiPromptCategory = typeof aiPromptCategories.$inferSelect;
+export type InsertAiPromptCategory = z.infer<typeof insertAiPromptCategorySchema>;
 
 // Template tag types (moved to end to avoid duplicates)
 export type TemplateTag = typeof templateTags.$inferSelect;
