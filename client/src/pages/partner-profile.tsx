@@ -34,7 +34,11 @@ interface Partner {
   id: number;
   name: string;
   description: string;
-  category: string;
+  category: {
+    id: number;
+    name: string;
+    description?: string;
+  };
   logo?: string;
   website?: string;
   phone?: string;
@@ -288,6 +292,7 @@ export default function PartnerProfile() {
       </Card>
 
       {/* Tab Navigation */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general">Dados Gerais</TabsTrigger>
           <TabsTrigger value="contacts">Contatos</TabsTrigger>
