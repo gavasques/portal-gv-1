@@ -72,6 +72,11 @@ function MaterialCard({ material }: { material: Material }) {
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center space-x-1 flex-wrap">
               <Icon className="h-4 w-4 text-primary shrink-0" />
+              {material.isFeatured && (
+                <Badge variant="default" className="text-xs bg-orange-600 hover:bg-orange-700 text-white font-medium">
+                  DESTACADO
+                </Badge>
+              )}
               <Badge variant={canAccess ? "default" : "secondary"} className="text-xs">
                 {material.accessLevel === "Public" ? (
                   <>
@@ -127,6 +132,11 @@ function MaterialListItem({ material }: { material: Material }) {
             {material.description}
           </p>
           <div className="flex items-center gap-2 flex-wrap">
+            {material.isFeatured && (
+              <Badge variant="default" className="text-xs bg-orange-600 hover:bg-orange-700 text-white font-medium">
+                DESTACADO
+              </Badge>
+            )}
             <Badge variant="outline" className="text-xs">
               {material.category && material.category.length > 15 
                 ? material.category.substring(0, 15) + "..." 
@@ -156,6 +166,7 @@ export default function Materials() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedFormat, setSelectedFormat] = useState<string>("");
+  const [featuredFilter, setFeaturedFilter] = useState<'all' | 'featured' | 'regular'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
@@ -180,8 +191,11 @@ export default function Materials() {
       material.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || selectedCategory === "all" || material.category === selectedCategory;
     const matchesFormat = !selectedFormat || selectedFormat === "all" || material.type === selectedFormat;
+    const matchesFeatured = featuredFilter === 'all' || 
+      (featuredFilter === 'featured' && material.isFeatured) ||
+      (featuredFilter === 'regular' && !material.isFeatured);
     
-    return matchesSearch && matchesCategory && matchesFormat;
+    return matchesSearch && matchesCategory && matchesFormat && matchesFeatured;
   }) || [];
 
   const totalPages = Math.ceil(filteredMaterials.length / itemsPerPage);
@@ -216,10 +230,10 @@ export default function Materials() {
             </div>
 
             {/* Filters and View Toggle */}
-            <div className="flex flex-col sm:flex-row gap-2 justify-between">
-              <div className="flex gap-2 flex-1">
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-2 flex-wrap">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="flex-1 min-w-0 text-xs">
+                  <SelectTrigger className="flex-1 min-w-0 text-xs min-w-32">
                     <Filter className="h-3 w-3 mr-1" />
                     <SelectValue placeholder="Categoria" />
                   </SelectTrigger>
@@ -247,25 +261,55 @@ export default function Materials() {
                   </SelectContent>
                 </Select>
               </div>
+              
+              {/* Featured Filter Buttons */}
+              <div className="flex gap-2 flex-wrap justify-between items-center">
+                <div className="flex gap-2">
+                  <Button
+                    variant={featuredFilter === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFeaturedFilter('all')}
+                    className="text-xs"
+                  >
+                    Todos ({materials?.length || 0})
+                  </Button>
+                  <Button
+                    variant={featuredFilter === 'featured' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFeaturedFilter('featured')}
+                    className={`text-xs ${featuredFilter === 'featured' ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
+                  >
+                    Destacados ({materials?.filter(m => m.isFeatured).length || 0})
+                  </Button>
+                  <Button
+                    variant={featuredFilter === 'regular' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFeaturedFilter('regular')}
+                    className="text-xs"
+                  >
+                    Regulares ({materials?.filter(m => !m.isFeatured).length || 0})
+                  </Button>
+                </div>
 
-              {/* View Mode Toggle */}
-              <div className="flex border rounded-lg self-start">
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className="rounded-r-none px-3"
-                >
-                  <List className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="rounded-l-none px-3"
-                >
-                  <Grid3X3 className="h-3 w-3" />
-                </Button>
+                {/* View Mode Toggle */}
+                <div className="flex border rounded-lg self-start">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-r-none px-3"
+                  >
+                    <List className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-l-none px-3"
+                  >
+                    <Grid3X3 className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

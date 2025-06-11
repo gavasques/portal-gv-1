@@ -335,9 +335,9 @@ export default function AdminMaterials() {
         </Dialog>
       </div>
 
-      {/* Search */}
+      {/* Search and Filters */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-4 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -346,6 +346,32 @@ export default function AdminMaterials() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
+          </div>
+          
+          {/* Filter Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={filter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('all')}
+            >
+              Todos ({materials.length})
+            </Button>
+            <Button
+              variant={filter === 'featured' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('featured')}
+              className={filter === 'featured' ? 'bg-orange-600 hover:bg-orange-700' : ''}
+            >
+              Destacados ({materials.filter(m => m.isFeatured).length})
+            </Button>
+            <Button
+              variant={filter === 'regular' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilter('regular')}
+            >
+              Regulares ({materials.filter(m => !m.isFeatured).length})
+            </Button>
           </div>
         </CardContent>
       </Card>
