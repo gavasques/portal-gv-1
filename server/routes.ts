@@ -7,8 +7,8 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
-import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema, insertAiPromptSchema, insertAiPromptCategorySchema } from "@shared/schema";
-import { users, tickets, materials, templates, aiPrompts } from "@shared/schema";
+import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema, insertAiPromptSchema, insertAiPromptCategorySchema, insertCourseSchema, insertMentorshipSchema, insertPageContentSchema } from "@shared/schema";
+import { users, tickets, materials, templates, aiPrompts, courses, mentorships, pageContent, aiPromptCategories } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -1802,6 +1802,204 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedContent);
     } catch (error) {
       res.status(500).json({ message: 'Failed to update page content' });
+    }
+  });
+
+  // Courses management API routes
+  app.get('/api/admin/courses', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const allCourses = await db.select().from(courses).orderBy(courses.sortOrder, courses.createdAt);
+      res.json(allCourses);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch courses' });
+    }
+  });
+
+  app.post('/api/admin/courses', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = insertCourseSchema.parse(req.body);
+      const [newCourse] = await db.insert(courses).values(validatedData).returning();
+      res.status(201).json(newCourse);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create course', error: error.message });
+    }
+  });
+
+  app.put('/api/admin/courses/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertCourseSchema.parse(req.body);
+      const [updatedCourse] = await db.update(courses).set({
+        ...validatedData,
+        updatedAt: new Date()
+      }).where(eq(courses.id, id)).returning();
+      
+      if (!updatedCourse) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+      
+      res.json(updatedCourse);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update course', error: error.message });
+    }
+  });
+
+  app.delete('/api/admin/courses/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const [deletedCourse] = await db.delete(courses).where(eq(courses.id, id)).returning();
+      
+      if (!deletedCourse) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+      
+      res.json({ message: 'Course deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete course' });
+    }
+  });
+
+  // Mentorships management API routes
+  app.get('/api/admin/mentorships', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const allMentorships = await db.select().from(mentorships).orderBy(mentorships.sortOrder, mentorships.createdAt);
+      res.json(allMentorships);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch mentorships' });
+    }
+  });
+
+  app.post('/api/admin/mentorships', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = insertMentorshipSchema.parse(req.body);
+      const [newMentorship] = await db.insert(mentorships).values(validatedData).returning();
+      res.status(201).json(newMentorship);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create mentorship', error: error.message });
+    }
+  });
+
+  app.put('/api/admin/mentorships/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertMentorshipSchema.parse(req.body);
+      const [updatedMentorship] = await db.update(mentorships).set({
+        ...validatedData,
+        updatedAt: new Date()
+      }).where(eq(mentorships.id, id)).returning();
+      
+      if (!updatedMentorship) {
+        return res.status(404).json({ message: 'Mentorship not found' });
+      }
+      
+      res.json(updatedMentorship);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update mentorship', error: error.message });
+    }
+  });
+
+  app.delete('/api/admin/mentorships/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const [deletedMentorship] = await db.delete(mentorships).where(eq(mentorships.id, id)).returning();
+      
+      if (!deletedMentorship) {
+        return res.status(404).json({ message: 'Mentorship not found' });
+      }
+      
+      res.json({ message: 'Mentorship deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete mentorship' });
+    }
+  });
+
+  // Page content management API routes
+  app.get('/api/admin/page-content/:pageKey', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { pageKey } = req.params;
+      const [content] = await db.select().from(pageContent).where(eq(pageContent.pageKey, pageKey));
+      
+      if (!content) {
+        // Create default content if doesn't exist
+        const defaultContent = {
+          pageKey,
+          heroTitle: `Página ${pageKey}`,
+          heroDescription: 'Descrição padrão',
+          isActive: true
+        };
+        const [newContent] = await db.insert(pageContent).values(defaultContent).returning();
+        return res.json(newContent);
+      }
+      
+      res.json(content);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch page content' });
+    }
+  });
+
+  app.put('/api/admin/page-content/:pageKey', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { pageKey } = req.params;
+      const validatedData = insertPageContentSchema.parse({ ...req.body, pageKey });
+      
+      // Check if content exists
+      const [existing] = await db.select().from(pageContent).where(eq(pageContent.pageKey, pageKey));
+      
+      if (existing) {
+        const [updated] = await db.update(pageContent)
+          .set({ ...validatedData, updatedAt: new Date() })
+          .where(eq(pageContent.pageKey, pageKey))
+          .returning();
+        res.json(updated);
+      } else {
+        const [created] = await db.insert(pageContent).values(validatedData).returning();
+        res.json(created);
+      }
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update page content', error: error.message });
+    }
+  });
+
+  // Public courses API for student area
+  app.get('/api/courses', async (req, res) => {
+    try {
+      const activeCourses = await db.select().from(courses)
+        .where(eq(courses.isActive, true))
+        .orderBy(courses.sortOrder, courses.createdAt);
+      res.json(activeCourses);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch courses' });
+    }
+  });
+
+  // Public mentorships API for student area
+  app.get('/api/mentorships', async (req, res) => {
+    try {
+      const activeMentorships = await db.select().from(mentorships)
+        .where(eq(mentorships.isActive, true))
+        .orderBy(mentorships.sortOrder, mentorships.createdAt);
+      res.json(activeMentorships);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch mentorships' });
+    }
+  });
+
+  // Public page content API for student area
+  app.get('/api/page-content/:pageKey', async (req, res) => {
+    try {
+      const { pageKey } = req.params;
+      const content = await db.select().from(pageContent)
+        .where(eq(pageContent.pageKey, pageKey));
+      
+      const activeContent = content.find(c => c.isActive);
+      
+      if (!activeContent) {
+        return res.status(404).json({ message: 'Page content not found' });
+      }
+      
+      res.json(activeContent);
+    } catch (error: any) {
+      res.status(500).json({ message: 'Failed to fetch page content' });
     }
   });
 

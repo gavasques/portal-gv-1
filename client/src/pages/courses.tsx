@@ -42,35 +42,33 @@ interface PageContent {
 }
 
 export default function Courses() {
-  // Fetch courses data
+  // Fetch courses data from public API
   const { data: courses = [], isLoading: coursesLoading } = useQuery({
-    queryKey: ['courses'],
+    queryKey: ['/api/courses'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/courses');
+      const response = await fetch('/api/courses');
       if (!response.ok) throw new Error('Failed to fetch courses');
-      const data = await response.json();
-      return data.filter((course: CourseData) => course.isActive);
+      return await response.json();
     }
   });
 
-  // Fetch mentorships data
+  // Fetch mentorships data from public API
   const { data: mentorships = [], isLoading: mentorshipsLoading } = useQuery({
-    queryKey: ['mentorships'],
+    queryKey: ['/api/mentorships'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/mentorships');
+      const response = await fetch('/api/mentorships');
       if (!response.ok) throw new Error('Failed to fetch mentorships');
-      const data = await response.json();
-      return data.filter((mentorship: MentorshipData) => mentorship.isActive);
+      return await response.json();
     }
   });
 
-  // Fetch page content
+  // Fetch page content from public API
   const { data: pageContent, isLoading: pageLoading } = useQuery({
-    queryKey: ['page-content-courses'],
+    queryKey: ['/api/page-content/courses'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/page-content/courses');
-      if (!response.ok) throw new Error('Failed to fetch page content');
-      return response.json();
+      const response = await fetch('/api/page-content/courses');
+      if (!response.ok) return null;
+      return await response.json();
     }
   });
 
