@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, Search, Verified, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Star, Search, Verified, MapPin, Phone, Globe } from 'lucide-react';
 import { Link } from 'wouter';
 
 interface Partner {
@@ -94,11 +94,7 @@ export default function Partners() {
                 </span>
               </div>
             )}
-            <div className="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
-              <div className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500">
-                ♥
-              </div>
-            </div>
+            
             {partner.isVerified && (
               <div className="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
                 Verificado
@@ -135,10 +131,6 @@ export default function Partners() {
                   Ver Detalhes
                 </Button>
               </Link>
-              <Button variant="outline" size="sm" className="flex items-center">
-                <Mail className="h-4 w-4 mr-1" />
-                Contatar
-              </Button>
             </div>
           </CardContent>
         </Card>
