@@ -363,6 +363,7 @@ export const materials = pgTable("materials", {
   downloadCount: integer("download_count").notNull().default(0),
   viewCount: integer("view_count").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
+  isFeatured: boolean("is_featured").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

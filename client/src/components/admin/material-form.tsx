@@ -29,6 +29,7 @@ const materialFormSchema = z.object({
   category: z.string().min(1, "Categoria é obrigatória"),
   tags: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
 });
 
 type MaterialFormData = z.infer<typeof materialFormSchema>;
@@ -93,6 +94,7 @@ export default function MaterialForm({ material, onSubmit, onCancel, isLoading }
       category: material?.category || "",
       tags: material?.tags || [],
       isActive: material?.isActive ?? true,
+      isFeatured: material?.isFeatured ?? false,
     },
   });
 
@@ -627,6 +629,27 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
                         <FormLabel className="text-base">Material Ativo</FormLabel>
                         <div className="text-sm text-muted-foreground">
                           Controla se o material está visível para os usuários
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="isFeatured"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Material Destacado</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          Marca o material como "DESTACADO" com visual especial
                         </div>
                       </div>
                       <FormControl>
