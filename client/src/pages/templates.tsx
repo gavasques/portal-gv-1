@@ -90,7 +90,7 @@ export default function Templates() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full p-6">
         <div className="space-y-6">
           <div className="space-y-2">
             <Skeleton className="h-8 w-64" />
@@ -111,7 +111,7 @@ export default function Templates() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="w-full p-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight mb-2">Biblioteca de Templates</h1>
