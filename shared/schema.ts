@@ -169,7 +169,7 @@ export const partnerComments = pgTable("partner_comments", {
   partnerId: integer("partner_id").notNull().references(() => partners.id),
   userId: integer("user_id").notNull().references(() => users.id),
   content: text("content").notNull(),
-  parentId: integer("parent_id").references(() => partnerComments.id),
+  parentId: integer("parent_id"),
   likes: integer("likes").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -714,6 +714,21 @@ export const updateProfileSchema = createInsertSchema(users).pick({
 });
 
 export const insertPartnerSchema = createInsertSchema(partners).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPartnerCommentSchema = createInsertSchema(partnerComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPartnerReviewSchema = createInsertSchema(partnerReviews).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPartnerContactSchema = createInsertSchema(partnerContacts).omit({
   id: true,
   createdAt: true,
 });

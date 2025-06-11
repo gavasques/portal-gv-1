@@ -1,10 +1,11 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, tickets, ticketFiles, ticketMessages,
   materials, news, reviews, userGroups, permissions, groupPermissions, userActivityLog, authTokens,
-  materialTypes, materialCategories, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags, templateTagRelations, aiPromptCategories
+  materialTypes, materialCategories, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags, templateTagRelations, aiPromptCategories,
+  partnerComments, partnerReviews, partnerContacts, partnerFiles
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, like, sql } from "drizzle-orm";
+import { eq, desc, and, or, like, sql, isNull } from "drizzle-orm";
 
 import type { 
   User, InsertUser, Partner, InsertPartner, Supplier, InsertSupplier, Tool, InsertTool,
@@ -599,24 +600,108 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  // Partner comments - placeholder implementations for now
+  // Partner comments
   async getPartnerComments(partnerId: number): Promise<any[]> {
-    // Return empty array for now since comments are not in database schema yet
-    return [];
+    const results = await db.execute(
+      sql`
+        WITH RECURSIVE comment_tree AS (
+          -- Base case: top-level comments
+          SELECT 
+            pc.id,
+            pc.partner_id,
+            pc.user_id,
+            pc.content,
+            pc.parent_id,
+            pc.likes,
+            pc.created_at,
+            u.full_name as user_name,
+            0 as level
+          FROM partner_comments pc
+          LEFT JOIN users u ON pc.user_id = u.id
+          WHERE pc.partner_id = ${partnerId} AND pc.parent_id IS NULL
+          
+          UNION ALL
+          
+          -- Recursive case: replies
+          SELECT 
+            pc.id,
+            pc.partner_id,
+            pc.user_id,
+            pc.content,
+            pc.parent_id,
+            pc.likes,
+            pc.created_at,
+            u.full_name as user_name,
+            ct.level + 1
+          FROM partner_comments pc
+          LEFT JOIN users u ON pc.user_id = u.id
+          INNER JOIN comment_tree ct ON pc.parent_id = ct.id
+        )
+        SELECT * FROM comment_tree
+        ORDER BY created_at DESC
+      `
+    );
+
+    // Organize comments into nested structure
+    const commentsMap = new Map();
+    const topLevelComments: any[] = [];
+
+    results.rows.forEach((row: any) => {
+      const comment = {
+        id: row.id,
+        partnerId: row.partner_id,
+        userId: row.user_id,
+        userName: row.user_name || 'Usuário',
+        content: row.content,
+        parentId: row.parent_id,
+        likes: row.likes,
+        createdAt: row.created_at,
+        hasLiked: false,
+        replies: []
+      };
+
+      commentsMap.set(comment.id, comment);
+
+      if (!comment.parentId) {
+        topLevelComments.push(comment);
+      } else {
+        const parent = commentsMap.get(comment.parentId);
+        if (parent) {
+          parent.replies.push(comment);
+        }
+      }
+    });
+
+    return topLevelComments;
   }
 
   async createPartnerComment(comment: { partnerId: number; userId: number; content: string; parentId?: number | null }): Promise<any> {
-    // Return a mock comment for now since comments are not in database schema yet
+    const result = await db.execute(
+      sql`
+        INSERT INTO partner_comments (partner_id, user_id, content, parent_id)
+        VALUES (${comment.partnerId}, ${comment.userId}, ${comment.content}, ${comment.parentId || null})
+        RETURNING *
+      `
+    );
+
+    const newComment = result.rows[0];
+
+    // Get user name
+    const userResult = await db.execute(
+      sql`SELECT full_name FROM users WHERE id = ${comment.userId}`
+    );
+
     return {
-      id: Date.now(),
-      partnerId: comment.partnerId,
-      userId: comment.userId,
-      userName: 'Usuário',
-      content: comment.content,
-      likes: 0,
+      id: newComment.id,
+      partnerId: newComment.partner_id,
+      userId: newComment.user_id,
+      userName: userResult.rows[0]?.full_name || 'Usuário',
+      content: newComment.content,
+      parentId: newComment.parent_id,
+      likes: newComment.likes,
+      createdAt: newComment.created_at,
       hasLiked: false,
-      replies: [],
-      createdAt: new Date().toISOString()
+      replies: []
     };
   }
 
