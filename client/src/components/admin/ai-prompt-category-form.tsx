@@ -153,6 +153,7 @@ export default function AiPromptCategoryForm({ category, onSuccess }: AiPromptCa
                       placeholder="Descreva o propósito desta categoria..."
                       rows={3}
                       {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -167,7 +168,7 @@ export default function AiPromptCategoryForm({ category, onSuccess }: AiPromptCa
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Ícone</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value ?? "Brain"}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione um ícone" />
