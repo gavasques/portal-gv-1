@@ -376,6 +376,22 @@ export const news = pgTable("news", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// AI Prompts table for comprehensive prompt management
+export const aiPrompts = pgTable("ai_prompts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  category: text("category").notNull(), // Geração de Imagens, Pesquisa e Análise, Comunicação com Fornecedores, Estratégias de Marca, Gestão Financeira
+  description: text("description").notNull(),
+  content: text("content").notNull(), // Full prompt content with placeholders
+  instructions: text("instructions"), // Usage instructions and tips
+  placeholders: jsonb("placeholders"), // Array of placeholder descriptions
+  tags: text("tags").array(),
+  useCount: integer("use_count").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
@@ -702,6 +718,12 @@ export const insertTemplateTagRelationSchema = createInsertSchema(templateTagRel
   createdAt: true,
 });
 
+export const insertAiPromptSchema = createInsertSchema(aiPrompts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -757,3 +779,7 @@ export type TemplateTag = typeof templateTags.$inferSelect;
 export type InsertTemplateTag = z.infer<typeof insertTemplateTagSchema>;
 export type TemplateTagRelation = typeof templateTagRelations.$inferSelect;
 export type InsertTemplateTagRelation = z.infer<typeof insertTemplateTagRelationSchema>;
+
+// AI Prompts types
+export type AiPrompt = typeof aiPrompts.$inferSelect;
+export type InsertAiPrompt = z.infer<typeof insertAiPromptSchema>;
