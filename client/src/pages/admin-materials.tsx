@@ -69,6 +69,32 @@ function MaterialRow({ material, onEdit, onDelete }: {
     }
   });
 
+  const { mutate: toggleFeatured } = useMutation({
+    mutationFn: async (isFeatured: boolean) => {
+      const response = await fetch(`/api/admin/materials/${material.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...material, isFeatured })
+      });
+      if (!response.ok) throw new Error('Failed to update material');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/materials'] });
+      toast({
+        title: "Status atualizado",
+        description: `Material ${material.isFeatured ? 'removido dos' : 'adicionado aos'} destacados.`
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status de destaque.",
+        variant: "destructive"
+      });
+    }
+  });
+
   return (
     <div className="p-3 border-b border-border hover:bg-muted/30 transition-colors">
       <div className="flex items-start justify-between gap-3">
@@ -90,6 +116,11 @@ function MaterialRow({ material, onEdit, onDelete }: {
           
           {/* Badges and stats */}
           <div className="flex items-center gap-2 flex-wrap mb-2">
+            {material.isFeatured && (
+              <Badge variant="default" className="text-xs bg-orange-600 hover:bg-orange-700 text-white font-medium">
+                DESTACADO
+              </Badge>
+            )}
             <Badge variant="outline" className="text-xs">
               {material.category && material.category.length > 12 
                 ? material.category.substring(0, 12) + "..." 
@@ -132,11 +163,24 @@ function MaterialRow({ material, onEdit, onDelete }: {
 
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          <Switch 
-            checked={material.isActive}
-            onCheckedChange={(checked) => toggleStatus(checked)}
-            className="scale-75"
-          />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground">Ativo</span>
+              <Switch 
+                checked={material.isActive}
+                onCheckedChange={(checked) => toggleStatus(checked)}
+                className="scale-75"
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground">Destaque</span>
+              <Switch 
+                checked={material.isFeatured}
+                onCheckedChange={(checked) => toggleFeatured(checked)}
+                className="scale-75"
+              />
+            </div>
+          </div>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -165,11 +209,25 @@ export default function AdminMaterials() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [filter, setFilter] = useState<'all' | 'featured' | 'regular'>('all');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: materials = [], isLoading } = useQuery<Material[]>({
     queryKey: ['/api/admin/materials', { search: searchQuery }],
+  });
+
+  const filteredMaterials = materials.filter(material => {
+    const matchesSearch = !searchQuery || 
+      material.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      material.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      material.category?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesFilter = filter === 'all' || 
+      (filter === 'featured' && material.isFeatured) ||
+      (filter === 'regular' && !material.isFeatured);
+    
+    return matchesSearch && matchesFilter;
   });
 
   const { mutate: deleteMaterial } = useMutation({
@@ -212,11 +270,6 @@ export default function AdminMaterials() {
     setIsFormOpen(false);
     setEditingMaterial(null);
   };
-
-  const filteredMaterials = materials.filter(material =>
-    material.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    material.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="space-y-6">
