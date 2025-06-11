@@ -11,6 +11,9 @@ import Login from "@/pages/login";
 import Partners from "@/pages/partners";
 import Suppliers from "@/pages/suppliers";
 import Tools from "@/pages/tools";
+
+import AdminGroups from '@/pages/admin-groups';
+
 import MySuppliers from "@/pages/my-suppliers";
 import MyProducts from "@/pages/my-products";
 import Templates from "@/pages/templates";
@@ -101,8 +104,8 @@ function Router() {
         <Route path="/admin/cadastros" component={AdminCadastros} />
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/groups" component={AdminGroups} />
+        <Route path="/admin/groups" component={AdminGroups} />
         <Route path="/admin/permissions" component={AdminPermissions} />
-        <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
         <Route path="/admin/courses" component={() => <div>Admin Courses - Em desenvolvimento</div>} />
         <Route path="/admin/templates" component={AdminTemplates} />
         <Route path="/admin/tickets" component={() => <div>Admin Tickets - Em desenvolvimento</div>} />
