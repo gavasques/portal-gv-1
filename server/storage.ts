@@ -1,7 +1,7 @@
 import { 
   users, partners, suppliers, tools, mySuppliers, products, templates, tickets, ticketFiles, ticketMessages,
   materials, news, reviews, userGroups, permissions, groupPermissions, userActivityLog, authTokens,
-  materialTypes, materialCategories, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags, templateTagRelations
+  materialTypes, materialCategories, softwareTypes, supplierTypes, productCategories, partnerCategories, templateTags, templateTagRelations, aiPromptCategories
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
@@ -14,7 +14,7 @@ import type {
   UserActivityLog, InsertUserActivityLog, AuthToken, InsertAuthToken,
   MaterialType, InsertMaterialType, MaterialCategory, InsertMaterialCategory, SoftwareType, InsertSoftwareType, SupplierType, InsertSupplierType,
   ProductCategory, InsertProductCategory, PartnerCategory, InsertPartnerCategory,
-  TemplateTag, InsertTemplateTag
+  TemplateTag, InsertTemplateTag, AiPromptCategory, InsertAiPromptCategory
 } from "@shared/schema";
 export interface IStorage {
   // User management
@@ -191,6 +191,13 @@ export interface IStorage {
   createPartnerCategory(partnerCategory: InsertPartnerCategory): Promise<PartnerCategory>;
   updatePartnerCategory(id: number, updates: Partial<PartnerCategory>): Promise<PartnerCategory>;
   deletePartnerCategory(id: number): Promise<void>;
+
+  // AI Prompt Categories
+  getAiPromptCategories(limit?: number, offset?: number): Promise<AiPromptCategory[]>;
+  getAiPromptCategoryById(id: number): Promise<AiPromptCategory | undefined>;
+  createAiPromptCategory(category: InsertAiPromptCategory): Promise<AiPromptCategory>;
+  updateAiPromptCategory(id: number, updates: Partial<AiPromptCategory>): Promise<AiPromptCategory>;
+  deleteAiPromptCategory(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1202,6 +1209,38 @@ export class DatabaseStorage implements IStorage {
 
   async deletePartnerCategory(id: number): Promise<void> {
     await db.delete(partnerCategories).where(eq(partnerCategories.id, id));
+  }
+
+  // AI Prompt Categories implementation
+  async getAiPromptCategories(limit: number = 50, offset: number = 0): Promise<AiPromptCategory[]> {
+    const categories = await db.select().from(aiPromptCategories)
+      .orderBy(aiPromptCategories.name)
+      .limit(limit)
+      .offset(offset);
+    return categories;
+  }
+
+  async getAiPromptCategoryById(id: number): Promise<AiPromptCategory | undefined> {
+    const [category] = await db.select().from(aiPromptCategories).where(eq(aiPromptCategories.id, id));
+    return category || undefined;
+  }
+
+  async createAiPromptCategory(category: InsertAiPromptCategory): Promise<AiPromptCategory> {
+    const [newCategory] = await db.insert(aiPromptCategories).values(category).returning();
+    return newCategory;
+  }
+
+  async updateAiPromptCategory(id: number, updates: Partial<AiPromptCategory>): Promise<AiPromptCategory> {
+    const [updatedCategory] = await db
+      .update(aiPromptCategories)
+      .set(updates)
+      .where(eq(aiPromptCategories.id, id))
+      .returning();
+    return updatedCategory;
+  }
+
+  async deleteAiPromptCategory(id: number): Promise<void> {
+    await db.delete(aiPromptCategories).where(eq(aiPromptCategories.id, id));
   }
 }
 

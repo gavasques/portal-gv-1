@@ -857,6 +857,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Prompt Categories routes
+  app.get("/api/ai-prompt-categories", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const categories = await storage.getAiPromptCategories(limit, offset);
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch AI prompt categories' });
+    }
+  });
+
+  app.post("/api/ai-prompt-categories", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const validatedData = insertAiPromptCategorySchema.parse(req.body);
+      const category = await storage.createAiPromptCategory(validatedData);
+      res.status(201).json(category);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid AI prompt category data' });
+    }
+  });
+
+  app.put("/api/ai-prompt-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertAiPromptCategorySchema.partial().parse(req.body);
+      const category = await storage.updateAiPromptCategory(id, validatedData);
+      res.json(category);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update AI prompt category' });
+    }
+  });
+
+  app.delete("/api/ai-prompt-categories/:id", requireAuth, requireRole(["Administradores"]), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAiPromptCategory(id);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to delete AI prompt category' });
+    }
+  });
+
   // User Management Routes
   app.get('/api/admin/users', requireAuth, async (req, res) => {
     try {
