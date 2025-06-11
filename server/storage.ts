@@ -1307,8 +1307,9 @@ export class DatabaseStorage implements IStorage {
         module: 'dashboard',
         category: 'principal',
         permissions: [
-          { key: 'dashboard.view', name: 'Ver Dashboard', description: 'Acesso ao painel principal' },
-          { key: 'dashboard.metrics', name: 'Ver Métricas', description: 'Visualizar métricas e estatísticas' }
+          { key: 'dashboard.access', name: 'Acessar Dashboard', description: 'Acesso ao painel principal do sistema' },
+          { key: 'dashboard.view_metrics', name: 'Ver Métricas', description: 'Visualizar métricas e estatísticas pessoais' },
+          { key: 'dashboard.view_summary', name: 'Ver Resumo', description: 'Visualizar resumo de atividades' }
         ]
       },
 
@@ -1317,30 +1318,39 @@ export class DatabaseStorage implements IStorage {
         module: 'courses',
         category: 'educacional',
         permissions: [
-          { key: 'courses.view', name: 'Ver Cursos', description: 'Acesso aos cursos' },
-          { key: 'courses.enroll', name: 'Inscrever em Cursos', description: 'Capacidade de se inscrever em cursos' }
+          { key: 'courses.access', name: 'Acessar Cursos', description: 'Acesso à área de cursos' },
+          { key: 'courses.view', name: 'Ver Cursos', description: 'Visualizar lista de cursos disponíveis' },
+          { key: 'courses.enroll', name: 'Inscrever-se', description: 'Inscrever-se em cursos' },
+          { key: 'courses.view_content', name: 'Ver Conteúdo', description: 'Acessar conteúdo dos cursos' },
+          { key: 'courses.track_progress', name: 'Acompanhar Progresso', description: 'Visualizar progresso nos cursos' }
         ]
       },
       {
         module: 'materials',
         category: 'educacional',
         permissions: [
-          { key: 'materials.view', name: 'Ver Materiais', description: 'Acesso aos materiais educacionais' },
-          { key: 'materials.download', name: 'Baixar Materiais', description: 'Download de materiais' },
-          { key: 'materials.create', name: 'Criar Materiais', description: 'Criar novos materiais' },
-          { key: 'materials.edit', name: 'Editar Materiais', description: 'Editar materiais existentes' },
-          { key: 'materials.delete', name: 'Excluir Materiais', description: 'Excluir materiais' }
+          { key: 'materials.access', name: 'Acessar Materiais', description: 'Acesso à área de materiais educacionais' },
+          { key: 'materials.view', name: 'Ver Materiais', description: 'Visualizar lista de materiais' },
+          { key: 'materials.view_content', name: 'Ver Conteúdo', description: 'Acessar conteúdo dos materiais' },
+          { key: 'materials.download', name: 'Baixar Materiais', description: 'Download de arquivos e recursos' },
+          { key: 'materials.bookmark', name: 'Favoritar', description: 'Marcar materiais como favoritos' },
+          { key: 'materials.create', name: 'Criar Materiais', description: 'Criar novos materiais (admin)' },
+          { key: 'materials.edit', name: 'Editar Materiais', description: 'Editar materiais existentes (admin)' },
+          { key: 'materials.delete', name: 'Excluir Materiais', description: 'Excluir materiais (admin)' }
         ]
       },
       {
         module: 'templates',
         category: 'educacional',
         permissions: [
-          { key: 'templates.view', name: 'Ver Templates', description: 'Acesso aos templates' },
-          { key: 'templates.copy', name: 'Copiar Templates', description: 'Copiar templates para uso' },
-          { key: 'templates.create', name: 'Criar Templates', description: 'Criar novos templates' },
-          { key: 'templates.edit', name: 'Editar Templates', description: 'Editar templates existentes' },
-          { key: 'templates.delete', name: 'Excluir Templates', description: 'Excluir templates' }
+          { key: 'templates.access', name: 'Acessar Templates', description: 'Acesso à área de templates' },
+          { key: 'templates.view', name: 'Ver Templates', description: 'Visualizar lista de templates' },
+          { key: 'templates.view_content', name: 'Ver Conteúdo', description: 'Visualizar conteúdo dos templates' },
+          { key: 'templates.copy', name: 'Copiar Templates', description: 'Copiar templates para uso pessoal' },
+          { key: 'templates.export', name: 'Exportar Templates', description: 'Exportar templates em diferentes formatos' },
+          { key: 'templates.create', name: 'Criar Templates', description: 'Criar novos templates (admin)' },
+          { key: 'templates.edit', name: 'Editar Templates', description: 'Editar templates existentes (admin)' },
+          { key: 'templates.delete', name: 'Excluir Templates', description: 'Excluir templates (admin)' }
         ]
       },
 
@@ -1349,36 +1359,47 @@ export class DatabaseStorage implements IStorage {
         module: 'partners',
         category: 'fornecedores_produtos',
         permissions: [
-          { key: 'partners.view', name: 'Ver Parceiros', description: 'Acesso à lista de parceiros' },
-          { key: 'partners.create', name: 'Criar Parceiros', description: 'Cadastrar novos parceiros' },
-          { key: 'partners.edit', name: 'Editar Parceiros', description: 'Editar informações de parceiros' },
-          { key: 'partners.delete', name: 'Excluir Parceiros', description: 'Remover parceiros' }
+          { key: 'partners.access', name: 'Acessar Parceiros', description: 'Acesso à área de parceiros' },
+          { key: 'partners.view', name: 'Ver Parceiros', description: 'Visualizar lista de parceiros' },
+          { key: 'partners.view_details', name: 'Ver Detalhes', description: 'Visualizar informações detalhadas dos parceiros' },
+          { key: 'partners.contact', name: 'Contatar Parceiros', description: 'Entrar em contato com parceiros' },
+          { key: 'partners.favorite', name: 'Favoritar Parceiros', description: 'Marcar parceiros como favoritos' }
         ]
       },
       {
         module: 'suppliers',
         category: 'fornecedores_produtos',
         permissions: [
-          { key: 'suppliers.view', name: 'Ver Fornecedores', description: 'Acesso à lista de fornecedores' },
-          { key: 'suppliers.create', name: 'Criar Fornecedores', description: 'Cadastrar novos fornecedores' },
-          { key: 'suppliers.edit', name: 'Editar Fornecedores', description: 'Editar informações de fornecedores' },
-          { key: 'suppliers.delete', name: 'Excluir Fornecedores', description: 'Remover fornecedores' }
+          { key: 'suppliers.access', name: 'Acessar Fornecedores', description: 'Acesso à área de fornecedores' },
+          { key: 'suppliers.view', name: 'Ver Fornecedores', description: 'Visualizar lista de fornecedores' },
+          { key: 'suppliers.view_details', name: 'Ver Detalhes', description: 'Visualizar informações detalhadas' },
+          { key: 'suppliers.contact', name: 'Contatar Fornecedores', description: 'Entrar em contato com fornecedores' },
+          { key: 'suppliers.compare', name: 'Comparar Fornecedores', description: 'Comparar diferentes fornecedores' }
         ]
       },
       {
         module: 'my_suppliers',
         category: 'fornecedores_produtos',
         permissions: [
-          { key: 'my_suppliers.view', name: 'Ver Meus Fornecedores', description: 'Acesso aos meus fornecedores' },
-          { key: 'my_suppliers.manage', name: 'Gerenciar Meus Fornecedores', description: 'Gerenciar fornecedores pessoais' }
+          { key: 'my_suppliers.access', name: 'Acessar Meus Fornecedores', description: 'Acesso aos fornecedores pessoais' },
+          { key: 'my_suppliers.view', name: 'Ver Meus Fornecedores', description: 'Visualizar fornecedores salvos' },
+          { key: 'my_suppliers.add', name: 'Adicionar Fornecedores', description: 'Adicionar fornecedores à lista pessoal' },
+          { key: 'my_suppliers.edit', name: 'Editar Informações', description: 'Editar informações dos fornecedores' },
+          { key: 'my_suppliers.remove', name: 'Remover Fornecedores', description: 'Remover fornecedores da lista' },
+          { key: 'my_suppliers.notes', name: 'Gerenciar Notas', description: 'Adicionar e editar notas pessoais' }
         ]
       },
       {
         module: 'my_products',
         category: 'fornecedores_produtos',
         permissions: [
-          { key: 'my_products.view', name: 'Ver Meus Produtos', description: 'Acesso aos meus produtos' },
-          { key: 'my_products.manage', name: 'Gerenciar Meus Produtos', description: 'Gerenciar produtos pessoais' }
+          { key: 'my_products.access', name: 'Acessar Meus Produtos', description: 'Acesso aos produtos pessoais' },
+          { key: 'my_products.view', name: 'Ver Meus Produtos', description: 'Visualizar lista de produtos' },
+          { key: 'my_products.add', name: 'Adicionar Produtos', description: 'Adicionar novos produtos' },
+          { key: 'my_products.edit', name: 'Editar Produtos', description: 'Editar informações dos produtos' },
+          { key: 'my_products.remove', name: 'Remover Produtos', description: 'Remover produtos da lista' },
+          { key: 'my_products.track', name: 'Rastrear Produtos', description: 'Acompanhar status e performance' },
+          { key: 'my_products.analyze', name: 'Analisar Performance', description: 'Análise de performance e vendas' }
         ]
       },
 
@@ -1387,36 +1408,50 @@ export class DatabaseStorage implements IStorage {
         module: 'tools',
         category: 'ferramentas',
         permissions: [
-          { key: 'tools.view', name: 'Ver Ferramentas', description: 'Acesso às ferramentas' },
-          { key: 'tools.use', name: 'Usar Ferramentas', description: 'Utilizar ferramentas disponíveis' }
+          { key: 'tools.access', name: 'Acessar Ferramentas', description: 'Acesso à área de ferramentas' },
+          { key: 'tools.view', name: 'Ver Ferramentas', description: 'Visualizar ferramentas disponíveis' },
+          { key: 'tools.use_basic', name: 'Usar Ferramentas Básicas', description: 'Utilizar ferramentas básicas' },
+          { key: 'tools.use_advanced', name: 'Usar Ferramentas Avançadas', description: 'Utilizar ferramentas avançadas' },
+          { key: 'tools.save_results', name: 'Salvar Resultados', description: 'Salvar resultados das ferramentas' }
         ]
       },
       {
         module: 'simulators',
         category: 'ferramentas',
         permissions: [
-          { key: 'simulators.view', name: 'Ver Simuladores', description: 'Acesso aos simuladores' },
-          { key: 'simulators.use', name: 'Usar Simuladores', description: 'Utilizar simuladores' }
+          { key: 'simulators.access', name: 'Acessar Simuladores', description: 'Acesso à área de simuladores' },
+          { key: 'simulators.view', name: 'Ver Simuladores', description: 'Visualizar simuladores disponíveis' },
+          { key: 'simulators.use_cost', name: 'Simulador de Custos', description: 'Utilizar simulador de custos' },
+          { key: 'simulators.use_profit', name: 'Simulador de Lucro', description: 'Utilizar simulador de lucro' },
+          { key: 'simulators.use_import', name: 'Simulador de Importação', description: 'Utilizar simulador de importação' },
+          { key: 'simulators.save_scenarios', name: 'Salvar Cenários', description: 'Salvar cenários de simulação' },
+          { key: 'simulators.export_reports', name: 'Exportar Relatórios', description: 'Exportar relatórios de simulação' }
         ]
       },
       {
         module: 'ai_agents',
         category: 'ferramentas',
         permissions: [
-          { key: 'ai_agents.view', name: 'Ver Agentes de IA', description: 'Acesso aos agentes de IA' },
-          { key: 'ai_agents.use', name: 'Usar Agentes de IA', description: 'Utilizar agentes de IA' },
-          { key: 'ai_agents.manage_credits', name: 'Gerenciar Créditos IA', description: 'Gerenciar créditos de IA' }
+          { key: 'ai_agents.access', name: 'Acessar Agentes de IA', description: 'Acesso aos agentes de IA' },
+          { key: 'ai_agents.view', name: 'Ver Agentes', description: 'Visualizar agentes disponíveis' },
+          { key: 'ai_agents.use_basic', name: 'Usar Agentes Básicos', description: 'Utilizar agentes básicos (limitado)' },
+          { key: 'ai_agents.use_advanced', name: 'Usar Agentes Avançados', description: 'Utilizar agentes avançados' },
+          { key: 'ai_agents.unlimited_usage', name: 'Uso Ilimitado', description: 'Uso ilimitado de agentes IA' },
+          { key: 'ai_agents.view_credits', name: 'Ver Créditos', description: 'Visualizar saldo de créditos' },
+          { key: 'ai_agents.buy_credits', name: 'Comprar Créditos', description: 'Adquirir novos créditos' }
         ]
       },
       {
         module: 'ai_prompts',
         category: 'ferramentas',
         permissions: [
-          { key: 'ai_prompts.view', name: 'Ver Prompts de IA', description: 'Acesso aos prompts de IA' },
-          { key: 'ai_prompts.use', name: 'Usar Prompts de IA', description: 'Utilizar prompts de IA' },
-          { key: 'ai_prompts.create', name: 'Criar Prompts de IA', description: 'Criar novos prompts' },
-          { key: 'ai_prompts.edit', name: 'Editar Prompts de IA', description: 'Editar prompts existentes' },
-          { key: 'ai_prompts.delete', name: 'Excluir Prompts de IA', description: 'Excluir prompts' }
+          { key: 'ai_prompts.access', name: 'Acessar Prompts de IA', description: 'Acesso à biblioteca de prompts' },
+          { key: 'ai_prompts.view', name: 'Ver Prompts', description: 'Visualizar prompts disponíveis' },
+          { key: 'ai_prompts.use', name: 'Usar Prompts', description: 'Utilizar prompts existentes' },
+          { key: 'ai_prompts.copy', name: 'Copiar Prompts', description: 'Copiar prompts para uso pessoal' },
+          { key: 'ai_prompts.favorite', name: 'Favoritar Prompts', description: 'Marcar prompts como favoritos' },
+          { key: 'ai_prompts.create_personal', name: 'Criar Prompts Pessoais', description: 'Criar prompts pessoais' },
+          { key: 'ai_prompts.share', name: 'Compartilhar Prompts', description: 'Compartilhar prompts com outros usuários' }
         ]
       },
 
@@ -1425,25 +1460,93 @@ export class DatabaseStorage implements IStorage {
         module: 'tickets',
         category: 'suporte',
         permissions: [
-          { key: 'tickets.view', name: 'Ver Chamados', description: 'Acesso aos chamados' },
+          { key: 'tickets.access', name: 'Acessar Suporte', description: 'Acesso à área de suporte' },
+          { key: 'tickets.view_own', name: 'Ver Meus Chamados', description: 'Visualizar próprios chamados' },
           { key: 'tickets.create', name: 'Criar Chamados', description: 'Abrir novos chamados' },
-          { key: 'tickets.edit', name: 'Editar Chamados', description: 'Editar chamados existentes' },
+          { key: 'tickets.reply', name: 'Responder Chamados', description: 'Responder em chamados próprios' },
+          { key: 'tickets.attach_files', name: 'Anexar Arquivos', description: 'Anexar arquivos aos chamados' },
+          { key: 'tickets.view_all', name: 'Ver Todos Chamados', description: 'Visualizar todos os chamados (suporte)' },
+          { key: 'tickets.assign', name: 'Atribuir Chamados', description: 'Atribuir chamados a outros usuários' },
           { key: 'tickets.close', name: 'Fechar Chamados', description: 'Resolver e fechar chamados' },
-          { key: 'tickets.assign', name: 'Atribuir Chamados', description: 'Atribuir chamados a usuários' }
+          { key: 'tickets.reopen', name: 'Reabrir Chamados', description: 'Reabrir chamados fechados' }
         ]
       },
 
-      // ADMIN
+      // ADMIN - Gestão de Usuários
       {
-        module: 'admin',
+        module: 'admin_users',
         category: 'admin',
         permissions: [
-          { key: 'admin.dashboard', name: 'Dashboard Admin', description: 'Acesso ao dashboard administrativo' },
-          { key: 'admin.users', name: 'Gerenciar Usuários', description: 'Gerenciar usuários do sistema' },
-          { key: 'admin.groups', name: 'Gerenciar Grupos', description: 'Gerenciar grupos de usuários' },
-          { key: 'admin.permissions', name: 'Gerenciar Permissões', description: 'Gerenciar permissões do sistema' },
-          { key: 'admin.cadastros', name: 'Cadastros Base', description: 'Gerenciar cadastros base do sistema' },
-          { key: 'admin.system_settings', name: 'Configurações Sistema', description: 'Configurações gerais do sistema' }
+          { key: 'admin.access_panel', name: 'Acessar Painel Admin', description: 'Acesso ao painel administrativo' },
+          { key: 'admin.dashboard', name: 'Dashboard Admin', description: 'Visualizar dashboard administrativo' },
+          { key: 'admin.users.view', name: 'Ver Usuários', description: 'Visualizar lista de usuários' },
+          { key: 'admin.users.create', name: 'Criar Usuários', description: 'Criar novos usuários' },
+          { key: 'admin.users.edit', name: 'Editar Usuários', description: 'Editar informações de usuários' },
+          { key: 'admin.users.delete', name: 'Excluir Usuários', description: 'Excluir usuários do sistema' },
+          { key: 'admin.users.impersonate', name: 'Personificar Usuários', description: 'Acessar como outro usuário' },
+          { key: 'admin.users.reset_password', name: 'Resetar Senhas', description: 'Resetar senhas de usuários' },
+          { key: 'admin.users.manage_credits', name: 'Gerenciar Créditos', description: 'Gerenciar créditos de IA dos usuários' }
+        ]
+      },
+
+      // ADMIN - Controle de Acesso
+      {
+        module: 'admin_access',
+        category: 'admin',
+        permissions: [
+          { key: 'admin.access.view_groups', name: 'Ver Grupos', description: 'Visualizar grupos de usuários' },
+          { key: 'admin.access.create_groups', name: 'Criar Grupos', description: 'Criar novos grupos' },
+          { key: 'admin.access.edit_groups', name: 'Editar Grupos', description: 'Editar grupos existentes' },
+          { key: 'admin.access.delete_groups', name: 'Excluir Grupos', description: 'Excluir grupos de usuários' },
+          { key: 'admin.access.view_permissions', name: 'Ver Permissões', description: 'Visualizar permissões do sistema' },
+          { key: 'admin.access.assign_permissions', name: 'Atribuir Permissões', description: 'Atribuir permissões a grupos' },
+          { key: 'admin.access.create_permissions', name: 'Criar Permissões', description: 'Criar novas permissões' },
+          { key: 'admin.access.edit_permissions', name: 'Editar Permissões', description: 'Editar permissões existentes' }
+        ]
+      },
+
+      // ADMIN - Gestão de Conteúdo
+      {
+        module: 'admin_content',
+        category: 'admin',
+        permissions: [
+          { key: 'admin.materials.manage', name: 'Gerenciar Materiais', description: 'Gerenciamento completo de materiais' },
+          { key: 'admin.templates.manage', name: 'Gerenciar Templates', description: 'Gerenciamento completo de templates' },
+          { key: 'admin.ai_prompts.manage', name: 'Gerenciar Prompts IA', description: 'Gerenciamento completo de prompts IA' },
+          { key: 'admin.courses.manage', name: 'Gerenciar Cursos', description: 'Gerenciamento completo de cursos' },
+          { key: 'admin.news.manage', name: 'Gerenciar Notícias', description: 'Gerenciar notícias e atualizações' },
+          { key: 'admin.content.moderate', name: 'Moderar Conteúdo', description: 'Moderar conteúdo enviado por usuários' },
+          { key: 'admin.content.publish', name: 'Publicar Conteúdo', description: 'Publicar e despublicar conteúdo' }
+        ]
+      },
+
+      // ADMIN - Cadastros Base
+      {
+        module: 'admin_cadastros',
+        category: 'admin',
+        permissions: [
+          { key: 'admin.cadastros.view', name: 'Ver Cadastros', description: 'Visualizar cadastros base do sistema' },
+          { key: 'admin.cadastros.material_types', name: 'Tipos de Material', description: 'Gerenciar tipos de material' },
+          { key: 'admin.cadastros.material_categories', name: 'Categorias de Material', description: 'Gerenciar categorias de material' },
+          { key: 'admin.cadastros.supplier_types', name: 'Tipos de Fornecedor', description: 'Gerenciar tipos de fornecedor' },
+          { key: 'admin.cadastros.partner_categories', name: 'Categorias de Parceiro', description: 'Gerenciar categorias de parceiro' },
+          { key: 'admin.cadastros.ai_prompt_categories', name: 'Categorias de Prompt IA', description: 'Gerenciar categorias de prompt IA' },
+          { key: 'admin.cadastros.software_types', name: 'Tipos de Software', description: 'Gerenciar tipos de software' },
+          { key: 'admin.cadastros.template_tags', name: 'Tags de Template', description: 'Gerenciar tags de template' }
+        ]
+      },
+
+      // ADMIN - Sistema
+      {
+        module: 'admin_system',
+        category: 'admin',
+        permissions: [
+          { key: 'admin.system.settings', name: 'Configurações Sistema', description: 'Configurações gerais do sistema' },
+          { key: 'admin.system.logs', name: 'Ver Logs Sistema', description: 'Visualizar logs do sistema' },
+          { key: 'admin.system.backup', name: 'Backup Sistema', description: 'Realizar backup do sistema' },
+          { key: 'admin.system.maintenance', name: 'Manutenção Sistema', description: 'Ativar modo de manutenção' },
+          { key: 'admin.system.analytics', name: 'Analytics Sistema', description: 'Visualizar analytics detalhados' },
+          { key: 'admin.system.monitoring', name: 'Monitoramento Sistema', description: 'Monitorar saúde do sistema' }
         ]
       }
     ];
@@ -1461,14 +1564,6 @@ export class DatabaseStorage implements IStorage {
         });
       }
     }
-  }
-
-  async getUserActivity(userId: number, limit = 50, offset = 0): Promise<UserActivityLog[]> {
-    return await db.select().from(userActivityLog)
-      .where(eq(userActivityLog.userId, userId))
-      .limit(limit)
-      .offset(offset)
-      .orderBy(desc(userActivityLog.createdAt));
   }
 
   // Check if user has specific permission

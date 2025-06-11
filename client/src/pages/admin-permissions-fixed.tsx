@@ -229,24 +229,38 @@ export default function AdminPermissions() {
     setSelectedGroup(group);
   };
 
-  const getModuleIcon = (module: string) => {
-    switch (module) {
-      case 'admin': return <Shield className="h-4 w-4" />;
-      case 'materials': return <Star className="h-4 w-4" />;
-      case 'ai_agents': return <Settings className="h-4 w-4" />;
-      case 'tickets': return <Users className="h-4 w-4" />;
-      case 'tools': return <Lock className="h-4 w-4" />;
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'principal': return <Shield className="h-4 w-4" />;
+      case 'educacional': return <Star className="h-4 w-4" />;
+      case 'fornecedores_produtos': return <Users className="h-4 w-4" />;
+      case 'ferramentas': return <Settings className="h-4 w-4" />;
+      case 'suporte': return <Users className="h-4 w-4" />;
+      case 'admin': return <Lock className="h-4 w-4" />;
       default: return <Lock className="h-4 w-4" />;
     }
   };
 
-  const getModuleDescription = (module: string) => {
-    switch (module) {
-      case 'admin': return 'Acesso administrativo e gerenciamento do sistema';
-      case 'materials': return 'Acesso a conteúdo educacional e materiais premium';
-      case 'ai_agents': return 'Ferramentas de IA e gerenciamento de créditos';
-      case 'tickets': return 'Sistema de suporte e gerenciamento de tickets';
-      case 'tools': return 'Acesso ao diretório e interações do usuário';
+  const getCategoryName = (category: string) => {
+    switch (category) {
+      case 'principal': return 'Principal';
+      case 'educacional': return 'Educacional';
+      case 'fornecedores_produtos': return 'Fornecedores & Produtos';
+      case 'ferramentas': return 'Ferramentas';
+      case 'suporte': return 'Suporte';
+      case 'admin': return 'Administração';
+      default: return 'Sistema';
+    }
+  };
+
+  const getCategoryDescription = (category: string) => {
+    switch (category) {
+      case 'principal': return 'Acesso ao dashboard e informações principais';
+      case 'educacional': return 'Cursos, materiais educacionais e templates';
+      case 'fornecedores_produtos': return 'Parceiros, fornecedores e gestão de produtos';
+      case 'ferramentas': return 'Ferramentas, simuladores e agentes de IA';
+      case 'suporte': return 'Sistema de chamados e suporte técnico';
+      case 'admin': return 'Funções administrativas e configurações do sistema';
       default: return 'Permissões do sistema';
     }
   };
