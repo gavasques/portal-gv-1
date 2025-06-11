@@ -376,7 +376,6 @@ export const aiPromptCategories = pgTable("ai_prompt_categories", {
   color: text("color").notNull().default("#6b7280"), // CSS color for UI
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const news = pgTable("news", {
@@ -402,77 +401,6 @@ export const aiPrompts = pgTable("ai_prompts", {
   useCount: integer("use_count").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
   isFeatured: boolean("is_featured").notNull().default(false), // Badge "DESTACADO" controlado pelo admin
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-
-
-// Courses management system
-export const courses = pgTable("courses", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  subtitle: text("subtitle"),
-  description: text("description").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
-  features: text("features").array().notNull().default([]),
-  highlights: text("highlights").array().notNull().default([]),
-  link: text("link").notNull(),
-  calendlyLink: text("calendly_link"),
-  popular: boolean("popular").notNull().default(false),
-  isActive: boolean("is_active").notNull().default(true),
-  customHtml: text("custom_html"),
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Mentorships management system
-export const mentorships = pgTable("mentorships", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  features: text("features").array().notNull().default([]),
-  calendlyLink: text("calendly_link").notNull(),
-  isActive: boolean("is_active").notNull().default(true),
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Page content management for dynamic editing
-export const pageContent = pgTable("page_content", {
-  id: serial("id").primaryKey(),
-  pageKey: text("page_key").notNull().unique(), // courses, materials, etc.
-  heroTitle: text("hero_title"),
-  heroSubtitle: text("hero_subtitle"),
-  heroDescription: text("hero_description"),
-  benefitsTitle: text("benefits_title"),
-  ctaTitle: text("cta_title"),
-  ctaDescription: text("cta_description"),
-  customCss: text("custom_css"),
-  customJs: text("custom_js"),
-  metaTitle: text("meta_title"),
-  metaDescription: text("meta_description"),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Page sections for modular content management
-export const pageSections = pgTable("page_sections", {
-  id: serial("id").primaryKey(),
-  pageKey: text("page_key").notNull(),
-  sectionKey: text("section_key").notNull(), // hero, benefits, features, testimonials, etc.
-  title: text("title"),
-  subtitle: text("subtitle"),
-  content: text("content"),
-  backgroundImage: text("background_image"),
-  backgroundColor: text("background_color"),
-  textColor: text("text_color"),
-  isActive: boolean("is_active").notNull().default(true),
-  sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -792,6 +720,11 @@ export const insertPartnerCategorySchema = createInsertSchema(partnerCategories)
   createdAt: true,
 });
 
+export const insertAiPromptCategorySchema = createInsertSchema(aiPromptCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Template tag schemas
 export const insertTemplateTagSchema = createInsertSchema(templateTags).omit({
   id: true,
@@ -804,36 +737,6 @@ export const insertTemplateTagRelationSchema = createInsertSchema(templateTagRel
 });
 
 export const insertAiPromptSchema = createInsertSchema(aiPrompts).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertAiPromptCategorySchema = createInsertSchema(aiPromptCategories).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertCourseSchema = createInsertSchema(courses).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertMentorshipSchema = createInsertSchema(mentorships).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertPageContentSchema = createInsertSchema(pageContent).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertPageSectionSchema = createInsertSchema(pageSections).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -900,13 +803,3 @@ export type InsertTemplateTagRelation = z.infer<typeof insertTemplateTagRelation
 // AI Prompts types
 export type AiPrompt = typeof aiPrompts.$inferSelect;
 export type InsertAiPrompt = z.infer<typeof insertAiPromptSchema>;
-
-// Course management types
-export type Course = typeof courses.$inferSelect;
-export type InsertCourse = z.infer<typeof insertCourseSchema>;
-export type Mentorship = typeof mentorships.$inferSelect;
-export type InsertMentorship = z.infer<typeof insertMentorshipSchema>;
-export type PageContent = typeof pageContent.$inferSelect;
-export type InsertPageContent = z.infer<typeof insertPageContentSchema>;
-export type PageSection = typeof pageSections.$inferSelect;
-export type InsertPageSection = z.infer<typeof insertPageSectionSchema>;

@@ -22,7 +22,6 @@ import AdminCadastros from "./pages/admin-cadastros";
 import AdminPermissions from "./pages/admin-permissions";
 import AdminAiPrompts from "./pages/admin/ai-prompts";
 import AdminCourses from "./pages/admin-courses";
-import AdminCoursesEnhanced from "./pages/admin-courses-enhanced";
 import AiAgents from "@/pages/ai-agents";
 import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
@@ -104,7 +103,7 @@ function Router() {
         <Route path="/admin/groups" component={() => <div>Admin Groups - Em desenvolvimento</div>} />
         <Route path="/admin/permissions" component={AdminPermissions} />
         <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
-        <Route path="/admin/courses" component={AdminCoursesEnhanced} />
+        <Route path="/admin/courses" component={AdminCourses} />
         <Route path="/admin/templates" component={AdminTemplates} />
         <Route path="/admin/tickets" component={() => <div>Admin Tickets - Em desenvolvimento</div>} />
         <Route path="/admin/partners" component={() => <div>Admin Partners - Em desenvolvimento</div>} />
