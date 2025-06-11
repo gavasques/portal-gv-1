@@ -495,12 +495,73 @@ export class DatabaseStorage implements IStorage {
     return partner;
   }
 
+  async deletePartner(id: number): Promise<void> {
+    await db.delete(partners).where(eq(partners.id, id));
+  }
+
   async searchPartners(query: string, category?: string): Promise<Partner[]> {
     let whereClause = like(partners.name, `%${query}%`);
     if (category) {
       whereClause = and(whereClause, eq(partners.category, category)) as any;
     }
     return await db.select().from(partners).where(whereClause);
+  }
+
+  // Partner contacts - placeholder implementations for now
+  async getPartnerContacts(partnerId: number): Promise<any[]> {
+    // Return empty array for now since contacts are not in database schema yet
+    return [];
+  }
+
+  // Partner reviews - placeholder implementations for now
+  async getPartnerReviews(partnerId: number): Promise<any[]> {
+    // Return empty array for now since reviews are not in database schema yet
+    return [];
+  }
+
+  async createPartnerReview(review: { partnerId: number; userId: number; rating: number; comment: string }): Promise<any> {
+    // Return a mock review for now since reviews are not in database schema yet
+    return {
+      id: Date.now(),
+      partnerId: review.partnerId,
+      userId: review.userId,
+      userName: 'Usuário',
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  // Partner comments - placeholder implementations for now
+  async getPartnerComments(partnerId: number): Promise<any[]> {
+    // Return empty array for now since comments are not in database schema yet
+    return [];
+  }
+
+  async createPartnerComment(comment: { partnerId: number; userId: number; content: string; parentId?: number | null }): Promise<any> {
+    // Return a mock comment for now since comments are not in database schema yet
+    return {
+      id: Date.now(),
+      partnerId: comment.partnerId,
+      userId: comment.userId,
+      userName: 'Usuário',
+      content: comment.content,
+      likes: 0,
+      hasLiked: false,
+      replies: [],
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  async toggleCommentLike(commentId: number, userId: number): Promise<any> {
+    // Return mock like toggle for now since comments are not in database schema yet
+    return { liked: true, likes: 1 };
+  }
+
+  // Partner files - placeholder implementations for now
+  async getPartnerFiles(partnerId: number): Promise<any[]> {
+    // Return empty array for now since files are not in database schema yet
+    return [];
   }
 
   async getSuppliers(limit = 50, offset = 0): Promise<Supplier[]> {
