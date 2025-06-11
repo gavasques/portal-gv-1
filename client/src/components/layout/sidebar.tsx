@@ -116,6 +116,12 @@ const studentMenuGroups = [
         href: "/ai-agents", 
         icon: Bot,
         accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
+      },
+      { 
+        label: "Prompts de IA", 
+        href: "/ai-prompts", 
+        icon: Bot,
+        accessLevels: ["aluno", "aluno_pro", "suporte", "admin"]
       }
     ]
   },
@@ -193,6 +199,12 @@ const adminMenuGroups = [
         label: "Templates", 
         href: "/admin/templates", 
         icon: FileText,
+        accessLevels: ["admin", "suporte"]
+      },
+      { 
+        label: "Prompts de IA", 
+        href: "/admin/ai-prompts", 
+        icon: Bot,
         accessLevels: ["admin", "suporte"]
       }
     ]

@@ -87,6 +87,7 @@ function Router() {
         <Route path="/templates" component={Templates} />
         <Route path="/templates/:id" component={TemplateView} />
         <Route path="/ai-agents" component={AiAgents} />
+        <Route path="/ai-prompts" component={AiPrompts} />
         <Route path="/tickets" component={Tickets} />
         <Route path="/materials" component={Materials} />
         <Route path="/materials/:id" component={MaterialView} />
@@ -96,6 +97,7 @@ function Router() {
         <Route path="/profile" component={ProfileSettings} />
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/materials" component={AdminMaterials} />
+        <Route path="/admin/ai-prompts" component={AdminAiPrompts} />
         <Route path="/admin/cadastros" component={AdminCadastros} />
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/groups" component={AdminGroups} />
