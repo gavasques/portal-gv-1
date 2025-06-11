@@ -189,6 +189,66 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
           />
         );
       
+
+      
+      case "Fluxograma Miro":
+      case "Embed/Iframe":
+      case "Código Embed":
+      case "iFrame Externo":
+      case "embed_iframe":
+      case "fluxograma_miro":
+        return (
+          <FormField
+            control={form.control}
+            name="embedCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Código de Incorporação (iframe)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value || ""}
+                    placeholder="Cole aqui o código iframe de incorporação..."
+                    className="min-h-[200px] font-mono text-sm"
+                  />
+                </FormControl>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p><strong>Exemplo de código iframe:</strong></p>
+                  <code className="block bg-muted p-2 rounded text-xs">
+                    &lt;iframe src="https://exemplo.com" width="100%" height="400"&gt;&lt;/iframe&gt;
+                  </code>
+                  <p>Cole aqui o código HTML iframe completo fornecido pela plataforma externa.</p>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+      
+      case "Link de Pasta":
+      case "Link de Documento":
+      case "link_pasta":
+      case "link_documento":
+        return (
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL do Link</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ""} placeholder="https://drive.google.com/..." />
+                </FormControl>
+                <div className="text-xs text-muted-foreground">
+                  Cole aqui o link direto para o documento ou pasta (Google Drive, Dropbox, OneDrive, etc.)
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+
+      case "Documento PDF":
       case "documento_pdf":
         return (
           <div className="space-y-4">
@@ -218,6 +278,7 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
           </div>
         );
 
+      case "Planilha Excel":
       case "planilha_excel":
         return (
           <div className="space-y-4">
@@ -247,6 +308,7 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
           </div>
         );
 
+      case "Arquivo Word":
       case "arquivo_word":
         return (
           <div className="space-y-4">
@@ -276,6 +338,37 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
           </div>
         );
 
+      case "Apresentação PowerPoint":
+        return (
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+              <div className="text-center">
+                <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">Upload de Apresentação PowerPoint</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Selecione um arquivo .ppt ou .pptx
+                </p>
+                <Input type="file" accept=".ppt,.pptx" className="max-w-sm mx-auto" />
+              </div>
+            </div>
+            <FormField
+              control={form.control}
+              name="fileName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome de Exibição</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} placeholder="Nome da apresentação para exibição" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        );
+
+      case "Áudio":
+      case "Áudio/Podcast":
       case "audio":
         return (
           <div className="space-y-4">
@@ -284,9 +377,9 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
                 <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">Upload de Arquivo de Áudio</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Selecione um arquivo .mp3 ou .wav
+                  Selecione um arquivo .mp3, .wav ou .m4a
                 </p>
-                <Input type="file" accept=".mp3,.wav" className="max-w-sm mx-auto" />
+                <Input type="file" accept=".mp3,.wav,.m4a" className="max-w-sm mx-auto" />
               </div>
             </div>
             <FormField
@@ -305,6 +398,49 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
           </div>
         );
 
+      case "Vídeo YouTube":
+      case "video_youtube":
+        return (
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL do YouTube</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ""} placeholder="https://www.youtube.com/watch?v=..." />
+                </FormControl>
+                <div className="text-xs text-muted-foreground">
+                  Cole aqui o link completo do vídeo no YouTube
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+
+      case "Vídeo Panda":
+      case "video_panda":
+        return (
+          <FormField
+            control={form.control}
+            name="url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>URL do Vídeo Panda</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ""} placeholder="URL do vídeo no Panda Video" />
+                </FormControl>
+                <div className="text-xs text-muted-foreground">
+                  Cole aqui o link do vídeo hospedado no Panda Video
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        );
+
+      case "Vídeo Upload":
       case "video_upload":
         return (
           <div className="space-y-4">
@@ -332,81 +468,6 @@ Explique como usar este prompt no ChatGPT ou Claude...`}
               )}
             />
           </div>
-        );
-      
-      case "video_youtube":
-        return (
-          <FormField
-            control={form.control}
-            name="url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>URL do YouTube</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value || ""} placeholder="https://www.youtube.com/watch?v=..." />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-      
-      case "video_panda":
-        return (
-          <FormField
-            control={form.control}
-            name="url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>URL do Vídeo Panda</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value || ""} placeholder="URL do vídeo no Panda Video" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-      
-      case "fluxograma_miro":
-      case "embed_iframe":
-        return (
-          <FormField
-            control={form.control}
-            name="embedCode"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Código de Incorporação</FormLabel>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    value={field.value || ""}
-                    placeholder="Cole aqui o código iframe de incorporação..."
-                    className="min-h-[120px]"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        );
-      
-      case "link_pasta":
-      case "link_documento":
-        return (
-          <FormField
-            control={form.control}
-            name="url"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>URL do Link</FormLabel>
-                <FormControl>
-                  <Input {...field} value={field.value || ""} placeholder="https://drive.google.com/..." />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         );
       
       default:
