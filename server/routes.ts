@@ -7,8 +7,8 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
-import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema } from "@shared/schema";
-import { users, tickets, materials, templates } from "@shared/schema";
+import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema, insertAiPromptSchema } from "@shared/schema";
+import { users, tickets, materials, templates, aiPrompts } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -1458,6 +1458,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error syncing YouTube videos:', error);
       res.status(500).json({ message: 'Failed to sync YouTube videos' });
+    }
+  });
+
+  // AI Prompts API routes
+  app.get('/api/ai-prompts', requireAuth, async (req, res) => {
+    try {
+      const { category, search } = req.query;
+      let prompts = await db.select().from(aiPrompts).where(eq(aiPrompts.isActive, true));
+      
+      if (category) {
+        prompts = prompts.filter(p => p.category === category);
+      }
+      
+      if (search) {
+        const searchTerm = (search as string).toLowerCase();
+        prompts = prompts.filter(p => 
+          p.title.toLowerCase().includes(searchTerm) ||
+          p.description.toLowerCase().includes(searchTerm) ||
+          p.content.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      res.json(prompts);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch AI prompts' });
+    }
+  });
+
+  app.get('/api/ai-prompts/:id', requireAuth, async (req, res) => {
+    try {
+      const promptId = parseInt(req.params.id);
+      const [prompt] = await db.select().from(aiPrompts).where(eq(aiPrompts.id, promptId));
+      
+      if (!prompt) {
+        return res.status(404).json({ message: 'Prompt not found' });
+      }
+
+      res.json(prompt);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch AI prompt' });
+    }
+  });
+
+  app.post('/api/ai-prompts/:id/use', requireAuth, async (req, res) => {
+    try {
+      const promptId = parseInt(req.params.id);
+      const [prompt] = await db.select().from(aiPrompts).where(eq(aiPrompts.id, promptId));
+      
+      if (prompt) {
+        await db.update(aiPrompts)
+          .set({ 
+            useCount: prompt.useCount + 1,
+            updatedAt: new Date()
+          })
+          .where(eq(aiPrompts.id, promptId));
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to track prompt usage' });
+    }
+  });
+
+  // Admin AI Prompts routes
+  app.get('/api/admin/ai-prompts', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const prompts = await db.select().from(aiPrompts);
+      res.json(prompts);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch AI prompts' });
+    }
+  });
+
+  app.post('/api/admin/ai-prompts', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const validatedData = insertAiPromptSchema.parse(req.body);
+      const [newPrompt] = await db.insert(aiPrompts)
+        .values(validatedData)
+        .returning();
+      res.status(201).json(newPrompt);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create AI prompt' });
+    }
+  });
+
+  app.put('/api/admin/ai-prompts/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const promptId = parseInt(req.params.id);
+      const validatedData = insertAiPromptSchema.partial().parse(req.body);
+      
+      const [updatedPrompt] = await db.update(aiPrompts)
+        .set({ ...validatedData, updatedAt: new Date() })
+        .where(eq(aiPrompts.id, promptId))
+        .returning();
+
+      if (!updatedPrompt) {
+        return res.status(404).json({ message: 'Prompt not found' });
+      }
+
+      res.json(updatedPrompt);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update AI prompt' });
+    }
+  });
+
+  app.delete('/api/admin/ai-prompts/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const promptId = parseInt(req.params.id);
+      await db.delete(aiPrompts).where(eq(aiPrompts.id, promptId));
+      res.json({ message: 'AI prompt deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete AI prompt' });
     }
   });
 
