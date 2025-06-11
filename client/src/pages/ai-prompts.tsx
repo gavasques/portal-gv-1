@@ -208,55 +208,59 @@ export default function AiPrompts() {
       </div>
 
       {/* Prompts Grid */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
         {paginatedPrompts.map((prompt) => {
           const Icon = categoryIcons[prompt.category as keyof typeof categoryIcons] || BookOpen;
           const isExpanded = expandedPrompt === prompt.id;
           
           return (
-            <Card key={prompt.id} className="transition-all duration-200 hover:shadow-md cursor-pointer" onClick={() => toggleExpand(prompt.id)}>
+            <Card key={prompt.id} className="transition-all duration-200 hover:shadow-md cursor-pointer h-fit" onClick={() => toggleExpand(prompt.id)}>
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center space-x-2">
-                      <Icon className="h-5 w-5 text-primary" />
-                      <h3 className="font-semibold text-lg">{prompt.title}</h3>
-                      {prompt.isFeatured && (
-                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white animate-pulse">
-                          ⭐ DESTACADO
-                        </Badge>
-                      )}
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
+                      <Icon className="h-4 w-4 text-primary shrink-0" />
+                      <h3 className="font-semibold text-sm truncate">{prompt.title}</h3>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={categoryColors[prompt.category as keyof typeof categoryColors]}>
-                        {prompt.category}
+                    <div className="flex items-center space-x-1 shrink-0">
+                      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                        <Eye className="h-3 w-3" />
+                        <span>{prompt.useCount}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleExpand(prompt.id);
+                        }}
+                        className="h-6 w-6 p-0"
+                      >
+                        {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {prompt.isFeatured && (
+                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs w-fit">
+                      ⭐ DESTACADO
+                    </Badge>
+                  )}
+                  
+                  <div className="flex flex-wrap gap-1">
+                    <Badge className={`${categoryColors[prompt.category as keyof typeof categoryColors]} text-xs`}>
+                      {prompt.category}
+                    </Badge>
+                    {prompt.isFeatured && (
+                      <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs">
+                        Testado e Aprovado
                       </Badge>
-                      {prompt.isFeatured && (
-                        <Badge variant="outline" className="border-amber-500 text-amber-600">
-                          Testado e Aprovado
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {prompt.description}
-                    </p>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                      <Eye className="h-3 w-3" />
-                      <span>{prompt.useCount}</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleExpand(prompt.id);
-                      }}
-                    >
-                      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </Button>
-                  </div>
+                  
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                    {prompt.description}
+                  </p>
                 </div>
               </CardHeader>
               
