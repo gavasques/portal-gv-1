@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parceiros - Plataforma para Vendedores Amazon Brasil</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#0056b3',secondary:'#ff9800'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+        .sidebar-item.active {
+            background-color: rgba(0, 86, 179, 0.1);
+            border-left: 3px solid #0056b3;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .custom-checkbox {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+        .custom-checkbox:checked {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .custom-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 6px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .custom-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .custom-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e7eb;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .switch-slider {
+            background-color: #0056b3;
+        }
+        input:checked + .switch-slider:before {
+            transform: translateX(20px);
+        }
+        .custom-range {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #e5e7eb;
+            outline: none;
+        }
+        .custom-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0056b3;
+            cursor: pointer;
+        }
+        .custom-range::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0056b3;
+            cursor: pointer;
+            border: none;
+        }
+        .custom-radio {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+        }
+        .custom-radio:checked {
+            border-color: #0056b3;
+        }
+        .custom-radio:checked::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #0056b3;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .rating-filter input[type="radio"] {
+            display: none;
+        }
+        .rating-filter label {
+            cursor: pointer;
+            color: #d1d5db;
+        }
+        .rating-filter input[type="radio"]:checked ~ label {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
+        <div class="flex items-center justify-between px-6 py-3">
+            <div class="flex items-center">
+                <a href="#" class="text-2xl font-['Pacifico'] text-primary mr-8">logo</a>
+                <div class="relative ml-4 hidden md:block">
+                    <input type="text" placeholder="Pesquisar..." class="pl-10 pr-4 py-2 border border-gray-200 rounded-button w-64 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400">
+                        <i class="ri-search-line"></i>
+                    </div>
+                </div>
+            </div>
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="#" class="text-gray-700 hover:text-primary font-medium">Dashboard</a>
+                <a href="#" class="text-gray-700 hover:text-primary font-medium">Diretórios</a>
+                <a href="#" class="text-gray-700 hover:text-primary font-medium">Ferramentas</a>
+                <a href="#" class="text-gray-700 hover:text-primary font-medium">IA Premium</a>
+                <a href="#" class="text-gray-700 hover:text-primary font-medium">Suporte</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 cursor-pointer relative">
+                    <i class="ri-notification-3-line"></i>
+                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">3</span>
+                </div>
+                <div class="flex items-center space-x-2 cursor-pointer">
+                    <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+                        <img src="https://readdy.ai/api/search-image?query=professional%2520headshot%2520of%2520a%2520Brazilian%2520businessman%2520with%2520short%2520dark%2520hair%252C%2520smiling%252C%2520wearing%2520a%2520blue%2520shirt%252C%2520clean%2520background%252C%2520high%2520quality%252C%2520realistic&width=100&height=100&seq=user123&orientation=squarish" alt="Perfil" class="w-full h-full object-cover">
+                    </div>
+                    <span class="text-sm font-medium text-gray-700 hidden md:inline-block">Rodrigo Oliveira</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <aside class="w-64 fixed h-full bg-white border-r border-gray-200 overflow-y-auto hidden md:block">
+            <div class="p-4">
+                <div class="mb-6">
+                    <p class="text-xs uppercase font-semibold text-gray-500 mb-3">Principal</p>
+                    <ul>
+                        <li class="mb-1">
+                            <a href="https://readdy.ai/home/9057573e-8021-490b-9f82-a207a90aea89/eb85ebf0-374f-4aad-b9a9-f37f3a8156d5" data-readdy="true" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-dashboard-line"></i>
+                                </div>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-store-2-line"></i>
+                                </div>
+                                <span>Meus Produtos</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-contacts-book-line"></i>
+                                </div>
+                                <span>Meus Fornecedores</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-xs uppercase font-semibold text-gray-500 mb-3">Diretórios</p>
+                    <ul>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item active flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-primary">
+                                    <i class="ri-team-line"></i>
+                                </div>
+                                <span>Parceiros</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-truck-line"></i>
+                                </div>
+                                <span>Fornecedores</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-tools-line"></i>
+                                </div>
+                                <span>Ferramentas</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-xs uppercase font-semibold text-gray-500 mb-3">Ferramentas</p>
+                    <ul>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-calculator-line"></i>
+                                </div>
+                                <span>Simulador de Preços</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-ship-line"></i>
+                                </div>
+                                <span>Importação</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-government-line"></i>
+                                </div>
+                                <span>Impostos</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-xs uppercase font-semibold text-gray-500 mb-3">IA Premium</p>
+                    <ul>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-file-text-line"></i>
+                                </div>
+                                <span>Gerador de Listings</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-image-line"></i>
+                                </div>
+                                <span>Gerador de Imagens</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-robot-line"></i>
+                                </div>
+                                <span>Especialista Virtual</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <p class="text-xs uppercase font-semibold text-gray-500 mb-3">Suporte</p>
+                    <ul>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-question-answer-line"></i>
+                                </div>
+                                <span>Tickets</span>
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a href="#" class="sidebar-item flex items-center px-3 py-2 text-gray-700 hover:bg-gray-50 rounded">
+                                <div class="w-5 h-5 flex items-center justify-center mr-3 text-gray-500">
+                                    <i class="ri-book-open-line"></i>
+                                </div>
+                                <span>Biblioteca</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-0 md:ml-64 p-6 bg-gray-50 min-h-screen">
+            <!-- Breadcrumbs -->
+            <div class="flex items-center text-sm text-gray-500 mb-6">
+                <a href="https://readdy.ai/home/9057573e-8021-490b-9f82-a207a90aea89/eb85ebf0-374f-4aad-b9a9-f37f3a8156d5" data-readdy="true" class="hover:text-primary">Dashboard</a>
+                <div class="w-4 h-4 flex items-center justify-center mx-1">
+                    <i class="ri-arrow-right-s-line"></i>
+                </div>
+                <span class="text-gray-700 font-medium">Parceiros</span>
+            </div>
+
+            <!-- Page Header -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Parceiros de Negócio</h1>
+                    <p class="text-gray-600 mt-1">Encontre e conecte-se com parceiros verificados para impulsionar seu negócio</p>
+                </div>
+                <button class="mt-4 md:mt-0 bg-primary text-white px-4 py-2 rounded-button flex items-center justify-center whitespace-nowrap">
+                    <div class="w-5 h-5 flex items-center justify-center mr-2">
+                        <i class="ri-add-line"></i>
+                    </div>
+                    Adicionar Novo Parceiro
+                </button>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <!-- Search Bar -->
+                    <div class="relative flex-grow max-w-xl">
+                        <input type="text" placeholder="Buscar parceiros por nome, categoria ou serviço..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-button text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-400">
+                            <i class="ri-search-line"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="flex flex-wrap gap-2">
+                        <!-- Category Filter -->
+                        <div class="relative">
+                            <button id="categoryFilterBtn" class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-button text-sm text-gray-700 bg-white hover:bg-gray-50 whitespace-nowrap">
+                                <span>Categoria</span>
+                                <div class="w-4 h-4 flex items-center justify-center ml-2">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </div>
+                            </button>
+                            <div id="categoryFilterDropdown" class="hidden absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg z-10 p-2">
+                                <div class="p-2">
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Logística</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Marketing</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Importação</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Fotografia</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Contabilidade</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Consultoria</span>
+                                    </label>
+                                </div>
+                                <div class="flex justify-between p-2 border-t border-gray-100 mt-1">
+                                    <button class="text-sm text-gray-500 hover:text-gray-700">Limpar</button>
+                                    <button class="text-sm text-primary hover:text-primary-dark">Aplicar</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rating Filter -->
+                        <div class="relative">
+                            <button id="ratingFilterBtn" class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-button text-sm text-gray-700 bg-white hover:bg-gray-50 whitespace-nowrap">
+                                <span>Avaliação</span>
+                                <div class="w-4 h-4 flex items-center justify-center ml-2">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </div>
+                            </button>
+                            <div id="ratingFilterDropdown" class="hidden absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg z-10 p-2">
+                                <div class="p-2">
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="radio" name="rating" class="custom-radio mr-3" value="5">
+                                        <div class="flex">
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <span class="ml-2">5 estrelas</span>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="radio" name="rating" class="custom-radio mr-3" value="4">
+                                        <div class="flex">
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-gray-300">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <span class="ml-2">4+ estrelas</span>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="radio" name="rating" class="custom-radio mr-3" value="3">
+                                        <div class="flex">
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-gray-300">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <div class="w-4 h-4 flex items-center justify-center text-gray-300">
+                                                <i class="ri-star-fill"></i>
+                                            </div>
+                                            <span class="ml-2">3+ estrelas</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="flex justify-between p-2 border-t border-gray-100 mt-1">
+                                    <button class="text-sm text-gray-500 hover:text-gray-700">Limpar</button>
+                                    <button class="text-sm text-primary hover:text-primary-dark">Aplicar</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Location Filter -->
+                        <div class="relative">
+                            <button id="locationFilterBtn" class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-button text-sm text-gray-700 bg-white hover:bg-gray-50 whitespace-nowrap">
+                                <span>Localização</span>
+                                <div class="w-4 h-4 flex items-center justify-center ml-2">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </div>
+                            </button>
+                            <div id="locationFilterDropdown" class="hidden absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg z-10 p-2">
+                                <div class="p-2">
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>São Paulo</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Rio de Janeiro</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Minas Gerais</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Paraná</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Santa Catarina</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" class="custom-checkbox mr-3">
+                                        <span>Rio Grande do Sul</span>
+                                    </label>
+                                </div>
+                                <div class="flex justify-between p-2 border-t border-gray-100 mt-1">
+                                    <button class="text-sm text-gray-500 hover:text-gray-700">Limpar</button>
+                                    <button class="text-sm text-primary hover:text-primary-dark">Aplicar</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sort Filter -->
+                        <div class="relative">
+                            <button id="sortFilterBtn" class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-button text-sm text-gray-700 bg-white hover:bg-gray-50 whitespace-nowrap">
+                                <span>Ordenar por</span>
+                                <div class="w-4 h-4 flex items-center justify-center ml-2">
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </div>
+                            </button>
+                            <div id="sortFilterDropdown" class="hidden absolute right-0 mt-1 w-56 bg-white rounded-lg shadow-lg z-10 p-2">
+                                <div class="p-2">
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="radio" name="sort" class="custom-radio mr-3" value="relevance" checked>
+                                        <span>Relevância</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="radio" name="sort" class="custom-radio mr-3" value="rating">
+                                        <span>Melhor avaliação</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="radio" name="sort" class="custom-radio mr-3" value="newest">
+                                        <span>Mais recentes</span>
+                                    </label>
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="radio" name="sort" class="custom-radio mr-3" value="oldest">
+                                        <span>Mais antigos</span>
+                                    </label>
+                                </div>
+                                <div class="flex justify-between p-2 border-t border-gray-100 mt-1">
+                                    <button class="text-sm text-gray-500 hover:text-gray-700">Limpar</button>
+                                    <button class="text-sm text-primary hover:text-primary-dark">Aplicar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Filters -->
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <div class="bg-blue-50 text-primary px-3 py-1 rounded-full text-sm flex items-center">
+                        <span>Logística</span>
+                        <button class="ml-2 w-4 h-4 flex items-center justify-center">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </div>
+                    <div class="bg-blue-50 text-primary px-3 py-1 rounded-full text-sm flex items-center">
+                        <span>4+ estrelas</span>
+                        <button class="ml-2 w-4 h-4 flex items-center justify-center">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </div>
+                    <div class="bg-blue-50 text-primary px-3 py-1 rounded-full text-sm flex items-center">
+                        <span>São Paulo</span>
+                        <button class="ml-2 w-4 h-4 flex items-center justify-center">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </div>
+                    <button class="text-sm text-primary hover:underline">Limpar filtros</button>
+                </div>
+            </div>
+
+            <!-- Partners List -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Partner 1 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="h-48 bg-gray-100 relative">
+                        <img src="https://readdy.ai/api/search-image?query=professional%2520logistics%2520warehouse%2520with%2520organized%2520shelves%2520and%2520workers%2520managing%2520inventory%252C%2520bright%2520modern%2520facility%2520with%2520packages%2520and%2520shipping%2520boxes%252C%2520clean%2520environment%252C%2520high%2520quality%2520commercial%2520photography&width=400&height=200&seq=partner1&orientation=landscape" alt="LogisTech Brasil" class="w-full h-full object-cover">
+                        <div class="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                <i class="ri-heart-line"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                            Verificado
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-800 text-lg">LogisTech Brasil</h3>
+                            <div class="flex">
+                                <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                    <i class="ri-star-fill"></i>
+                                </div>
+                                <span class="text-sm font-medium ml-1">4.8</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Soluções logísticas completas para e-commerce com armazenagem e fulfillment.</p>
+                        
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Fulfillment</span>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Armazenagem</span>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Distribuição</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <span>São Paulo, SP</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-user-line"></i>
+                            </div>
+                            <span>126 clientes atendidos</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-primary text-white py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">Ver Detalhes</button>
+                            <button class="flex items-center justify-center bg-gray-100 text-gray-700 py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-message-3-line"></i>
+                                </div>
+                                Contatar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partner 2 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="h-48 bg-gray-100 relative">
+                        <img src="https://readdy.ai/api/search-image?query=professional%2520photography%2520studio%2520with%2520product%2520photography%2520setup%252C%2520cameras%252C%2520lighting%2520equipment%252C%2520clean%2520modern%2520environment%2520for%2520e-commerce%2520product%2520photos%252C%2520high%2520quality%2520commercial%2520photography&width=400&height=200&seq=partner2&orientation=landscape" alt="FotoE-commerce" class="w-full h-full object-cover">
+                        <div class="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                <i class="ri-heart-line"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                            Verificado
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-800 text-lg">FotoE-commerce</h3>
+                            <div class="flex">
+                                <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                    <i class="ri-star-fill"></i>
+                                </div>
+                                <span class="text-sm font-medium ml-1">5.0</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Serviço especializado em fotografia profissional para e-commerce e marketplaces.</p>
+                        
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">Fotografia</span>
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">Edição</span>
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">Marketing</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <span>São Paulo, SP</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-user-line"></i>
+                            </div>
+                            <span>87 clientes atendidos</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-primary text-white py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">Ver Detalhes</button>
+                            <button class="flex items-center justify-center bg-gray-100 text-gray-700 py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-message-3-line"></i>
+                                </div>
+                                Contatar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partner 3 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="h-48 bg-gray-100 relative">
+                        <img src="https://readdy.ai/api/search-image?query=professional%2520import%2520export%2520business%2520office%2520with%2520staff%2520working%2520on%2520computers%252C%2520shipping%2520documents%2520and%2520customs%2520paperwork%2520visible%252C%2520modern%2520clean%2520environment%252C%2520high%2520quality%2520commercial%2520photography&width=400&height=200&seq=partner3&orientation=landscape" alt="TechImport SP" class="w-full h-full object-cover">
+                        <div class="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
+                            <div class="w-5 h-5 flex items-center justify-center text-red-500">
+                                <i class="ri-heart-fill"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                            Verificado
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-800 text-lg">TechImport SP</h3>
+                            <div class="flex">
+                                <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                    <i class="ri-star-fill"></i>
+                                </div>
+                                <span class="text-sm font-medium ml-1">4.5</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Importação de eletrônicos e acessórios direto da China com despacho aduaneiro.</p>
+                        
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Importação</span>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Despacho</span>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">Sourcing</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <span>São Paulo, SP</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-user-line"></i>
+                            </div>
+                            <span>204 clientes atendidos</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-primary text-white py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">Ver Detalhes</button>
+                            <button class="flex items-center justify-center bg-gray-100 text-gray-700 py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-message-3-line"></i>
+                                </div>
+                                Contatar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partner 4 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="h-48 bg-gray-100 relative">
+                        <img src="https://readdy.ai/api/search-image?query=professional%2520accounting%2520office%2520with%2520accountants%2520working%2520on%2520computers%252C%2520financial%2520documents%2520and%2520charts%2520visible%252C%2520modern%2520clean%2520environment%252C%2520high%2520quality%2520commercial%2520photography&width=400&height=200&seq=partner4&orientation=landscape" alt="ContaFácil" class="w-full h-full object-cover">
+                        <div class="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                <i class="ri-heart-line"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                            Verificado
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-800 text-lg">ContaFácil</h3>
+                            <div class="flex">
+                                <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                    <i class="ri-star-fill"></i>
+                                </div>
+                                <span class="text-sm font-medium ml-1">4.7</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Contabilidade especializada para e-commerce e vendedores de marketplaces.</p>
+                        
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            <span class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">Contabilidade</span>
+                            <span class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">Impostos</span>
+                            <span class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">MEI/ME</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <span>Curitiba, PR</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-user-line"></i>
+                            </div>
+                            <span>158 clientes atendidos</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-primary text-white py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">Ver Detalhes</button>
+                            <button class="flex items-center justify-center bg-gray-100 text-gray-700 py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-message-3-line"></i>
+                                </div>
+                                Contatar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partner 5 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="h-48 bg-gray-100 relative">
+                        <img src="https://readdy.ai/api/search-image?query=professional%2520marketing%2520agency%2520office%2520with%2520creative%2520team%2520working%2520on%2520computers%252C%2520marketing%2520materials%2520and%2520campaign%2520visuals%2520visible%252C%2520modern%2520clean%2520environment%252C%2520high%2520quality%2520commercial%2520photography&width=400&height=200&seq=partner5&orientation=landscape" alt="MarketingPro" class="w-full h-full object-cover">
+                        <div class="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                <i class="ri-heart-line"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-3 left-3 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                            Verificado
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-800 text-lg">MarketingPro</h3>
+                            <div class="flex">
+                                <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                    <i class="ri-star-fill"></i>
+                                </div>
+                                <span class="text-sm font-medium ml-1">4.6</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Agência especializada em marketing digital para e-commerce e marketplaces.</p>
+                        
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">Marketing</span>
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">SEO</span>
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">PPC</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <span>Rio de Janeiro, RJ</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-user-line"></i>
+                            </div>
+                            <span>112 clientes atendidos</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-primary text-white py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">Ver Detalhes</button>
+                            <button class="flex items-center justify-center bg-gray-100 text-gray-700 py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-message-3-line"></i>
+                                </div>
+                                Contatar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partner 6 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                    <div class="h-48 bg-gray-100 relative">
+                        <img src="https://readdy.ai/api/search-image?query=professional%2520business%2520consulting%2520office%2520with%2520consultants%2520in%2520meeting%2520room%252C%2520business%2520charts%2520and%2520strategy%2520documents%2520visible%252C%2520modern%2520clean%2520environment%252C%2520high%2520quality%2520commercial%2520photography&width=400&height=200&seq=partner6&orientation=landscape" alt="E-Consultoria" class="w-full h-full object-cover">
+                        <div class="absolute top-3 right-3 bg-white rounded-full p-1.5 shadow-sm cursor-pointer">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                <i class="ri-heart-line"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-3 left-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                            Novo
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-800 text-lg">E-Consultoria</h3>
+                            <div class="flex">
+                                <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                    <i class="ri-star-fill"></i>
+                                </div>
+                                <span class="text-sm font-medium ml-1">4.9</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">Consultoria estratégica para vendedores online com foco em crescimento e expansão.</p>
+                        
+                        <div class="flex flex-wrap gap-1 mb-4">
+                            <span class="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full">Consultoria</span>
+                            <span class="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full">Estratégia</span>
+                            <span class="text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full">Mentoria</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-3">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-map-pin-line"></i>
+                            </div>
+                            <span>Belo Horizonte, MG</span>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                <i class="ri-user-line"></i>
+                            </div>
+                            <span>42 clientes atendidos</span>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-primary text-white py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">Ver Detalhes</button>
+                            <button class="flex items-center justify-center bg-gray-100 text-gray-700 py-2 px-3 rounded-button text-sm font-medium whitespace-nowrap">
+                                <div class="w-4 h-4 flex items-center justify-center mr-1">
+                                    <i class="ri-message-3-line"></i>
+                                </div>
+                                Contatar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="flex justify-center items-center mt-8 mb-8">
+                <nav class="flex items-center">
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 mr-2">
+                        <i class="ri-arrow-left-s-line"></i>
+                    </button>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white font-medium">1</button>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-50 font-medium">2</button>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-50 font-medium">3</button>
+                    <span class="mx-2 text-gray-500">...</span>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full text-gray-700 hover:bg-gray-50 font-medium">12</button>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50 ml-2">
+                        <i class="ri-arrow-right-s-line"></i>
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Featured Partners -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Parceiros em Destaque</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="flex items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden mr-4 flex-shrink-0">
+                            <img src="https://readdy.ai/api/search-image?query=professional%2520logistics%2520company%2520logo%2520design%252C%2520modern%2520minimal%2520style%252C%2520blue%2520color%2520scheme%252C%2520high%2520quality&width=100&height=100&seq=logo1&orientation=squarish" alt="LogisTech Brasil" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">LogisTech Brasil</h3>
+                            <div class="flex items-center mt-1">
+                                <div class="flex">
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-half-fill"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-500 ml-1">(126)</span>
+                            </div>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full mt-2 inline-block">Logística</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden mr-4 flex-shrink-0">
+                            <img src="https://readdy.ai/api/search-image?query=professional%2520photography%2520studio%2520logo%2520design%252C%2520modern%2520minimal%2520style%252C%2520camera%2520icon%252C%2520purple%2520color%2520scheme%252C%2520high%2520quality&width=100&height=100&seq=logo2&orientation=squarish" alt="FotoE-commerce" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">FotoE-commerce</h3>
+                            <div class="flex items-center mt-1">
+                                <div class="flex">
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-500 ml-1">(87)</span>
+                            </div>
+                            <span class="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full mt-2 inline-block">Fotografia</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden mr-4 flex-shrink-0">
+                            <img src="https://readdy.ai/api/search-image?query=professional%2520import%2520export%2520company%2520logo%2520design%252C%2520modern%2520minimal%2520style%252C%2520globe%2520icon%252C%2520blue%2520color%2520scheme%252C%2520high%2520quality&width=100&height=100&seq=logo3&orientation=squarish" alt="TechImport SP" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">TechImport SP</h3>
+                            <div class="flex items-center mt-1">
+                                <div class="flex">
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-3 h-3 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-half-fill"></i>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-500 ml-1">(204)</span>
+                            </div>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full mt-2 inline-block">Importação</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Categories Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Categorias de Parceiros</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <a href="#" class="flex flex-col items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 text-primary mb-3">
+                            <i class="ri-truck-line ri-lg"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Logística</span>
+                        <span class="text-xs text-gray-500 mt-1">32 parceiros</span>
+                    </a>
+                    
+                    <a href="#" class="flex flex-col items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 mb-3">
+                            <i class="ri-camera-line ri-lg"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Fotografia</span>
+                        <span class="text-xs text-gray-500 mt-1">18 parceiros</span>
+                    </a>
+                    
+                    <a href="#" class="flex flex-col items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-3">
+                            <i class="ri-ship-line ri-lg"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Importação</span>
+                        <span class="text-xs text-gray-500 mt-1">24 parceiros</span>
+                    </a>
+                    
+                    <a href="#" class="flex flex-col items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-green-100 text-green-600 mb-3">
+                            <i class="ri-bank-line ri-lg"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Contabilidade</span>
+                        <span class="text-xs text-gray-500 mt-1">15 parceiros</span>
+                    </a>
+                    
+                    <a href="#" class="flex flex-col items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 text-purple-600 mb-3">
+                            <i class="ri-line-chart-line ri-lg"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Marketing</span>
+                        <span class="text-xs text-gray-500 mt-1">29 parceiros</span>
+                    </a>
+                    
+                    <a href="#" class="flex flex-col items-center p-4 border border-gray-100 rounded-lg hover:shadow-sm transition-shadow">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 mb-3">
+                            <i class="ri-user-settings-line ri-lg"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Consultoria</span>
+                        <span class="text-xs text-gray-500 mt-1">21 parceiros</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Become a Partner -->
+            <div class="bg-gradient-to-r from-primary to-blue-700 rounded-lg shadow-sm p-8 mb-8 text-white">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div class="mb-6 md:mb-0 md:mr-8">
+                        <h2 class="text-2xl font-bold mb-3">Torne-se um Parceiro</h2>
+                        <p class="text-blue-100 mb-4">Conecte-se com milhares de vendedores Amazon e expanda seu negócio. Cadastre sua empresa como parceira e comece a receber leads qualificados.</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center">
+                                <div class="w-5 h-5 flex items-center justify-center mr-2 text-blue-200">
+                                    <i class="ri-check-line"></i>
+                                </div>
+                                <span>Perfil verificado com selo de confiança</span>
+                            </li>
+                            <li class="flex items-center">
+                                <div class="w-5 h-5 flex items-center justify-center mr-2 text-blue-200">
+                                    <i class="ri-check-line"></i>
+                                </div>
+                                <span>Destaque nas buscas e categorias</span>
+                            </li>
+                            <li class="flex items-center">
+                                <div class="w-5 h-5 flex items-center justify-center mr-2 text-blue-200">
+                                    <i class="ri-check-line"></i>
+                                </div>
+                                <span>Sistema de avaliações e feedback</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <button class="bg-white text-primary px-6 py-3 rounded-button font-medium shadow-sm hover:shadow-md transition-shadow whitespace-nowrap">Cadastrar minha empresa</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Reviews -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Avaliações Recentes</h2>
+                <div class="space-y-6">
+                    <div class="border-b border-gray-100 pb-6">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-4">
+                                <img src="https://readdy.ai/api/search-image?query=professional%2520headshot%2520of%2520a%2520Brazilian%2520woman%2520with%2520medium%2520length%2520dark%2520hair%252C%2520smiling%252C%2520business%2520attire%252C%2520clean%2520background%252C%2520high%2520quality%252C%2520realistic&width=100&height=100&seq=user1&orientation=squarish" alt="Usuário" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-medium text-gray-800">Camila Mendes</h4>
+                                    <span class="text-xs text-gray-500">2 dias atrás</span>
+                                </div>
+                                <div class="flex mt-1 mb-2">
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 text-sm">A FotoE-commerce superou todas as minhas expectativas! As fotos dos meus produtos ficaram incríveis e as vendas aumentaram significativamente após a atualização das imagens. Equipe super profissional e atenciosa.</p>
+                                <div class="mt-3 flex items-center text-sm">
+                                    <span class="text-primary font-medium">FotoE-commerce</span>
+                                    <span class="mx-2 text-gray-300">•</span>
+                                    <span class="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">Fotografia</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-b border-gray-100 pb-6">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-4">
+                                <img src="https://readdy.ai/api/search-image?query=professional%2520headshot%2520of%2520a%2520Brazilian%2520man%2520with%2520short%2520dark%2520hair%2520and%2520glasses%252C%2520smiling%252C%2520business%2520attire%252C%2520clean%2520background%252C%2520high%2520quality%252C%2520realistic&width=100&height=100&seq=user2&orientation=squarish" alt="Usuário" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-medium text-gray-800">Rafael Costa</h4>
+                                    <span class="text-xs text-gray-500">5 dias atrás</span>
+                                </div>
+                                <div class="flex mt-1 mb-2">
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-gray-300">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 text-sm">A TechImport SP facilitou muito o processo de importação dos meus produtos. O despacho aduaneiro foi rápido e sem complicações. Recomendo para quem está começando a importar e não quer dor de cabeça.</p>
+                                <div class="mt-3 flex items-center text-sm">
+                                    <span class="text-primary font-medium">TechImport SP</span>
+                                    <span class="mx-2 text-gray-300">•</span>
+                                    <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Importação</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-4">
+                                <img src="https://readdy.ai/api/search-image?query=professional%2520headshot%2520of%2520a%2520Brazilian%2520woman%2520with%2520curly%2520hair%252C%2520smiling%252C%2520business%2520casual%2520attire%252C%2520clean%2520background%252C%2520high%2520quality%252C%2520realistic&width=100&height=100&seq=user3&orientation=squarish" alt="Usuário" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-medium text-gray-800">Juliana Santos</h4>
+                                    <span class="text-xs text-gray-500">1 semana atrás</span>
+                                </div>
+                                <div class="flex mt-1 mb-2">
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                    <div class="w-4 h-4 flex items-center justify-center text-yellow-400">
+                                        <i class="ri-star-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 text-sm">A ContaFácil resolveu todos os problemas fiscais da minha loja. Agora tenho mais tempo para focar no crescimento do negócio enquanto eles cuidam de toda a parte contábil. O atendimento é excelente!</p>
+                                <div class="mt-3 flex items-center text-sm">
+                                    <span class="text-primary font-medium">ContaFácil</span>
+                                    <span class="mx-2 text-gray-300">•</span>
+                                    <span class="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">Contabilidade</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <button class="text-primary font-medium hover:underline">Ver todas as avaliações</button>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Perguntas Frequentes</h2>
+                <div class="space-y-4">
+                    <div class="border border-gray-100 rounded-lg">
+                        <button id="faq1" class="flex items-center justify-between w-full p-4 text-left font-medium text-gray-800">
+                            <span>Como faço para me tornar um parceiro?</span>
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-500">
+                                <i class="ri-add-line"></i>
+                            </div>
+                        </button>
+                        <div id="faq1-answer" class="hidden px-4 pb-4">
+                            <p class="text-gray-600 text-sm">Para se tornar um parceiro, clique no botão "Cadastrar minha empresa" na seção "Torne-se um Parceiro". Você precisará preencher um formulário com informações da sua empresa, serviços oferecidos e documentação necessária para verificação. Após a análise, sua empresa será listada no diretório de parceiros.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-100 rounded-lg">
+                        <button id="faq2" class="flex items-center justify-between w-full p-4 text-left font-medium text-gray-800">
+                            <span>Como funciona o sistema de avaliações?</span>
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-500">
+                                <i class="ri-add-line"></i>
+                            </div>
+                        </button>
+                        <div id="faq2-answer" class="hidden px-4 pb-4">
+                            <p class="text-gray-600 text-sm">As avaliações são feitas por clientes que utilizaram os serviços dos parceiros. Após a conclusão do serviço, o cliente recebe um convite para avaliar a experiência. As avaliações incluem uma nota de 1 a 5 estrelas e um comentário opcional. Todas as avaliações são verificadas para garantir sua autenticidade.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-100 rounded-lg">
+                        <button id="faq3" class="flex items-center justify-between w-full p-4 text-left font-medium text-gray-800">
+                            <span>O que significa o selo de "Verificado"?</span>
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-500">
+                                <i class="ri-add-line"></i>
+                            </div>
+                        </button>
+                        <div id="faq3-answer" class="hidden px-4 pb-4">
+                            <p class="text-gray-600 text-sm">O selo "Verificado" indica que o parceiro passou por um processo de verificação completo. Isso inclui a validação de documentos da empresa, comprovação de endereço, verificação de credenciais profissionais e análise de histórico de serviços. Parceiros verificados oferecem maior segurança e confiabilidade.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-100 rounded-lg">
+                        <button id="faq4" class="flex items-center justify-between w-full p-4 text-left font-medium text-gray-800">
+                            <span>Como entro em contato com um parceiro?</span>
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-500">
+                                <i class="ri-add-line"></i>
+                            </div>
+                        </button>
+                        <div id="faq4-answer" class="hidden px-4 pb-4">
+                            <p class="text-gray-600 text-sm">Para entrar em contato com um parceiro, clique no botão "Contatar" no card do parceiro desejado. Você poderá enviar uma mensagem diretamente pelo sistema, que será encaminhada ao parceiro. Alternativamente, ao visualizar os detalhes completos do parceiro, você terá acesso às informações de contato como telefone e e-mail.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Back to Top Button -->
+            <div id="backToTop" class="fixed bottom-8 right-8 w-10 h-10 bg-primary text-white rounded-full shadow-md flex items-center justify-center cursor-pointer opacity-0 transition-opacity duration-300">
+                <i class="ri-arrow-up-line"></i>
+            </div>
+        </main>
+    </div>
+
+    <script id="filterDropdownScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Category Filter Dropdown
+            const categoryFilterBtn = document.getElementById('categoryFilterBtn');
+            const categoryFilterDropdown = document.getElementById('categoryFilterDropdown');
+            
+            categoryFilterBtn.addEventListener('click', function() {
+                categoryFilterDropdown.classList.toggle('hidden');
+                ratingFilterDropdown.classList.add('hidden');
+                locationFilterDropdown.classList.add('hidden');
+                sortFilterDropdown.classList.add('hidden');
+            });
+            
+            // Rating Filter Dropdown
+            const ratingFilterBtn = document.getElementById('ratingFilterBtn');
+            const ratingFilterDropdown = document.getElementById('ratingFilterDropdown');
+            
+            ratingFilterBtn.addEventListener('click', function() {
+                ratingFilterDropdown.classList.toggle('hidden');
+                categoryFilterDropdown.classList.add('hidden');
+                locationFilterDropdown.classList.add('hidden');
+                sortFilterDropdown.classList.add('hidden');
+            });
+            
+            // Location Filter Dropdown
+            const locationFilterBtn = document.getElementById('locationFilterBtn');
+            const locationFilterDropdown = document.getElementById('locationFilterDropdown');
+            
+            locationFilterBtn.addEventListener('click', function() {
+                locationFilterDropdown.classList.toggle('hidden');
+                categoryFilterDropdown.classList.add('hidden');
+                ratingFilterDropdown.classList.add('hidden');
+                sortFilterDropdown.classList.add('hidden');
+            });
+            
+            // Sort Filter Dropdown
+            const sortFilterBtn = document.getElementById('sortFilterBtn');
+            const sortFilterDropdown = document.getElementById('sortFilterDropdown');
+            
+            sortFilterBtn.addEventListener('click', function() {
+                sortFilterDropdown.classList.toggle('hidden');
+                categoryFilterDropdown.classList.add('hidden');
+                ratingFilterDropdown.classList.add('hidden');
+                locationFilterDropdown.classList.add('hidden');
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('#categoryFilterBtn') && !event.target.closest('#categoryFilterDropdown')) {
+                    categoryFilterDropdown.classList.add('hidden');
+                }
+                
+                if (!event.target.closest('#ratingFilterBtn') && !event.target.closest('#ratingFilterDropdown')) {
+                    ratingFilterDropdown.classList.add('hidden');
+                }
+                
+                if (!event.target.closest('#locationFilterBtn') && !event.target.closest('#locationFilterDropdown')) {
+                    locationFilterDropdown.classList.add('hidden');
+                }
+                
+                if (!event.target.closest('#sortFilterBtn') && !event.target.closest('#sortFilterDropdown')) {
+                    sortFilterDropdown.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+
+    <script id="faqScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqButtons = document.querySelectorAll('[id^="faq"]');
+            
+            faqButtons.forEach(button => {
+                if (button.id.indexOf('-answer') === -1) {
+                    button.addEventListener('click', function() {
+                        const answerId = button.id + '-answer';
+                        const answerElement = document.getElementById(answerId);
+                        
+                        if (answerElement) {
+                            answerElement.classList.toggle('hidden');
+                            
+                            const icon = button.querySelector('i');
+                            if (icon) {
+                                if (answerElement.classList.contains('hidden')) {
+                                    icon.classList.remove('ri-subtract-line');
+                                    icon.classList.add('ri-add-line');
+                                } else {
+                                    icon.classList.remove('ri-add-line');
+                                    icon.classList.add('ri-subtract-line');
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script id="backToTopScript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const backToTopButton = document.getElementById('backToTop');
+            
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    backToTopButton.style.opacity = '1';
+                } else {
+                    backToTopButton.style.opacity = '0';
+                }
+            });
+            
+            backToTopButton.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
