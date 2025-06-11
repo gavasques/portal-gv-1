@@ -21,12 +21,11 @@ interface Partner {
   website?: string;
   phone?: string;
   email?: string;
-  address?: string;
   isVerified: boolean;
-  averageRating: number;
-  reviewCount: number;
-  exclusiveDiscount?: string;
-  status: 'published' | 'draft';
+  discountInfo?: string;
+  averageRating?: number;
+  reviewCount?: number;
+  status?: string;
   createdAt: string;
 }
 
@@ -50,7 +49,7 @@ export default function Partners() {
                          partner.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || partner.category === selectedCategory;
     const matchesVerified = !showVerifiedOnly || partner.isVerified;
-    const isPublished = partner.status === 'published';
+    const isPublished = !partner.status || partner.status === 'published';
     
     return matchesSearch && matchesCategory && matchesVerified && isPublished;
   });
@@ -110,10 +109,10 @@ export default function Partners() {
               <div className="col-span-3">
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center">
-                    {renderStars(partner.averageRating)}
+                    {renderStars(partner.averageRating || 0)}
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {partner.averageRating.toFixed(1)} ({partner.reviewCount})
+                    {(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0})
                   </span>
                 </div>
               </div>
@@ -124,7 +123,7 @@ export default function Partners() {
                       Verificado
                     </Badge>
                   )}
-                  {partner.exclusiveDiscount && (
+                  {partner.discountInfo && (
                     <Badge variant="outline" className="text-green-600 border-green-200">
                       Desconto
                     </Badge>

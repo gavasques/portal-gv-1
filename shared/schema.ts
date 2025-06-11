@@ -139,6 +139,9 @@ export const partners = pgTable("partners", {
   logo: text("logo"),
   isVerified: boolean("is_verified").notNull().default(false),
   discountInfo: text("discount_info"),
+  averageRating: decimal("average_rating", { precision: 2, scale: 1 }).default("0.0"),
+  reviewCount: integer("review_count").default(0),
+  status: text("status").notNull().default("published"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
