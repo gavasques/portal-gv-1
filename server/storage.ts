@@ -198,6 +198,12 @@ export interface IStorage {
   createAiPromptCategory(category: InsertAiPromptCategory): Promise<AiPromptCategory>;
   updateAiPromptCategory(id: number, updates: Partial<AiPromptCategory>): Promise<AiPromptCategory>;
   deleteAiPromptCategory(id: number): Promise<void>;
+
+   // Check if user has specific permission
+   userHasPermission(userId: number, permissionKey: string): Promise<boolean>;
+
+   // Get user permissions by module
+   getUserPermissionsByModule(userId: number, module?: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -244,7 +250,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(userActivityLog).where(eq(userActivityLog.userId, id));
     await db.delete(tickets).where(eq(tickets.userId, id));
     await db.delete(mySuppliers).where(eq(mySuppliers.userId, id));
-    
+
     // Finally delete the user
     await db.delete(users).where(eq(users.id, id));
   }
@@ -793,7 +799,7 @@ export class DatabaseStorage implements IStorage {
       .from(templates)
       .where(eq(templates.status, 'published'))
       .orderBy(templates.category);
-    
+
     return result.map(row => row.category).filter(Boolean);
   }
 
@@ -826,7 +832,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // Primeiro remove todas as ligações existentes
       await db.delete(templateTagRelations).where(eq(templateTagRelations.templateId, templateId));
-      
+
       // Depois adiciona as novas ligações
       if (tagIds.length > 0) {
         await db.insert(templateTagRelations).values(
@@ -885,7 +891,7 @@ export class DatabaseStorage implements IStorage {
 
     // Group results by template
     const templatesMap = new Map();
-    
+
     results.forEach((row) => {
       if (!templatesMap.has(row.id)) {
         templatesMap.set(row.id, {
@@ -903,7 +909,7 @@ export class DatabaseStorage implements IStorage {
           tags: [],
         });
       }
-      
+
       // Add tag if it exists
       if (row.tagId) {
         templatesMap.get(row.id).tags.push({
@@ -1001,7 +1007,7 @@ export class DatabaseStorage implements IStorage {
         eq(authTokens.token, token),
         eq(authTokens.used, false)
       ));
-    
+
     // Check expiration in JavaScript
     if (authToken && authToken.expiresAt > new Date()) {
       return authToken;
@@ -1241,6 +1247,286 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAiPromptCategory(id: number): Promise<void> {
     await db.delete(aiPromptCategories).where(eq(aiPromptCategories.id, id));
+  }
+
+  // Initialize default user groups if they don't exist
+  async initializeDefaultGroups() {
+    const groups = await this.getUserGroups();
+    if (groups.length === 0) {
+      // Create default groups
+      await this.createUserGroup({
+        name: 'basic',
+        displayName: 'Basic',
+        description: 'Usuários básicos com acesso limitado',
+        color: '#6b7280',
+        isActive: true
+      });
+
+      await this.createUserGroup({
+        name: 'aluno',
+        displayName: 'Aluno',
+        description: 'Alunos com acesso a conteúdo educacional',
+        color: '#3b82f6',
+        isActive: true
+      });
+
+      await this.createUserGroup({
+        name: 'aluno_pro',
+        displayName: 'Aluno Pro',
+        description: 'Alunos com acesso premium',
+        color: '#f59e0b',
+        isActive: true
+      });
+
+      await this.createUserGroup({
+        name: 'suporte',
+        displayName: 'Suporte',
+        description: 'Equipe de suporte com acesso a tickets',
+        color: '#10b981',
+        isActive: true
+      });
+
+      await this.createUserGroup({
+        name: 'admin',
+        displayName: 'Administradores',
+        description: 'Administradores com acesso total',
+        color: '#ef4444',
+        isActive: true
+      });
+    }
+  }
+
+  // Initialize modular permissions system
+  async initializeModularPermissions() {
+    const existingPermissions = await this.getPermissions();
+    if (existingPermissions.length > 0) return;
+
+    const modulePermissions = [
+      // PRINCIPAL
+      {
+        module: 'dashboard',
+        category: 'principal',
+        permissions: [
+          { key: 'dashboard.view', name: 'Ver Dashboard', description: 'Acesso ao painel principal' },
+          { key: 'dashboard.metrics', name: 'Ver Métricas', description: 'Visualizar métricas e estatísticas' }
+        ]
+      },
+
+      // EDUCACIONAL
+      {
+        module: 'courses',
+        category: 'educacional',
+        permissions: [
+          { key: 'courses.view', name: 'Ver Cursos', description: 'Acesso aos cursos' },
+          { key: 'courses.enroll', name: 'Inscrever em Cursos', description: 'Capacidade de se inscrever em cursos' }
+        ]
+      },
+      {
+        module: 'materials',
+        category: 'educacional',
+        permissions: [
+          { key: 'materials.view', name: 'Ver Materiais', description: 'Acesso aos materiais educacionais' },
+          { key: 'materials.download', name: 'Baixar Materiais', description: 'Download de materiais' },
+          { key: 'materials.create', name: 'Criar Materiais', description: 'Criar novos materiais' },
+          { key: 'materials.edit', name: 'Editar Materiais', description: 'Editar materiais existentes' },
+          { key: 'materials.delete', name: 'Excluir Materiais', description: 'Excluir materiais' }
+        ]
+      },
+      {
+        module: 'templates',
+        category: 'educacional',
+        permissions: [
+          { key: 'templates.view', name: 'Ver Templates', description: 'Acesso aos templates' },
+          { key: 'templates.copy', name: 'Copiar Templates', description: 'Copiar templates para uso' },
+          { key: 'templates.create', name: 'Criar Templates', description: 'Criar novos templates' },
+          { key: 'templates.edit', name: 'Editar Templates', description: 'Editar templates existentes' },
+          { key: 'templates.delete', name: 'Excluir Templates', description: 'Excluir templates' }
+        ]
+      },
+
+      // FORNECEDORES & PRODUTOS
+      {
+        module: 'partners',
+        category: 'fornecedores_produtos',
+        permissions: [
+          { key: 'partners.view', name: 'Ver Parceiros', description: 'Acesso à lista de parceiros' },
+          { key: 'partners.create', name: 'Criar Parceiros', description: 'Cadastrar novos parceiros' },
+          { key: 'partners.edit', name: 'Editar Parceiros', description: 'Editar informações de parceiros' },
+          { key: 'partners.delete', name: 'Excluir Parceiros', description: 'Remover parceiros' }
+        ]
+      },
+      {
+        module: 'suppliers',
+        category: 'fornecedores_produtos',
+        permissions: [
+          { key: 'suppliers.view', name: 'Ver Fornecedores', description: 'Acesso à lista de fornecedores' },
+          { key: 'suppliers.create', name: 'Criar Fornecedores', description: 'Cadastrar novos fornecedores' },
+          { key: 'suppliers.edit', name: 'Editar Fornecedores', description: 'Editar informações de fornecedores' },
+          { key: 'suppliers.delete', name: 'Excluir Fornecedores', description: 'Remover fornecedores' }
+        ]
+      },
+      {
+        module: 'my_suppliers',
+        category: 'fornecedores_produtos',
+        permissions: [
+          { key: 'my_suppliers.view', name: 'Ver Meus Fornecedores', description: 'Acesso aos meus fornecedores' },
+          { key: 'my_suppliers.manage', name: 'Gerenciar Meus Fornecedores', description: 'Gerenciar fornecedores pessoais' }
+        ]
+      },
+      {
+        module: 'my_products',
+        category: 'fornecedores_produtos',
+        permissions: [
+          { key: 'my_products.view', name: 'Ver Meus Produtos', description: 'Acesso aos meus produtos' },
+          { key: 'my_products.manage', name: 'Gerenciar Meus Produtos', description: 'Gerenciar produtos pessoais' }
+        ]
+      },
+
+      // FERRAMENTAS
+      {
+        module: 'tools',
+        category: 'ferramentas',
+        permissions: [
+          { key: 'tools.view', name: 'Ver Ferramentas', description: 'Acesso às ferramentas' },
+          { key: 'tools.use', name: 'Usar Ferramentas', description: 'Utilizar ferramentas disponíveis' }
+        ]
+      },
+      {
+        module: 'simulators',
+        category: 'ferramentas',
+        permissions: [
+          { key: 'simulators.view', name: 'Ver Simuladores', description: 'Acesso aos simuladores' },
+          { key: 'simulators.use', name: 'Usar Simuladores', description: 'Utilizar simuladores' }
+        ]
+      },
+      {
+        module: 'ai_agents',
+        category: 'ferramentas',
+        permissions: [
+          { key: 'ai_agents.view', name: 'Ver Agentes de IA', description: 'Acesso aos agentes de IA' },
+          { key: 'ai_agents.use', name: 'Usar Agentes de IA', description: 'Utilizar agentes de IA' },
+          { key: 'ai_agents.manage_credits', name: 'Gerenciar Créditos IA', description: 'Gerenciar créditos de IA' }
+        ]
+      },
+      {
+        module: 'ai_prompts',
+        category: 'ferramentas',
+        permissions: [
+          { key: 'ai_prompts.view', name: 'Ver Prompts de IA', description: 'Acesso aos prompts de IA' },
+          { key: 'ai_prompts.use', name: 'Usar Prompts de IA', description: 'Utilizar prompts de IA' },
+          { key: 'ai_prompts.create', name: 'Criar Prompts de IA', description: 'Criar novos prompts' },
+          { key: 'ai_prompts.edit', name: 'Editar Prompts de IA', description: 'Editar prompts existentes' },
+          { key: 'ai_prompts.delete', name: 'Excluir Prompts de IA', description: 'Excluir prompts' }
+        ]
+      },
+
+      // SUPORTE
+      {
+        module: 'tickets',
+        category: 'suporte',
+        permissions: [
+          { key: 'tickets.view', name: 'Ver Chamados', description: 'Acesso aos chamados' },
+          { key: 'tickets.create', name: 'Criar Chamados', description: 'Abrir novos chamados' },
+          { key: 'tickets.edit', name: 'Editar Chamados', description: 'Editar chamados existentes' },
+          { key: 'tickets.close', name: 'Fechar Chamados', description: 'Resolver e fechar chamados' },
+          { key: 'tickets.assign', name: 'Atribuir Chamados', description: 'Atribuir chamados a usuários' }
+        ]
+      },
+
+      // ADMIN
+      {
+        module: 'admin',
+        category: 'admin',
+        permissions: [
+          { key: 'admin.dashboard', name: 'Dashboard Admin', description: 'Acesso ao dashboard administrativo' },
+          { key: 'admin.users', name: 'Gerenciar Usuários', description: 'Gerenciar usuários do sistema' },
+          { key: 'admin.groups', name: 'Gerenciar Grupos', description: 'Gerenciar grupos de usuários' },
+          { key: 'admin.permissions', name: 'Gerenciar Permissões', description: 'Gerenciar permissões do sistema' },
+          { key: 'admin.cadastros', name: 'Cadastros Base', description: 'Gerenciar cadastros base do sistema' },
+          { key: 'admin.system_settings', name: 'Configurações Sistema', description: 'Configurações gerais do sistema' }
+        ]
+      }
+    ];
+
+    // Create all permissions
+    for (const moduleData of modulePermissions) {
+      for (const permission of moduleData.permissions) {
+        await this.createPermission({
+          key: permission.key,
+          name: permission.name,
+          description: permission.description,
+          module: moduleData.module,
+          category: moduleData.category,
+          isActive: true
+        });
+      }
+    }
+  }
+
+  async getUserActivity(userId: number, limit = 50, offset = 0): Promise<UserActivityLog[]> {
+    return await db.select().from(userActivityLog)
+      .where(eq(userActivityLog.userId, userId))
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(userActivityLog.createdAt));
+  }
+
+  // Check if user has specific permission
+  async userHasPermission(userId: number, permissionKey: string): Promise<boolean> {
+    const user = await this.getUser(userId);
+    if (!user || !user.groupId) return false;
+
+    // Admin group has all permissions
+    if (user.groupId === 5) return true;
+
+    const result = await db.select()
+      .from(groupPermissions)
+      .innerJoin(permissions, eq(groupPermissions.permissionId, permissions.id))
+      .where(
+        and(
+          eq(groupPermissions.groupId, user.groupId),
+          eq(permissions.key, permissionKey),
+          eq(permissions.isActive, true)
+        )
+      )
+      .limit(1);
+
+    return result.length > 0;
+  }
+
+  // Get user permissions by module
+  async getUserPermissionsByModule(userId: number, module?: string) {
+    const user = await this.getUser(userId);
+    if (!user || !user.groupId) return [];
+
+    let query = db.select({
+      id: permissions.id,
+      key: permissions.key,
+      name: permissions.name,
+      description: permissions.description,
+      module: permissions.module,
+      category: permissions.category
+    })
+    .from(groupPermissions)
+    .innerJoin(permissions, eq(groupPermissions.permissionId, permissions.id))
+    .where(
+      and(
+        eq(groupPermissions.groupId, user.groupId),
+        eq(permissions.isActive, true)
+      )
+    );
+
+    if (module) {
+      query = query.where(
+        and(
+          eq(groupPermissions.groupId, user.groupId),
+          eq(permissions.isActive, true),
+          eq(permissions.module, module)
+        )
+      );
+    }
+
+    return await query;
   }
 }
 

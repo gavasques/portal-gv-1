@@ -41,6 +41,11 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+  // Initialize default groups and modular permissions
+  const { storage } = require('./storage');
+  await storage.initializeDefaultGroups();
+  await storage.initializeModularPermissions();
+
   // Initialize YouTube scheduler
   initializeYouTubeScheduler();
 

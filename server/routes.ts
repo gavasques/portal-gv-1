@@ -128,6 +128,29 @@ function requireRole(roles: string[]) {
   };
 }
 
+function requirePermission(permissionKey: string) {
+  return async (req: any, res: any, next: any) => {
+    if (!req.isAuthenticated()) {
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+
+    const user = req.user as any;
+    try {
+      const hasPermission = await storage.userHasPermission(user.id, permissionKey);
+      if (hasPermission) {
+        return next();
+      }
+
+      res.setHeader('Content-Type', 'application/json');
+      res.status(403).json({ message: 'Permission denied' });
+    } catch (error) {
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).json({ message: 'Error checking permissions' });
+    }
+  };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
 
   const requireAdmin = requireRole(['Administradores']);
@@ -210,6 +233,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(userWithoutPassword);
     } else {
       res.status(401).json({ message: 'Not authenticated' });
+    }
+  });
+
+  // Get user permissions
+  app.get('/api/auth/permissions', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { module } = req.query;
+      
+      const permissions = await storage.getUserPermissionsByModule(
+        user.id, 
+        module as string
+      );
+      
+      res.json(permissions);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch user permissions' });
+    }
+  });
+
+  // Check specific permission
+  app.post('/api/auth/check-permission', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { permission } = req.body;
+      
+      if (!permission) {
+        return res.status(400).json({ message: 'Permission key is required' });
+      }
+
+      const hasPermission = await storage.userHasPermission(user.id, permission);
+      res.json({ hasPermission });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to check permission' });
     }
   });
 

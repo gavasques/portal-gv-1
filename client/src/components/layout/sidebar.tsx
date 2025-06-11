@@ -257,16 +257,16 @@ export default function Sidebar() {
 
   const userAccessLevel = mapGroupIdToAccessLevel(user.groupId);
   const isAdminArea = location.startsWith('/admin');
-  
+
   // Choose menu groups based on current area
   const currentMenuGroups = isAdminArea ? adminMenuGroups : studentMenuGroups;
-  
+
   // Filter menu groups based on current area and user access
   const filteredMenuGroups = currentMenuGroups.map(group => ({
     ...group,
     items: group.items.filter(item => item.accessLevels.includes(userAccessLevel))
   })).filter(group => group.items.length > 0);
-  
+
   // Get current area context for display
   const currentAreaName = isAdminArea ? "Área Administrativa" : "Área do Aluno";
   const getGroupName = (groupId: number | null) => {
@@ -346,7 +346,7 @@ export default function Sidebar() {
               {group.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.href || location.startsWith(item.href + "/");
-                
+
                 return (
                   <Link key={item.href} href={item.href}>
                     <div
