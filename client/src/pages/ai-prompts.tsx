@@ -85,7 +85,14 @@ export default function AiPrompts() {
     const matchesSearch = !search || 
       prompt.title.toLowerCase().includes(search.toLowerCase()) ||
       prompt.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = !selectedCategory || prompt.category === selectedCategory;
+    
+    let matchesCategory = true;
+    if (selectedCategory === "DESTACADOS") {
+      matchesCategory = prompt.isFeatured;
+    } else if (selectedCategory) {
+      matchesCategory = prompt.category === selectedCategory;
+    }
+    
     return matchesSearch && matchesCategory;
   });
 
@@ -136,6 +143,14 @@ export default function AiPrompts() {
           >
             <Filter className="h-4 w-4 mr-2" />
             Todas Categorias
+          </Button>
+          <Button
+            variant={selectedCategory === "DESTACADOS" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedCategory("DESTACADOS")}
+            className="bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600"
+          >
+            ⭐ DESTACADOS
           </Button>
           {categories.map(category => (
             <Button
@@ -188,17 +203,29 @@ export default function AiPrompts() {
           const isExpanded = expandedPrompt === prompt.id;
           
           return (
-            <Card key={prompt.id} className="transition-all duration-200 hover:shadow-md">
+            <Card key={prompt.id} className="transition-all duration-200 hover:shadow-md cursor-pointer" onClick={() => toggleExpand(prompt.id)}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2 flex-1">
                     <div className="flex items-center space-x-2">
                       <Icon className="h-5 w-5 text-primary" />
                       <h3 className="font-semibold text-lg">{prompt.title}</h3>
+                      {prompt.isFeatured && (
+                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white animate-pulse">
+                          ⭐ DESTACADO
+                        </Badge>
+                      )}
                     </div>
-                    <Badge className={categoryColors[prompt.category as keyof typeof categoryColors]}>
-                      {prompt.category}
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={categoryColors[prompt.category as keyof typeof categoryColors]}>
+                        {prompt.category}
+                      </Badge>
+                      {prompt.isFeatured && (
+                        <Badge variant="outline" className="border-amber-500 text-amber-600">
+                          Testado e Aprovado
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {prompt.description}
                     </p>
@@ -211,7 +238,10 @@ export default function AiPrompts() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => toggleExpand(prompt.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleExpand(prompt.id);
+                      }}
                     >
                       {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                     </Button>

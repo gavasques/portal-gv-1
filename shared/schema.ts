@@ -388,6 +388,7 @@ export const aiPrompts = pgTable("ai_prompts", {
   tags: text("tags").array(),
   useCount: integer("use_count").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
+  isFeatured: boolean("is_featured").notNull().default(false), // Badge "DESTACADO" controlado pelo admin
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

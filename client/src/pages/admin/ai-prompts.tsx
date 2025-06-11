@@ -48,6 +48,7 @@ export default function AdminAiPrompts() {
       placeholders: [],
       tags: [],
       isActive: true,
+      isFeatured: false,
     },
   });
 
@@ -137,8 +138,28 @@ export default function AdminAiPrompts() {
       placeholders: prompt.placeholders || [],
       tags: prompt.tags || [],
       isActive: prompt.isActive,
+      isFeatured: prompt.isFeatured || false,
     });
   };
+
+  const { mutate: toggleFeatured } = useMutation({
+    mutationFn: (data: { id: number; isFeatured: boolean }) =>
+      apiRequest(`/api/admin/ai-prompts/${data.id}`, 'PUT', { isFeatured: data.isFeatured }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/ai-prompts'] });
+      toast({
+        title: "Status atualizado",
+        description: "Status de destaque do prompt foi atualizado.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmitEdit = (data: InsertAiPrompt) => {
     if (editingPrompt) {
@@ -396,6 +417,14 @@ export default function AdminAiPrompts() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
+                    <Button
+                      variant={prompt.isFeatured ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => toggleFeatured({ id: prompt.id, isFeatured: !prompt.isFeatured })}
+                      className={prompt.isFeatured ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white" : ""}
+                    >
+                      ⭐ {prompt.isFeatured ? "DESTACADO" : "Destacar"}
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
