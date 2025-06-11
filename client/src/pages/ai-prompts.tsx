@@ -47,9 +47,7 @@ export default function AiPrompts() {
   const { toast } = useToast();
 
   const { data: prompts = [], isLoading } = useQuery<AiPrompt[]>({
-    queryKey: selectedCategory || search ? 
-      ['/api/ai-prompts', { category: selectedCategory, search }] : 
-      ['/api/ai-prompts'],
+    queryKey: ['/api/ai-prompts'],
   });
 
   const categories = prompts.reduce((acc: string[], prompt) => {
