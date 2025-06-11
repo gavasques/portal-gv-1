@@ -476,12 +476,56 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(userActivityLog.createdAt));
   }
 
-  async getPartners(limit = 50, offset = 0): Promise<Partner[]> {
-    return await db.select().from(partners).limit(limit).offset(offset).orderBy(desc(partners.createdAt));
+  async getPartners(limit = 50, offset = 0): Promise<(Partner & { category: { name: string } })[]> {
+    return await db.select({
+      id: partners.id,
+      name: partners.name,
+      description: partners.description,
+      categoryId: partners.categoryId,
+      website: partners.website,
+      email: partners.email,
+      phone: partners.phone,
+      logo: partners.logo,
+      isVerified: partners.isVerified,
+      discountInfo: partners.discountInfo,
+      averageRating: partners.averageRating,
+      reviewCount: partners.reviewCount,
+      status: partners.status,
+      createdAt: partners.createdAt,
+      category: {
+        name: partnerCategories.name
+      }
+    })
+    .from(partners)
+    .leftJoin(partnerCategories, eq(partners.categoryId, partnerCategories.id))
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(partners.createdAt));
   }
 
-  async getPartner(id: number): Promise<Partner | undefined> {
-    const [partner] = await db.select().from(partners).where(eq(partners.id, id));
+  async getPartner(id: number): Promise<(Partner & { category: { name: string } }) | undefined> {
+    const [partner] = await db.select({
+      id: partners.id,
+      name: partners.name,
+      description: partners.description,
+      categoryId: partners.categoryId,
+      website: partners.website,
+      email: partners.email,
+      phone: partners.phone,
+      logo: partners.logo,
+      isVerified: partners.isVerified,
+      discountInfo: partners.discountInfo,
+      averageRating: partners.averageRating,
+      reviewCount: partners.reviewCount,
+      status: partners.status,
+      createdAt: partners.createdAt,
+      category: {
+        name: partnerCategories.name
+      }
+    })
+    .from(partners)
+    .leftJoin(partnerCategories, eq(partners.categoryId, partnerCategories.id))
+    .where(eq(partners.id, id));
     return partner || undefined;
   }
 
@@ -499,13 +543,36 @@ export class DatabaseStorage implements IStorage {
     await db.delete(partners).where(eq(partners.id, id));
   }
 
-  async searchPartners(query: string, category?: string): Promise<Partner[]> {
+  async searchPartners(query: string, categoryName?: string): Promise<(Partner & { category: { name: string } })[]> {
     let whereClause = like(partners.name, `%${query}%`);
-    if (category) {
-      whereClause = and(whereClause, eq(partners.category, category)) as any;
+    if (categoryName) {
+      whereClause = and(whereClause, eq(partnerCategories.name, categoryName)) as any;
     }
-    return await db.select().from(partners).where(whereClause);
+    return await db.select({
+      id: partners.id,
+      name: partners.name,
+      description: partners.description,
+      categoryId: partners.categoryId,
+      website: partners.website,
+      email: partners.email,
+      phone: partners.phone,
+      logo: partners.logo,
+      isVerified: partners.isVerified,
+      discountInfo: partners.discountInfo,
+      averageRating: partners.averageRating,
+      reviewCount: partners.reviewCount,
+      status: partners.status,
+      createdAt: partners.createdAt,
+      category: {
+        name: partnerCategories.name
+      }
+    })
+    .from(partners)
+    .leftJoin(partnerCategories, eq(partners.categoryId, partnerCategories.id))
+    .where(whereClause);
   }
+
+
 
   // Partner contacts - placeholder implementations for now
   async getPartnerContacts(partnerId: number): Promise<any[]> {

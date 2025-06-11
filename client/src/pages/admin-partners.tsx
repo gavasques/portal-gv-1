@@ -32,16 +32,17 @@ interface Partner {
   id: number;
   name: string;
   description: string;
-  category: string;
+  categoryId: number;
+  category: { name: string };
   logo?: string;
   website?: string;
   phone?: string;
   email?: string;
   isVerified: boolean;
   discountInfo?: string;
-  averageRating?: number;
+  averageRating?: number | string;
   reviewCount?: number;
-  status?: string;
+  status: "published" | "draft";
   createdAt: string;
 }
 
