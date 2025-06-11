@@ -381,6 +381,10 @@ const renderExternalLink = (material: Material) => {
 export default function MaterialContentRenderer({ material }: MaterialContentRendererProps) {
   const { toast } = useToast();
   
+  // Debug log
+  console.log('Material type:', material.type);
+  console.log('Material embedCode:', material.embedCode);
+  
   const renderContent = () => {
     switch (material.type) {
       case "Prompt para IA":
@@ -419,21 +423,25 @@ export default function MaterialContentRenderer({ material }: MaterialContentRen
           <p className="text-muted-foreground">URL do vídeo não disponível</p>
         );
       
+      case "Fluxograma Miro":
+      case "Embed/Iframe":
+      case "Código Embed":
+      case "iFrame Externo":
       case "fluxograma_miro":
       case "embed_iframe":
-      case "Código Embed":
         return material.embedCode ? (
           <div 
-            className="w-full"
+            className="w-full min-h-[400px]"
             dangerouslySetInnerHTML={{ __html: material.embedCode }} 
           />
         ) : (
           <p className="text-muted-foreground">Código de incorporação não disponível</p>
         );
       
+      case "Link de Pasta":
+      case "Link de Documento":
       case "link_pasta":
       case "link_documento":
-      case "iFrame Externo":
       case "Link":
         return material.url ? renderExternalLink(material) : (
           <p className="text-muted-foreground">Link não disponível</p>
