@@ -1,5 +1,7 @@
 # Portal do Aluno - Plataforma de Educação para Vendedores Amazon Brasil
 
+![CI](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/workflows/CI/badge.svg)
+
 Uma plataforma educacional moderna e abrangente para vendedores Amazon no Brasil, oferecendo formação especializada em importação, criação de marcas e otimização de performance no marketplace.
 
 ## 🎯 Visão Geral
@@ -104,6 +106,39 @@ npm run dev
 ```
 
 O servidor estará disponível em `http://localhost:5000`
+
+## 🧪 Testes e CI/CD
+
+### Executar Testes
+
+```bash
+# Executar todos os testes
+npx vitest run
+
+# Executar testes em modo watch
+npx vitest watch
+
+# Executar teste específico
+npx vitest run tests/health.test.ts
+
+# Executar com coverage
+npx vitest run --coverage
+```
+
+### Pipeline CI/CD
+
+O projeto inclui pipeline automatizado no GitHub Actions:
+
+- **Trigger**: Push para branch `main` ou Pull Requests
+- **Passos**:
+  1. Checkout do código
+  2. Setup Node.js 20
+  3. Instalação de dependências (`npm ci`)
+  4. Execução dos testes (`vitest run`)
+  5. Build do projeto (`npm run build`)
+  6. Geração de coverage (opcional)
+
+O badge CI no topo do README mostra o status atual dos testes.
 
 ## 🏗️ Estrutura do Projeto
 
