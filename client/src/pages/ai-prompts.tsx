@@ -303,7 +303,7 @@ export default function AiPrompts() {
                         🔧 Campos para personalizar:
                       </h4>
                       <div className="space-y-2">
-                        {(prompt.placeholders as any[]).map((placeholder, index: number) => (
+                        {(prompt.placeholders as any[]).map((placeholder: any, index: number) => (
                           <div key={index} className="text-sm">
                             <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
                               {placeholder?.field || ""}
