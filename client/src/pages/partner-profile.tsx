@@ -39,12 +39,11 @@ interface Partner {
   website?: string;
   phone?: string;
   email?: string;
-  address?: string;
   isVerified: boolean;
-  averageRating: number;
-  reviewCount: number;
-  exclusiveDiscount?: string;
-  status: 'published' | 'draft';
+  averageRating?: number | string;
+  reviewCount?: number;
+  discountInfo?: string;
+  status?: string;
   createdAt: string;
 }
 
@@ -172,12 +171,13 @@ export default function PartnerProfile() {
     }
   });
 
-  const renderStars = (rating: number, interactive = false, onRatingChange?: (rating: number) => void) => {
+  const renderStars = (rating: number | string | undefined, interactive = false, onRatingChange?: (rating: number) => void) => {
+    const safeRating = Number(rating) || 0;
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
         className={`h-5 w-5 ${
-          i < rating 
+          i < safeRating 
             ? 'fill-yellow-400 text-yellow-400' 
             : 'text-gray-300'
         } ${interactive ? 'cursor-pointer hover:text-yellow-400' : ''}`}
@@ -277,7 +277,7 @@ export default function PartnerProfile() {
                   <div className="flex items-center space-x-1 mt-2">
                     {renderStars(partner.averageRating)}
                     <span className="text-sm text-muted-foreground ml-2">
-                      {partner.averageRating.toFixed(1)} ({partner.reviewCount} avaliações)
+                      {Number(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0} avaliações)
                     </span>
                   </div>
                 </div>
@@ -313,7 +313,7 @@ export default function PartnerProfile() {
           </Card>
 
           {/* Exclusive Discount */}
-          {partner.exclusiveDiscount && (
+          {partner.discountInfo && (
             <Card className="border-green-200 bg-green-50 dark:bg-green-900/20">
               <CardHeader>
                 <CardTitle className="text-green-700 dark:text-green-300">
@@ -322,7 +322,7 @@ export default function PartnerProfile() {
               </CardHeader>
               <CardContent>
                 <p className="text-green-600 dark:text-green-400 font-medium">
-                  {partner.exclusiveDiscount}
+                  {partner.discountInfo}
                 </p>
               </CardContent>
             </Card>
