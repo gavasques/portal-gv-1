@@ -381,10 +381,6 @@ const renderExternalLink = (material: Material) => {
 export default function MaterialContentRenderer({ material }: MaterialContentRendererProps) {
   const { toast } = useToast();
   
-  // Debug log
-  console.log('Material type:', material.type);
-  console.log('Material embedCode:', material.embedCode);
-  
   const renderContent = () => {
     switch (material.type) {
       case "Prompt para IA":
@@ -430,10 +426,17 @@ export default function MaterialContentRenderer({ material }: MaterialContentRen
       case "fluxograma_miro":
       case "embed_iframe":
         return material.embedCode ? (
-          <div 
-            className="w-full min-h-[400px]"
-            dangerouslySetInnerHTML={{ __html: material.embedCode }} 
-          />
+          <div className="w-full">
+            <div 
+              className="w-full h-[600px] lg:h-[700px] xl:h-[800px] rounded-lg overflow-hidden border shadow-sm"
+              dangerouslySetInnerHTML={{ 
+                __html: material.embedCode
+                  .replace(/width="[\d]*"/, 'width="100%"')
+                  .replace(/height="[\d]*"/, 'height="100%"')
+                  .replace(/style="[^"]*"/, 'style="width: 100%; height: 100%; border: none;"')
+              }} 
+            />
+          </div>
         ) : (
           <p className="text-muted-foreground">Código de incorporação não disponível</p>
         );
