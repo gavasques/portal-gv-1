@@ -21,6 +21,8 @@ import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
 import MaterialView from "@/pages/material-view";
 import AdminMaterials from "@/pages/admin-materials";
+import AiPrompts from "@/pages/ai-prompts";
+import AdminAiPrompts from "@/pages/admin/ai-prompts";
 import AdminCadastros from "@/pages/admin-cadastros";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";

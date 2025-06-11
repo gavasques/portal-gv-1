@@ -47,13 +47,17 @@ export default function AiPrompts() {
   const { toast } = useToast();
 
   const { data: prompts = [], isLoading } = useQuery<AiPrompt[]>({
-    queryKey: ['/api/ai-prompts', selectedCategory, search],
     queryKey: selectedCategory || search ? 
       ['/api/ai-prompts', { category: selectedCategory, search }] : 
       ['/api/ai-prompts'],
   });
 
-  const categories = [...new Set(prompts.map(p => p.category))];
+  const categories = prompts.reduce((acc: string[], prompt) => {
+    if (!acc.includes(prompt.category)) {
+      acc.push(prompt.category);
+    }
+    return acc;
+  }, []);
 
   const copyToClipboard = async (content: string, promptId: number) => {
     try {
@@ -256,13 +260,13 @@ export default function AiPrompts() {
                         🔧 Campos para personalizar:
                       </h4>
                       <div className="space-y-2">
-                        {prompt.placeholders.map((placeholder: any, index: number) => (
+                        {(prompt.placeholders as any[]).map((placeholder, index: number) => (
                           <div key={index} className="text-sm">
                             <span className="font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
-                              {placeholder.field}
+                              {placeholder?.field || ""}
                             </span>
                             <span className="text-amber-800 dark:text-amber-300 ml-2">
-                              - {placeholder.description}
+                              - {placeholder?.description || ""}
                             </span>
                           </div>
                         ))}
