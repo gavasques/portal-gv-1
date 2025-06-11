@@ -7,7 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, Settings, Lock, Star } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Shield, Users, Settings, Lock, Star, Plus, Edit, Trash2 } from 'lucide-react';
 
 interface UserGroup {
   id: number;
@@ -17,6 +25,14 @@ interface UserGroup {
   color: string;
   isActive: boolean;
 }
+
+const groupFormSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  displayName: z.string().min(1, "Nome de exibição é obrigatório"),
+  description: z.string().min(1, "Descrição é obrigatória"),
+  color: z.string().min(1, "Cor é obrigatória"),
+  isActive: z.boolean().default(true)
+});
 
 interface Permission {
   id: number;
@@ -32,8 +48,21 @@ export default function AdminPermissions() {
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
   const [pendingChanges, setPendingChanges] = useState<number[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<UserGroup | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const groupForm = useForm<z.infer<typeof groupFormSchema>>({
+    resolver: zodResolver(groupFormSchema),
+    defaultValues: {
+      name: "",
+      displayName: "",
+      description: "",
+      color: "#3b82f6",
+      isActive: true
+    }
+  });
 
   // Fetch user groups
   const { data: userGroups = [] } = useQuery({
@@ -71,6 +100,72 @@ export default function AdminPermissions() {
       toast({
         title: "Erro",
         description: "Não foi possível atualizar as permissões.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Create group mutation
+  const createGroupMutation = useMutation({
+    mutationFn: (data: z.infer<typeof groupFormSchema>) =>
+      apiRequest('/api/admin/groups', 'POST', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
+      setIsCreateGroupOpen(false);
+      groupForm.reset();
+      toast({
+        title: "Grupo criado",
+        description: "O grupo foi criado com sucesso."
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o grupo.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Update group mutation
+  const updateGroupMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: z.infer<typeof groupFormSchema> }) =>
+      apiRequest(`/api/admin/groups/${id}`, 'PUT', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
+      setEditingGroup(null);
+      groupForm.reset();
+      toast({
+        title: "Grupo atualizado",
+        description: "O grupo foi atualizado com sucesso."
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o grupo.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete group mutation
+  const deleteGroupMutation = useMutation({
+    mutationFn: (id: number) => apiRequest(`/api/admin/groups/${id}`, 'DELETE'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/groups'] });
+      if (selectedGroup && selectedGroup.id === deleteGroupMutation.variables) {
+        setSelectedGroup(null);
+      }
+      toast({
+        title: "Grupo excluído",
+        description: "O grupo foi excluído com sucesso."
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o grupo.",
         variant: "destructive"
       });
     }
@@ -168,12 +263,94 @@ export default function AdminPermissions() {
         {/* Groups List */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              Grupos de Usuários
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Grupos de Usuários
+              </div>
+              <Dialog open={isCreateGroupOpen} onOpenChange={setIsCreateGroupOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Novo Grupo
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Criar Novo Grupo</DialogTitle>
+                    <DialogDescription>
+                      Crie um novo grupo de usuários para organizar permissões
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...groupForm}>
+                    <form onSubmit={groupForm.handleSubmit((data) => createGroupMutation.mutate(data))} className="space-y-4">
+                      <FormField
+                        control={groupForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome do Grupo</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: premium_users" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={groupForm.control}
+                        name="displayName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome de Exibição</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ex: Usuários Premium" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={groupForm.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Descrição</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Descreva o propósito deste grupo..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={groupForm.control}
+                        name="color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Cor</FormLabel>
+                            <FormControl>
+                              <Input type="color" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={() => setIsCreateGroupOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" disabled={createGroupMutation.isPending}>
+                          {createGroupMutation.isPending ? 'Criando...' : 'Criar Grupo'}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </CardTitle>
             <CardDescription>
-              Selecione um grupo para gerenciar permissões
+              Gerencie grupos e suas permissões
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -202,12 +379,124 @@ export default function AdminPermissions() {
                         Admin
                       </Badge>
                     )}
+                    {group.name !== 'admin' && (
+                      <div className="flex space-x-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingGroup(group);
+                            groupForm.reset({
+                              name: group.name,
+                              displayName: group.displayName,
+                              description: group.description,
+                              color: group.color,
+                              isActive: group.isActive
+                            });
+                          }}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Tem certeza que deseja excluir este grupo?')) {
+                              deleteGroupMutation.mutate(group.id);
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
           </CardContent>
         </Card>
+
+        {/* Edit Group Dialog */}
+        {editingGroup && (
+          <Dialog open={!!editingGroup} onOpenChange={() => setEditingGroup(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Editar Grupo</DialogTitle>
+                <DialogDescription>
+                  Modifique as informações do grupo {editingGroup.displayName}
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...groupForm}>
+                <form onSubmit={groupForm.handleSubmit((data) => updateGroupMutation.mutate({ id: editingGroup.id, data }))} className="space-y-4">
+                  <FormField
+                    control={groupForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome do Grupo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: premium_users" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={groupForm.control}
+                    name="displayName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome de Exibição</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: Usuários Premium" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={groupForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Descrição</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Descreva o propósito deste grupo..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={groupForm.control}
+                    name="color"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cor</FormLabel>
+                        <FormControl>
+                          <Input type="color" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setEditingGroup(null)}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={updateGroupMutation.isPending}>
+                      {updateGroupMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* Permissions Configuration */}
         <Card className="lg:col-span-2">
