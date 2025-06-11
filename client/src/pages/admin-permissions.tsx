@@ -36,6 +36,8 @@ interface GroupPermission {
 
 export default function AdminPermissions() {
   const [selectedGroup, setSelectedGroup] = useState<UserGroup | null>(null);
+  const [pendingChanges, setPendingChanges] = useState<number[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -87,24 +89,50 @@ export default function AdminPermissions() {
     return acc;
   }, {}) : {};
 
-  // Check if permission is assigned to selected group
+  // Check if permission is assigned to selected group (from pending changes)
   const hasPermission = (permissionId: number) => {
-    return Array.isArray(groupPermissions) && groupPermissions.some((gp: any) => gp.id === permissionId);
+    return pendingChanges.includes(permissionId);
   };
 
-  // Toggle permission for group
+  // Initialize pending changes when group changes
+  const initializePendingChanges = (group: UserGroup | null) => {
+    if (group) {
+      const currentPermissions = Array.isArray(groupPermissions) ? groupPermissions.map((gp: any) => gp.id) : [];
+      setPendingChanges(currentPermissions);
+      setHasUnsavedChanges(false);
+    }
+  };
+
+  // Toggle permission for group (only update pending state)
   const togglePermission = (permissionId: number) => {
     if (!selectedGroup || selectedGroup.name === 'admin') return;
 
-    const currentPermissions = Array.isArray(groupPermissions) ? groupPermissions.map((gp: any) => gp.id) : [];
-    const newPermissions = hasPermission(permissionId)
-      ? currentPermissions.filter(id => id !== permissionId)
-      : [...currentPermissions, permissionId];
+    const newPendingChanges = pendingChanges.includes(permissionId)
+      ? pendingChanges.filter(id => id !== permissionId)
+      : [...pendingChanges, permissionId];
+
+    setPendingChanges(newPendingChanges);
+    setHasUnsavedChanges(true);
+  };
+
+  // Save changes
+  const savePermissions = () => {
+    if (!selectedGroup) return;
 
     updatePermissionsMutation.mutate({
       groupId: selectedGroup.id,
-      permissionIds: newPermissions
+      permissionIds: pendingChanges
+    }, {
+      onSuccess: () => {
+        setHasUnsavedChanges(false);
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/groups', selectedGroup.id, 'permissions'] });
+      }
     });
+  };
+
+  // Cancel changes
+  const cancelChanges = () => {
+    initializePendingChanges(selectedGroup);
   };
 
   const getModuleIcon = (module: string) => {
@@ -156,7 +184,13 @@ export default function AdminPermissions() {
                 className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                   selectedGroup?.id === group.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted'
                 } ${group.name === 'admin' ? 'border-orange-200 bg-orange-50' : ''}`}
-                onClick={() => setSelectedGroup(group)}
+                onClick={() => {
+                  setSelectedGroup(group);
+                  // Initialize pending changes when group is selected
+                  const currentPermissions = Array.isArray(groupPermissions) ? groupPermissions.map((gp: any) => gp.id) : [];
+                  setPendingChanges(currentPermissions);
+                  setHasUnsavedChanges(false);
+                }}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -207,15 +241,44 @@ export default function AdminPermissions() {
                 Select a user group to configure permissions
               </div>
             ) : (
-              <Tabs defaultValue="all" className="space-y-4">
-                <TabsList>
-                  <TabsTrigger value="all">All Permissions</TabsTrigger>
-                  {Object.keys(permissionsByModule).map(module => (
-                    <TabsTrigger key={module} value={module} className="capitalize">
-                      {module.replace('_', ' ')}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+              <div className="space-y-4">
+                {/* Save/Cancel Buttons */}
+                {selectedGroup.name !== 'admin' && (
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      {hasUnsavedChanges && (
+                        <div className="text-sm text-amber-600">
+                          ⚠️ You have unsaved changes
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={cancelChanges}
+                        disabled={!hasUnsavedChanges}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={savePermissions}
+                        disabled={!hasUnsavedChanges || updatePermissionsMutation.isPending}
+                      >
+                        {updatePermissionsMutation.isPending ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <Tabs defaultValue="all" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="all">All Permissions</TabsTrigger>
+                    {Object.keys(permissionsByModule).map(module => (
+                      <TabsTrigger key={module} value={module} className="capitalize">
+                        {module.replace('_', ' ')}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
 
                 <TabsContent value="all" className="space-y-6">
                   {Object.entries(permissionsByModule).map(([module, modulePermissions]) => (
@@ -288,7 +351,8 @@ export default function AdminPermissions() {
                     </Card>
                   </TabsContent>
                 ))}
-              </Tabs>
+                </Tabs>
+              </div>
             )}
           </CardContent>
         </Card>
