@@ -30,6 +30,8 @@ export default function Templates() {
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "cards">("cards");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   // Load dynamic categories from the database
   const { data: availableCategories = [] } = useQuery({
@@ -86,7 +88,16 @@ export default function Templates() {
     setSearchQuery("");
     setSelectedCategory("Todos");
     setSelectedTags([]);
+    setCurrentPage(1);
   };
+
+  // Pagination logic
+  const filteredTemplates = templates || [];
+  const totalPages = Math.ceil(filteredTemplates.length / itemsPerPage);
+  const paginatedTemplates = filteredTemplates.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (isLoading) {
     return (
@@ -209,10 +220,10 @@ export default function Templates() {
       </div>
 
       {/* Content */}
-      {templates && templates.length > 0 ? (
+      {paginatedTemplates && paginatedTemplates.length > 0 ? (
         viewMode === "list" ? (
           <div className="space-y-4">
-            {templates.map((template: any) => (
+            {paginatedTemplates.map((template: any) => (
               <Card key={template.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -236,7 +247,7 @@ export default function Templates() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((template: any) => (
+            {paginatedTemplates.map((template: any) => (
               <Card key={template.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">

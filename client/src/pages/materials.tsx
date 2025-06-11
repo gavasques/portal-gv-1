@@ -167,7 +167,7 @@ export default function Materials() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedFormat, setSelectedFormat] = useState<string>("");
   const [featuredFilter, setFeaturedFilter] = useState<'all' | 'featured' | 'regular'>('all');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
 
