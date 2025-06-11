@@ -92,7 +92,7 @@ export default function PartnerProfile() {
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -252,7 +252,7 @@ export default function PartnerProfile() {
                   Voltar para a lista
                 </Button>
               </Link>
-              
+
               <div className="flex items-center space-x-4">
                 <Avatar className="h-16 w-16">
                   <AvatarImage src={partner.logo} alt={partner.name} />
@@ -260,7 +260,7 @@ export default function PartnerProfile() {
                     {partner.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                
+
                 <div>
                   <div className="flex items-center space-x-2">
                     <h1 className="text-2xl font-bold">{partner.name}</h1>
@@ -288,11 +288,11 @@ export default function PartnerProfile() {
       </Card>
 
       {/* Tab Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general">Dados Gerais</TabsTrigger>
           <TabsTrigger value="contacts">Contatos</TabsTrigger>
-          <TabsTrigger value="reviews">Avaliações e Comunidade</TabsTrigger>
+          <TabsTrigger value="reviews">Avaliações</TabsTrigger>
+          <TabsTrigger value="comments">Comentários</TabsTrigger>
         </TabsList>
 
         {/* General Tab */}
@@ -395,7 +395,7 @@ export default function PartnerProfile() {
                             <h4 className="font-medium">{contact.name}</h4>
                             <p className="text-sm text-muted-foreground">{contact.position}</p>
                           </div>
-                          
+
                           <div className="space-y-2">
                             <div className="flex items-center space-x-2">
                               <Mail className="h-4 w-4 text-muted-foreground" />
@@ -406,7 +406,7 @@ export default function PartnerProfile() {
                                 {contact.email}
                               </a>
                             </div>
-                            
+
                             <div className="flex items-center space-x-2">
                               <Phone className="h-4 w-4 text-muted-foreground" />
                               <a 
@@ -427,93 +427,97 @@ export default function PartnerProfile() {
           </Card>
         </TabsContent>
 
-        {/* Reviews and Community Tab */}
+        {/* Reviews Tab */}
         <TabsContent value="reviews" className="space-y-6">
-          {/* Submit Review */}
           <Card>
             <CardHeader>
-              <CardTitle>Deixar Avaliação</CardTitle>
-              <CardDescription>
-                Compartilhe sua experiência com este parceiro
-              </CardDescription>
+              <CardTitle className="flex items-center justify-between">
+                <span>Avaliações ({reviews.length})</span>
+                <div className="flex items-center space-x-2">
+                  {renderStars(partner.averageRating)}
+                  <span className="text-sm text-muted-foreground">
+                    {Number(partner.averageRating || 0).toFixed(1)} de 5
+                  </span>
+                </div>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium mb-2 block">Sua avaliação</Label>
-                <div className="flex items-center space-x-1">
-                  {renderStars(newReview.rating, true, (rating) => 
-                    setNewReview(prev => ({ ...prev, rating }))
-                  )}
+            <CardContent className="space-y-6">
+              {/* Add Review Form */}
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <h4 className="font-semibold mb-3">Deixe sua avaliação</h4>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="rating">Sua nota:</Label>
+                    <div className="flex items-center space-x-1 mt-1">
+                      {renderStars(newReview.rating, true, (rating) => 
+                        setNewReview(prev => ({ ...prev, rating }))
+                      )}
+                      <span className="text-sm text-muted-foreground ml-2">
+                        {newReview.rating} de 5
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="comment">Comentário:</Label>
+                    <Textarea
+                      id="comment"
+                      placeholder="Compartilhe sua experiência com este parceiro..."
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                  <Button 
+                    onClick={handleSubmitReview}
+                    disabled={submitReviewMutation.isPending}
+                    size="sm"
+                  >
+                    {submitReviewMutation.isPending ? 'Enviando...' : 'Enviar Avaliação'}
+                  </Button>
                 </div>
               </div>
-              
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Comentário sobre sua experiência *
-                </Label>
-                <Textarea
-                  placeholder="Descreva sua experiência com este parceiro..."
-                  value={newReview.comment}
-                  onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
-                  rows={4}
-                />
-              </div>
-              
-              <Button 
-                onClick={handleSubmitReview}
-                disabled={submitReviewMutation.isPending || !newReview.comment.trim()}
-              >
-                {submitReviewMutation.isPending ? 'Enviando...' : 'Enviar Avaliação'}
-              </Button>
-            </CardContent>
-          </Card>
 
-          {/* Reviews List */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Avaliações ({reviews.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
+              {/* Reviews List */}
               {reviews.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Seja o primeiro a avaliar este parceiro!
-                </p>
+                <div className="text-center py-8 text-muted-foreground">
+                  <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Seja o primeiro a avaliar este parceiro!</p>
+                </div>
               ) : (
-                <div className="space-y-6">
-                  {reviews.map((review: Review) => (
-                    <div key={review.id}>
-                      <div className="flex items-start space-x-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>
-                            {review.userName.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-medium text-sm">{review.userName}</span>
-                            <div className="flex items-center">
+                <div className="space-y-4">
+                  {reviews.map((review: any) => (
+                    <div key={review.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>
+                              {review.userName?.substring(0, 2).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">{review.userName || 'Usuário'}</p>
+                            <div className="flex items-center space-x-1">
                               {renderStars(review.rating)}
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(review.createdAt).toLocaleDateString('pt-BR')}
-                            </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {review.comment}
-                          </p>
                         </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(review.createdAt).toLocaleDateString('pt-BR')}
+                        </span>
                       </div>
-                      {reviews.indexOf(review) < reviews.length - 1 && (
-                        <Separator className="mt-6" />
-                      )}
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {review.comment}
+                      </p>
                     </div>
                   ))}
                 </div>
               )}
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Comments and Discussion */}
+        {/* Comments Tab */}
+        <TabsContent value="comments" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Comentários e Dúvidas</CardTitle>
@@ -521,118 +525,137 @@ export default function PartnerProfile() {
                 Espaço para discussão e troca de experiências
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Add Comment */}
-              <div className="flex space-x-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>EU</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-2">
-                  <Textarea
-                    placeholder="Faça uma pergunta ou compartilhe uma dica..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    rows={2}
-                  />
-                  <Button 
-                    size="sm"
-                    onClick={handleSubmitComment}
-                    disabled={!newComment.trim() || submitCommentMutation.isPending}
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    Comentar
-                  </Button>
+            <CardContent className="space-y-6">
+              {/* Add Comment Form */}
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <div className="flex items-start space-x-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>EU</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-3">
+                    <Textarea
+                      placeholder="Faça uma pergunta ou compartilhe uma dica..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      rows={3}
+                    />
+                    <Button 
+                      onClick={handleSubmitComment}
+                      disabled={submitCommentMutation.isPending || !newComment.trim()}
+                      size="sm"
+                    >
+                      <Send className="h-4 w-4 mr-1" />
+                      Comentar
+                    </Button>
+                  </div>
                 </div>
               </div>
 
-              <Separator />
-
               {/* Comments List */}
               {comments.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Inicie a conversa! Faça uma pergunta ou compartilhe uma dica.
-                </p>
+                <div className="text-center py-8 text-muted-foreground">
+                  <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Inicie a conversa! Faça uma pergunta ou compartilhe uma dica.</p>
+                </div>
               ) : (
                 <div className="space-y-6">
-                  {comments.map((comment: Comment) => (
-                    <div key={comment.id}>
+                  {comments.map((comment: any) => (
+                    <div key={comment.id} className="space-y-4">
                       <div className="flex items-start space-x-3">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback>
-                            {comment.userName.substring(0, 2).toUpperCase()}
+                            {comment.userName?.substring(0, 2).toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-medium text-sm">{comment.userName}</span>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium text-sm">{comment.userName || 'Usuário'}</span>
                             <span className="text-xs text-muted-foreground">
                               {new Date(comment.createdAt).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
-                          <p className="text-sm mb-2">{comment.content}</p>
-                          
+                          <p className="text-sm leading-relaxed">
+                            {comment.content}
+                          </p>
                           <div className="flex items-center space-x-4">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => likeCommentMutation.mutate(comment.id)}
-                              className={comment.hasLiked ? 'text-blue-600' : ''}
+                              className="text-xs text-muted-foreground hover:text-foreground"
                             >
-                              <ThumbsUp className="h-4 w-4 mr-1" />
-                              {comment.likes}
+                              <ThumbsUp className="h-3 w-3 mr-1" />
+                              {comment.likes || 0}
                             </Button>
-                            
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
+                              className="text-xs text-muted-foreground hover:text-foreground"
                             >
-                              <MessageCircle className="h-4 w-4 mr-1" />
+                              <MessageCircle className="h-3 w-3 mr-1" />
                               Responder
                             </Button>
                           </div>
 
                           {/* Reply Form */}
                           {replyTo === comment.id && (
-                            <div className="mt-3 ml-4 flex space-x-2">
-                              <Input
-                                placeholder="Escreva sua resposta..."
-                                value={replyContent}
-                                onChange={(e) => setReplyContent(e.target.value)}
-                                onKeyPress={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleSubmitReply(comment.id);
-                                  }
-                                }}
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => handleSubmitReply(comment.id)}
-                                disabled={!replyContent.trim()}
-                              >
-                                Enviar
-                              </Button>
+                            <div className="mt-3 flex items-start space-x-3">
+                              <Avatar className="h-6 w-6">
+                                <AvatarFallback className="text-xs">EU</AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 space-y-2">
+                                <Textarea
+                                  placeholder="Escreva sua resposta..."
+                                  value={replyContent}
+                                  onChange={(e) => setReplyContent(e.target.value)}
+                                  rows={2}
+                                  className="text-sm"
+                                />
+                                <div className="flex space-x-2">
+                                  <Button 
+                                    onClick={() => handleSubmitReply(comment.id)}
+                                    disabled={submitCommentMutation.isPending || !replyContent.trim()}
+                                    size="sm"
+                                    variant="outline"
+                                  >
+                                    Responder
+                                  </Button>
+                                  <Button 
+                                    onClick={() => {
+                                      setReplyTo(null);
+                                      setReplyContent('');
+                                    }}
+                                    size="sm"
+                                    variant="ghost"
+                                  >
+                                    Cancelar
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
                           )}
 
                           {/* Replies */}
                           {comment.replies && comment.replies.length > 0 && (
-                            <div className="ml-4 mt-4 space-y-3 border-l-2 border-gray-100 pl-4">
-                              {comment.replies.map((reply) => (
-                                <div key={reply.id} className="flex items-start space-x-2">
+                            <div className="ml-6 space-y-3">
+                              {comment.replies.map((reply: any) => (
+                                <div key={reply.id} className="flex items-start space-x-3">
                                   <Avatar className="h-6 w-6">
                                     <AvatarFallback className="text-xs">
-                                      {reply.userName.substring(0, 2).toUpperCase()}
+                                      {reply.userName?.substring(0, 2).toUpperCase() || 'U'}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="flex-1">
-                                    <div className="flex items-center space-x-2 mb-1">
-                                      <span className="font-medium text-xs">{reply.userName}</span>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="font-medium text-xs">{reply.userName || 'Usuário'}</span>
                                       <span className="text-xs text-muted-foreground">
                                         {new Date(reply.createdAt).toLocaleDateString('pt-BR')}
                                       </span>
                                     </div>
-                                    <p className="text-xs">{reply.content}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {reply.content}
+                                    </p>
                                   </div>
                                 </div>
                               ))}
