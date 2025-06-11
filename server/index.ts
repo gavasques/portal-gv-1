@@ -42,7 +42,7 @@ app.use((req, res, next) => {
   const server = await registerRoutes(app);
 
   // Initialize default groups and modular permissions
-  const { storage } = require('./storage');
+  const { storage } = await import('./storage');
   await storage.initializeDefaultGroups();
   await storage.initializeModularPermissions();
 
