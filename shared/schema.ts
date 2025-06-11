@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, decimal, jsonb, pgEnum } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -34,11 +34,14 @@ export const groupPermissions = pgTable("group_permissions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const userRoleEnum = pgEnum("user_role", ["BASIC", "ALUNO", "ALUNO_PRO", "SUPORTE", "ADM"]);
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password"),
   fullName: text("full_name").notNull(),
+  role: userRoleEnum("role").notNull().default("BASIC"),
   groupId: integer("group_id").references(() => userGroups.id).default(1), // Default to "Basic" group
   status: text("status").notNull().default("active"), // active, inactive, pending
   aiCredits: integer("ai_credits").notNull().default(0),
