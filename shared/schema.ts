@@ -792,12 +792,6 @@ export const insertPartnerCategorySchema = createInsertSchema(partnerCategories)
   createdAt: true,
 });
 
-export const insertAiPromptCategorySchema = createInsertSchema(aiPromptCategories).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 // Template tag schemas
 export const insertTemplateTagSchema = createInsertSchema(templateTags).omit({
   id: true,
@@ -906,3 +900,13 @@ export type InsertTemplateTagRelation = z.infer<typeof insertTemplateTagRelation
 // AI Prompts types
 export type AiPrompt = typeof aiPrompts.$inferSelect;
 export type InsertAiPrompt = z.infer<typeof insertAiPromptSchema>;
+
+// Course management types
+export type Course = typeof courses.$inferSelect;
+export type InsertCourse = z.infer<typeof insertCourseSchema>;
+export type Mentorship = typeof mentorships.$inferSelect;
+export type InsertMentorship = z.infer<typeof insertMentorshipSchema>;
+export type PageContent = typeof pageContent.$inferSelect;
+export type InsertPageContent = z.infer<typeof insertPageContentSchema>;
+export type PageSection = typeof pageSections.$inferSelect;
+export type InsertPageSection = z.infer<typeof insertPageSectionSchema>;
