@@ -18,6 +18,7 @@ import {
   DollarSign,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   Eye,
   Target
 } from "lucide-react";
@@ -44,6 +45,9 @@ export default function AiPrompts() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedPrompt, setSelectedPrompt] = useState<AiPrompt | null>(null);
   const [expandedPrompt, setExpandedPrompt] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const itemsPerPage = 25;
   const { toast } = useToast();
 
   const { data: prompts = [], isLoading } = useQuery<AiPrompt[]>({
@@ -95,6 +99,13 @@ export default function AiPrompts() {
     
     return matchesSearch && matchesCategory;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPrompts.length / itemsPerPage);
+  const paginatedPrompts = filteredPrompts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (isLoading) {
     return (
@@ -198,7 +209,7 @@ export default function AiPrompts() {
 
       {/* Prompts Grid */}
       <div className="space-y-4">
-        {filteredPrompts.map((prompt) => {
+        {paginatedPrompts.map((prompt) => {
           const Icon = categoryIcons[prompt.category as keyof typeof categoryIcons] || BookOpen;
           const isExpanded = expandedPrompt === prompt.id;
           
