@@ -16,14 +16,15 @@ interface Partner {
   id: number;
   name: string;
   description: string;
-  category: string;
+  categoryId: number;
+  category: { name: string };
   logo?: string;
   website?: string;
   phone?: string;
   email?: string;
   isVerified: boolean;
   discountInfo?: string;
-  averageRating?: number;
+  averageRating?: number | string;
   reviewCount?: number;
   status?: string;
   createdAt: string;
@@ -47,7 +48,7 @@ export default function Partners() {
   const filteredPartners = partners.filter((partner: Partner) => {
     const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          partner.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || partner.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || partner.category.name === selectedCategory;
     const matchesVerified = !showVerifiedOnly || partner.isVerified;
     const isPublished = !partner.status || partner.status === 'published';
     
@@ -55,7 +56,7 @@ export default function Partners() {
   });
 
   // Get unique categories
-  const categories = Array.from(new Set(partners.map((partner: Partner) => partner.category)));
+  const categories = Array.from(new Set(partners.map((partner: Partner) => partner.category.name)));
 
   // Pagination
   const totalPages = Math.ceil(filteredPartners.length / itemsPerPage);
@@ -105,7 +106,7 @@ export default function Partners() {
                 </div>
               </div>
               <div className="col-span-2">
-                <Badge variant="secondary">{partner.category}</Badge>
+                <Badge variant="secondary">{partner.category.name}</Badge>
               </div>
               <div className="col-span-3">
                 <div className="flex items-center space-x-2">
@@ -162,7 +163,7 @@ export default function Partners() {
             <div>
               <CardTitle className="text-lg">{partner.name}</CardTitle>
               <CardDescription className="text-sm">
-                <Badge variant="secondary" className="mb-2">{partner.category}</Badge>
+                <Badge variant="secondary" className="mb-2">{partner.category.name}</Badge>
               </CardDescription>
             </div>
           </CardHeader>

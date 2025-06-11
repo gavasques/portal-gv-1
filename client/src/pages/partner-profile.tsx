@@ -272,7 +272,7 @@ export default function PartnerProfile() {
                     )}
                   </div>
                   <Badge variant="secondary" className="mt-1">
-                    {partner.category}
+                    {partner.category.name}
                   </Badge>
                   <div className="flex items-center space-x-1 mt-2">
                     {renderStars(partner.averageRating)}
