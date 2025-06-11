@@ -1616,6 +1616,195 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Courses Management API routes
+  app.get('/api/admin/courses', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      // For now, return mock data - this would be stored in database
+      const mockCourses = [
+        {
+          id: 1,
+          title: "Curso Iniciante",
+          subtitle: "Fundamentos do E-commerce na Amazon",
+          description: "Aprenda do zero como vender na Amazon. Ideal para quem está começando no mundo do e-commerce e quer dar os primeiros passos com segurança.",
+          price: 297,
+          originalPrice: 497,
+          features: [
+            "40+ horas de conteúdo em vídeo",
+            "Módulos práticos e teóricos",
+            "Planilhas e ferramentas incluídas",
+            "Suporte via grupo exclusivo",
+            "Acesso vitalício ao conteúdo",
+            "Certificado de conclusão"
+          ],
+          highlights: [
+            "Mais de 5.000 alunos",
+            "Avaliação 4.8/5",
+            "Suporte dedicado"
+          ],
+          link: "https://liberdadevirtual.com.br/curso-iniciante",
+          popular: false,
+          isActive: true,
+          customHtml: null
+        },
+        {
+          id: 2,
+          title: "Curso Completo",
+          subtitle: "Metodologia Avançada para Vendedores Profissionais",
+          description: "O curso mais completo do mercado. Para quem quer dominar todas as estratégias avançadas e construir um negócio sólido e escalável na Amazon.",
+          price: 2997,
+          originalPrice: 4997,
+          features: [
+            "120+ horas de conteúdo exclusivo",
+            "Metodologia proprietária LVB",
+            "Análise de nichos rentáveis",
+            "Estratégias de sourcing avançadas",
+            "Automação e escalabilidade",
+            "Suporte prioritário 1:1",
+            "Acesso ao grupo VIP",
+            "Atualizações perpétuas",
+            "Garantia de 30 dias"
+          ],
+          highlights: [
+            "ROI médio de 300%",
+            "Suporte 1:1 especializado",
+            "Acesso ao grupo VIP"
+          ],
+          link: "https://liberdadevirtual.com.br/curso-completo",
+          calendlyLink: "https://calendly.com/liberdadevirtual/consulta",
+          popular: true,
+          isActive: true,
+          customHtml: null
+        }
+      ];
+      res.json(mockCourses);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch courses' });
+    }
+  });
+
+  app.post('/api/admin/courses', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      // Here you would save to database
+      const courseData = req.body;
+      
+      // Mock response
+      const newCourse = {
+        id: Date.now(),
+        ...courseData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      res.status(201).json(newCourse);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to create course' });
+    }
+  });
+
+  app.put('/api/admin/courses/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const courseData = req.body;
+      
+      // Here you would update in database
+      const updatedCourse = {
+        id: courseId,
+        ...courseData,
+        updatedAt: new Date()
+      };
+      
+      res.json(updatedCourse);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update course' });
+    }
+  });
+
+  app.delete('/api/admin/courses/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      
+      // Here you would delete from database
+      res.json({ message: 'Course deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete course' });
+    }
+  });
+
+  app.get('/api/admin/mentorships', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const mockMentorships = [
+        {
+          id: 1,
+          title: "Mentoria Individual",
+          description: "Acompanhamento personalizado para acelerar seus resultados",
+          features: [
+            "Sessões 1:1 com especialistas",
+            "Plano de ação personalizado",
+            "Análise detalhada do seu negócio",
+            "Suporte via WhatsApp",
+            "Revisão de estratégias mensais"
+          ],
+          calendlyLink: "https://calendly.com/liberdadevirtual/mentoria-individual",
+          isActive: true
+        },
+        {
+          id: 2,
+          title: "Mentoria em Grupo",
+          description: "Aprenda junto com outros empreendedores em sessões exclusivas",
+          features: [
+            "Sessões semanais em grupo",
+            "Networking com outros vendedores",
+            "Cases de sucesso reais",
+            "Q&A ao vivo",
+            "Suporte contínuo"
+          ],
+          calendlyLink: "https://calendly.com/liberdadevirtual/mentoria-grupo",
+          isActive: true
+        }
+      ];
+      res.json(mockMentorships);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch mentorships' });
+    }
+  });
+
+  app.get('/api/admin/page-content/courses', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const mockPageContent = {
+        id: 1,
+        heroTitle: "Conheça Nossos Cursos",
+        heroSubtitle: "",
+        heroDescription: "Cursos e mentorias desenvolvidos para acelerar seu sucesso no e-commerce. Aprenda com quem já faturou milhões vendendo na Amazon.",
+        benefitsTitle: "Por que escolher a Liberdade Virtual?",
+        benefitsDescription: "",
+        ctaTitle: "Pronto para começar sua jornada?",
+        ctaDescription: "Escolha o curso ideal para seu momento e comece a construir seu império no e-commerce hoje mesmo.",
+        customCss: "",
+        customJs: "",
+        isActive: true
+      };
+      res.json(mockPageContent);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch page content' });
+    }
+  });
+
+  app.put('/api/admin/page-content/courses', requireAuth, requireRole(['Administradores']), async (req, res) => {
+    try {
+      const contentData = req.body;
+      
+      // Here you would update in database
+      const updatedContent = {
+        ...contentData,
+        updatedAt: new Date()
+      };
+      
+      res.json(updatedContent);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to update page content' });
+    }
+  });
+
   // News API routes (placeholder for future implementation)
   app.get('/api/news/latest', requireAuth, async (req, res) => {
     try {

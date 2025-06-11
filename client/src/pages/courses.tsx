@@ -2,89 +2,238 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, Calendar, ExternalLink, MessageCircle, Star, Clock, Users, CheckCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
-const courses = [
-  {
-    id: "iniciante",
-    title: "Curso Iniciante",
-    subtitle: "Fundamentos do E-commerce na Amazon",
-    description: "Aprenda do zero como vender na Amazon. Ideal para quem está começando no mundo do e-commerce e quer dar os primeiros passos com segurança.",
-    price: 297,
-    originalPrice: 497,
-    features: [
-      "40+ horas de conteúdo em vídeo",
-      "Módulos práticos e teóricos",
-      "Planilhas e ferramentas incluídas",
-      "Suporte via grupo exclusivo",
-      "Acesso vitalício ao conteúdo",
-      "Certificado de conclusão"
-    ],
-    highlights: [
-      "Mais de 5.000 alunos",
-      "Avaliação 4.8/5",
-      "Suporte dedicado"
-    ],
-    link: "https://liberdadevirtual.com.br/curso-iniciante",
-    popular: false
-  },
-  {
-    id: "completo",
-    title: "Curso Completo", 
-    subtitle: "Metodologia Avançada para Vendedores Profissionais",
-    description: "O curso mais completo do mercado. Para quem quer dominar todas as estratégias avançadas e construir um negócio sólido e escalável na Amazon.",
-    price: 2997,
-    originalPrice: 4997,
-    features: [
-      "120+ horas de conteúdo exclusivo",
-      "Metodologia proprietária LVB",
-      "Análise de nichos rentáveis",
-      "Estratégias de sourcing avançadas",
-      "Automação e escalabilidade",
-      "Suporte prioritário 1:1",
-      "Acesso ao grupo VIP",
-      "Atualizações perpétuas",
-      "Garantia de 30 dias"
-    ],
-    highlights: [
-      "ROI médio de 300%",
-      "Suporte 1:1 especializado", 
-      "Acesso ao grupo VIP"
-    ],
-    link: "https://liberdadevirtual.com.br/curso-completo",
-    calendlyLink: "https://calendly.com/liberdadevirtual/consulta",
-    popular: true
-  }
-];
+interface CourseData {
+  id: number;
+  title: string;
+  subtitle: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  features: string[];
+  highlights: string[];
+  link: string;
+  calendlyLink?: string;
+  popular: boolean;
+  isActive: boolean;
+  customHtml?: string;
+}
 
-const mentorships = [
-  {
-    title: "Mentoria Individual",
-    description: "Acompanhamento personalizado para acelerar seus resultados",
-    features: [
-      "Sessões 1:1 com especialistas",
-      "Plano de ação personalizado", 
-      "Análise detalhada do seu negócio",
-      "Suporte via WhatsApp",
-      "Revisão de estratégias mensais"
-    ],
-    calendlyLink: "https://calendly.com/liberdadevirtual/mentoria-individual"
-  },
-  {
-    title: "Mentoria em Grupo",
-    description: "Aprenda junto com outros empreendedores em sessões exclusivas",
-    features: [
-      "Sessões semanais em grupo",
-      "Networking com outros vendedores",
-      "Cases de sucesso reais",
-      "Q&A ao vivo",
-      "Suporte contínuo"
-    ],
-    calendlyLink: "https://calendly.com/liberdadevirtual/mentoria-grupo"
-  }
-];
+interface MentorshipData {
+  id: number;
+  title: string;
+  description: string;
+  features: string[];
+  calendlyLink: string;
+  isActive: boolean;
+}
+
+interface PageContent {
+  heroTitle: string;
+  heroSubtitle?: string;
+  heroDescription: string;
+  benefitsTitle: string;
+  ctaTitle: string;
+  ctaDescription: string;
+  customCss?: string;
+  customJs?: string;
+}
 
 export default function Courses() {
-  const CourseCard = ({ course }: { course: typeof courses[0] }) => (
+  // Fetch courses data
+  const { data: courses = [], isLoading: coursesLoading } = useQuery({
+    queryKey: ['courses'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/courses');
+      if (!response.ok) throw new Error('Failed to fetch courses');
+      const data = await response.json();
+      return data.filter((course: CourseData) => course.isActive);
+    }
+  });
+
+  // Fetch mentorships data
+  const { data: mentorships = [], isLoading: mentorshipsLoading } = useQuery({
+    queryKey: ['mentorships'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/mentorships');
+      if (!response.ok) throw new Error('Failed to fetch mentorships');
+      const data = await response.json();
+      return data.filter((mentorship: MentorshipData) => mentorship.isActive);
+    }
+  });
+
+  // Fetch page content
+  const { data: pageContent, isLoading: pageLoading } = useQuery({
+    queryKey: ['page-content-courses'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/page-content/courses');
+      if (!response.ok) throw new Error('Failed to fetch page content');
+      return response.json();
+    }
+  });
+
+  // Inject custom CSS and JS when page content loads
+  useEffect(() => {
+    if (pageContent?.customCss) {
+      const styleElement = document.createElement('style');
+      styleElement.textContent = pageContent.customCss;
+      styleElement.id = 'courses-custom-css';
+      
+      // Remove existing custom CSS
+      const existingStyle = document.getElementById('courses-custom-css');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+      
+      document.head.appendChild(styleElement);
+    }
+
+    if (pageContent?.customJs) {
+      try {
+        // Create script element
+        const scriptElement = document.createElement('script');
+        scriptElement.textContent = pageContent.customJs;
+        scriptElement.id = 'courses-custom-js';
+        
+        // Remove existing custom JS
+        const existingScript = document.getElementById('courses-custom-js');
+        if (existingScript) {
+          existingScript.remove();
+        }
+        
+        document.body.appendChild(scriptElement);
+      } catch (error) {
+        console.error('Error executing custom JavaScript:', error);
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      const customStyle = document.getElementById('courses-custom-css');
+      const customScript = document.getElementById('courses-custom-js');
+      if (customStyle) customStyle.remove();
+      if (customScript) customScript.remove();
+    };
+  }, [pageContent]);
+
+  if (coursesLoading || mentorshipsLoading || pageLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center">
+          <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-96 mx-auto"></div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-96 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback courses data if API returns empty
+  const fallbackCourses = [
+  {
+      id: "iniciante",
+      title: "Curso Iniciante",
+      subtitle: "Fundamentos do E-commerce na Amazon",
+      description: "Aprenda do zero como vender na Amazon. Ideal para quem está começando no mundo do e-commerce e quer dar os primeiros passos com segurança.",
+      price: 297,
+      originalPrice: 497,
+      features: [
+        "40+ horas de conteúdo em vídeo",
+        "Módulos práticos e teóricos",
+        "Planilhas e ferramentas incluídas",
+        "Suporte via grupo exclusivo",
+        "Acesso vitalício ao conteúdo",
+        "Certificado de conclusão"
+      ],
+      highlights: [
+        "Mais de 5.000 alunos",
+        "Avaliação 4.8/5",
+        "Suporte dedicado"
+      ],
+      link: "https://liberdadevirtual.com.br/curso-iniciante",
+      popular: false,
+      isActive: true
+    },
+    {
+      id: "completo",
+      title: "Curso Completo", 
+      subtitle: "Metodologia Avançada para Vendedores Profissionais",
+      description: "O curso mais completo do mercado. Para quem quer dominar todas as estratégias avançadas e construir um negócio sólido e escalável na Amazon.",
+      price: 2997,
+      originalPrice: 4997,
+      features: [
+        "120+ horas de conteúdo exclusivo",
+        "Metodologia proprietária LVB",
+        "Análise de nichos rentáveis",
+        "Estratégias de sourcing avançadas",
+        "Automação e escalabilidade",
+        "Suporte prioritário 1:1",
+        "Acesso ao grupo VIP",
+        "Atualizações perpétuas",
+        "Garantia de 30 dias"
+      ],
+      highlights: [
+        "ROI médio de 300%",
+        "Suporte 1:1 especializado", 
+        "Acesso ao grupo VIP"
+      ],
+      link: "https://liberdadevirtual.com.br/curso-completo",
+      calendlyLink: "https://calendly.com/liberdadevirtual/consulta",
+      popular: true,
+      isActive: true
+    }
+  ];
+
+  const fallbackMentorships = [
+    {
+      id: 1,
+      title: "Mentoria Individual",
+      description: "Acompanhamento personalizado para acelerar seus resultados",
+      features: [
+        "Sessões 1:1 com especialistas",
+        "Plano de ação personalizado", 
+        "Análise detalhada do seu negócio",
+        "Suporte via WhatsApp",
+        "Revisão de estratégias mensais"
+      ],
+      calendlyLink: "https://calendly.com/liberdadevirtual/mentoria-individual",
+      isActive: true
+    },
+    {
+      id: 2,
+      title: "Mentoria em Grupo",
+      description: "Aprenda junto com outros empreendedores em sessões exclusivas",
+      features: [
+        "Sessões semanais em grupo",
+        "Networking com outros vendedores",
+        "Cases de sucesso reais",
+        "Q&A ao vivo",
+        "Suporte contínuo"
+      ],
+      calendlyLink: "https://calendly.com/liberdadevirtual/mentoria-grupo",
+      isActive: true
+    }
+  ];
+
+  // Use API data if available, otherwise fallback to hardcoded data
+  const displayCourses = courses.length > 0 ? courses : fallbackCourses;
+  const displayMentorships = mentorships.length > 0 ? mentorships : fallbackMentorships;
+  
+  // Use page content or fallback values
+  const heroTitle = pageContent?.heroTitle || "Conheça Nossos Cursos";
+  const heroDescription = pageContent?.heroDescription || "Cursos e mentorias desenvolvidos para acelerar seu sucesso no e-commerce. Aprenda com quem já faturou milhões vendendo na Amazon.";
+  const benefitsTitle = pageContent?.benefitsTitle || "Por que escolher a Liberdade Virtual?";
+  const ctaTitle = pageContent?.ctaTitle || "Pronto para começar sua jornada?";
+  const ctaDescription = pageContent?.ctaDescription || "Escolha o curso ideal para seu momento e comece a construir seu império no e-commerce hoje mesmo.";
+
+export default function Courses() {
+  const CourseCard = ({ course }: { course: CourseData }) => (
     <Card className={`card-hover relative ${course.popular ? 'ring-2 ring-primary' : ''}`}>
       {course.popular && (
         <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
@@ -158,7 +307,7 @@ export default function Courses() {
     </Card>
   );
 
-  const MentorshipCard = ({ mentorship }: { mentorship: typeof mentorships[0] }) => (
+  const MentorshipCard = ({ mentorship }: { mentorship: MentorshipData }) => (
     <Card className="card-hover">
       <CardHeader>
         <div className="flex items-center space-x-3">
@@ -199,10 +348,12 @@ export default function Courses() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold mb-4">Conheça Nossos Cursos</h1>
+        <h1 className="text-3xl font-bold mb-4">{heroTitle}</h1>
+        {pageContent?.heroSubtitle && (
+          <p className="text-xl text-muted-foreground mb-2">{pageContent.heroSubtitle}</p>
+        )}
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Cursos e mentorias desenvolvidos para acelerar seu sucesso no e-commerce. 
-          Aprenda com quem já faturou milhões vendendo na Amazon.
+          {heroDescription}
         </p>
       </div>
 
@@ -230,7 +381,7 @@ export default function Courses() {
       <div>
         <h2 className="text-2xl font-bold mb-6">Nossos Cursos</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {courses.map((course) => (
+          {displayCourses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
         </div>
@@ -240,8 +391,8 @@ export default function Courses() {
       <div>
         <h2 className="text-2xl font-bold mb-6">Mentorias Personalizadas</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {mentorships.map((mentorship, index) => (
-            <MentorshipCard key={index} mentorship={mentorship} />
+          {displayMentorships.map((mentorship) => (
+            <MentorshipCard key={mentorship.id} mentorship={mentorship} />
           ))}
         </div>
       </div>
@@ -249,7 +400,7 @@ export default function Courses() {
       {/* Benefits Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">Por que escolher a Liberdade Virtual?</CardTitle>
+          <CardTitle className="text-center">{benefitsTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -289,9 +440,9 @@ export default function Courses() {
       {/* CTA Section */}
       <Card className="bg-muted/50">
         <CardContent className="p-8 text-center space-y-4">
-          <h2 className="text-2xl font-bold">Pronto para começar sua jornada?</h2>
+          <h2 className="text-2xl font-bold">{ctaTitle}</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Escolha o curso ideal para seu momento e comece a construir seu império no e-commerce hoje mesmo.
+            {ctaDescription}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg">

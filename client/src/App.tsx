@@ -15,7 +15,13 @@ import MySuppliers from "@/pages/my-suppliers";
 import MyProducts from "@/pages/my-products";
 import Templates from "@/pages/templates";
 import TemplateView from "@/pages/template-view";
-import AdminTemplates from "@/pages/admin-templates";
+import AdminTemplates from "./pages/admin-templates";
+import AdminUsers from "./pages/admin-users";
+import AdminDashboard from "./pages/admin-dashboard";
+import AdminCadastros from "./pages/admin-cadastros";
+import AdminPermissions from "./pages/admin-permissions";
+import AdminAiPrompts from "./pages/admin/ai-prompts";
+import AdminCourses from "./pages/admin-courses";
 import AiAgents from "@/pages/ai-agents";
 import Tickets from "@/pages/tickets";
 import Materials from "@/pages/materials";
@@ -23,14 +29,9 @@ import MaterialView from "@/pages/material-view";
 import AdminMaterials from "@/pages/admin-materials";
 import AiPrompts from "@/pages/ai-prompts";
 import AdminAiPrompts from "@/pages/admin/ai-prompts";
-import AdminCadastros from "@/pages/admin-cadastros";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
 import Settings from "@/pages/settings";
-import AdminDashboard from "@/pages/admin-dashboard";
-import AdminUsers from "@/pages/admin-users-enhanced";
-import AdminPermissions from "@/pages/admin-permissions";
-import AdminGroups from "@/pages/admin-groups";
 import ResetPassword from "@/pages/reset-password";
 import ProfileSettings from "@/pages/profile-settings";
 import { useAuth } from "./hooks/use-auth";
@@ -103,7 +104,7 @@ function Router() {
         <Route path="/admin/groups" component={AdminGroups} />
         <Route path="/admin/permissions" component={AdminPermissions} />
         <Route path="/admin/access" component={() => <div>Admin Access Control - Em desenvolvimento</div>} />
-        <Route path="/admin/courses" component={() => <div>Admin Courses - Em desenvolvimento</div>} />
+        <Route path="/admin/courses" component={AdminCourses} />
         <Route path="/admin/templates" component={AdminTemplates} />
         <Route path="/admin/tickets" component={() => <div>Admin Tickets - Em desenvolvimento</div>} />
         <Route path="/admin/partners" component={() => <div>Admin Partners - Em desenvolvimento</div>} />
