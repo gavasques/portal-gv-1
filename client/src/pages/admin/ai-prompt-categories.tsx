@@ -177,7 +177,6 @@ export default function AdminAiPromptCategories() {
                   id="description"
                   value={formData.description || ""}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
                 />
               </div>
 
