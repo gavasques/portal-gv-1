@@ -23,8 +23,7 @@ import {
   UserCheck,
   Database,
   Key,
-  ShieldCheck,
-  Tags as Tag
+  ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -207,12 +206,6 @@ const adminMenuGroups = [
         href: "/admin/ai-prompts", 
         icon: Bot,
         accessLevels: ["admin", "suporte"]
-      },
-      { 
-        label: "Categorias de IA", 
-        href: "/admin/ai-prompt-categories", 
-        icon: Tag,
-        accessLevels: ["admin"]
       }
     ]
   },

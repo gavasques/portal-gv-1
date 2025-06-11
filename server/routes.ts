@@ -7,8 +7,8 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { getCachedVideos } from "./youtube";
-import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema, insertAiPromptSchema, insertAiPromptCategorySchema } from "@shared/schema";
-import { users, tickets, materials, templates, aiPrompts, aiPromptCategories } from "@shared/schema";
+import { insertUserSchema, insertPartnerSchema, insertSupplierSchema, insertToolSchema, insertMySupplierSchema, insertProductSchema, insertTemplateSchema, insertTicketSchema, insertMaterialSchema, insertNewsSchema, insertReviewSchema, insertMaterialTypeSchema, insertMaterialCategorySchema, insertSoftwareTypeSchema, insertSupplierTypeSchema, insertProductCategorySchema, insertPartnerCategorySchema, insertUserGroupSchema, insertPermissionSchema, insertUserActivityLogSchema, insertTemplateTagSchema, insertAiPromptSchema } from "@shared/schema";
+import { users, tickets, materials, templates, aiPrompts } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -1390,58 +1390,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(400).json({ message: 'Failed to delete template tag' });
-    }
-  });
-
-  // AI Prompt Categories management (Admin only)
-  app.get('/api/admin/ai-prompt-categories', requireAuth, requireRole(['Administradores']), async (req, res) => {
-    try {
-      const categories = await db.select().from(aiPromptCategories);
-      res.json(categories);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch AI prompt categories' });
-    }
-  });
-
-  app.post('/api/admin/ai-prompt-categories', requireAuth, requireRole(['Administradores']), async (req, res) => {
-    try {
-      const validatedData = insertAiPromptCategorySchema.parse(req.body);
-      const [category] = await db.insert(aiPromptCategories)
-        .values(validatedData)
-        .returning();
-      res.status(201).json(category);
-    } catch (error) {
-      res.status(400).json({ message: 'Failed to create AI prompt category' });
-    }
-  });
-
-  app.put('/api/admin/ai-prompt-categories/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
-    try {
-      const categoryId = parseInt(req.params.id);
-      const validatedData = insertAiPromptCategorySchema.partial().parse(req.body);
-      
-      const [updatedCategory] = await db.update(aiPromptCategories)
-        .set(validatedData)
-        .where(eq(aiPromptCategories.id, categoryId))
-        .returning();
-
-      if (!updatedCategory) {
-        return res.status(404).json({ message: 'Category not found' });
-      }
-
-      res.json(updatedCategory);
-    } catch (error) {
-      res.status(400).json({ message: 'Failed to update AI prompt category' });
-    }
-  });
-
-  app.delete('/api/admin/ai-prompt-categories/:id', requireAuth, requireRole(['Administradores']), async (req, res) => {
-    try {
-      const categoryId = parseInt(req.params.id);
-      await db.delete(aiPromptCategories).where(eq(aiPromptCategories.id, categoryId));
-      res.json({ message: 'AI prompt category deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to delete AI prompt category' });
     }
   });
 

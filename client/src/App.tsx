@@ -23,7 +23,6 @@ import MaterialView from "@/pages/material-view";
 import AdminMaterials from "@/pages/admin-materials";
 import AiPrompts from "@/pages/ai-prompts";
 import AdminAiPrompts from "@/pages/admin/ai-prompts";
-import AdminAiPromptCategories from "@/pages/admin/ai-prompt-categories";
 import AdminCadastros from "@/pages/admin-cadastros";
 import Simulators from "@/pages/simulators";
 import Courses from "@/pages/courses";
@@ -99,7 +98,6 @@ function Router() {
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/materials" component={AdminMaterials} />
         <Route path="/admin/ai-prompts" component={AdminAiPrompts} />
-        <Route path="/admin/ai-prompt-categories" component={AdminAiPromptCategories} />
         <Route path="/admin/cadastros" component={AdminCadastros} />
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/groups" component={AdminGroups} />

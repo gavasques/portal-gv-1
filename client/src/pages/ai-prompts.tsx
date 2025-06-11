@@ -298,7 +298,7 @@ export default function AiPrompts() {
                     />
                   </div>
 
-                  {prompt.placeholders && Array.isArray(prompt.placeholders) && prompt.placeholders.length > 0 ? (
+                  {prompt.placeholders && Array.isArray(prompt.placeholders) && prompt.placeholders.length > 0 && (
                     <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
                       <h4 className="font-medium text-sm text-amber-900 dark:text-amber-200 mb-3">
                         🔧 Campos para personalizar:
@@ -316,7 +316,7 @@ export default function AiPrompts() {
                         ))}
                       </div>
                     </div>
-                  ) : null}
+                  )}
 
                   {prompt.tags && prompt.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
