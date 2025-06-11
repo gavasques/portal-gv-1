@@ -1683,6 +1683,212 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Partners routes
+  app.get('/api/partners', async (req: express.Request, res: express.Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const partners = await storage.getPartners(limit, offset);
+      res.json(partners);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load partners' });
+    }
+  });
+
+  app.get('/api/partners/search', async (req: express.Request, res: express.Response) => {
+    try {
+      const { q: query, category } = req.query;
+      if (!query) {
+        return res.status(400).json({ message: 'Query parameter is required' });
+      }
+      const partners = await storage.searchPartners(query as string, category as string);
+      res.json(partners);
+    } catch (error) {
+      res.status(500).json({ message: 'Search failed' });
+    }
+  });
+
+  app.get('/api/partners/:id', async (req: express.Request, res: express.Response) => {
+    try {
+      const partner = await storage.getPartner(parseInt(req.params.id));
+      if (!partner) {
+        return res.status(404).json({ message: 'Partner not found' });
+      }
+      res.json(partner);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load partner' });
+    }
+  });
+
+  app.post('/api/partners', requireAuth, requireRole(['Administradores']), async (req: express.Request, res: express.Response) => {
+    try {
+      const partnerData = insertPartnerSchema.parse(req.body);
+      const partner = await storage.createPartner(partnerData);
+      res.json(partner);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create partner' });
+    }
+  });
+
+  // Suppliers routes
+  app.get('/api/suppliers', async (req: express.Request, res: express.Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const suppliers = await storage.getSuppliers(limit, offset);
+      res.json(suppliers);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load suppliers' });
+    }
+  });
+
+  app.get('/api/suppliers/search', async (req: express.Request, res: express.Response) => {
+    try {
+      const { q: query, productType, country } = req.query;
+      if (!query) {
+        return res.status(400).json({ message: 'Query parameter is required' });
+      }
+      const suppliers = await storage.searchSuppliers(query as string, productType as string, country as string);
+      res.json(suppliers);
+    } catch (error) {
+      res.status(500).json({ message: 'Search failed' });
+    }
+  });
+
+  app.get('/api/suppliers/:id', async (req: express.Request, res: express.Response) => {
+    try {
+      const supplier = await storage.getSupplier(parseInt(req.params.id));
+      if (!supplier) {
+        return res.status(404).json({ message: 'Supplier not found' });
+      }
+      res.json(supplier);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load supplier' });
+    }
+  });
+
+  app.post('/api/suppliers', requireAuth, requireRole(['Administradores']), async (req: express.Request, res: express.Response) => {
+    try {
+      const supplierData = insertSupplierSchema.parse(req.body);
+      const supplier = await storage.createSupplier(supplierData);
+      res.json(supplier);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create supplier' });
+    }
+  });
+
+  // My Suppliers (CRM) routes
+  app.get('/api/my-suppliers', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const suppliers = await storage.getMySuppliers((req.user as any).id, limit, offset);
+      res.json(suppliers);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load suppliers' });
+    }
+  });
+
+  app.get('/api/my-suppliers/:id', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const supplier = await storage.getMySupplier(parseInt(req.params.id), (req.user as any).id);
+      if (!supplier) {
+        return res.status(404).json({ message: 'Supplier not found' });
+      }
+      res.json(supplier);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load supplier' });
+    }
+  });
+
+  app.post('/api/my-suppliers', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const supplierData = insertMySupplierSchema.parse({
+        ...req.body,
+        userId: (req.user as any).id,
+      });
+      const supplier = await storage.createMySupplier(supplierData);
+      res.json(supplier);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create supplier' });
+    }
+  });
+
+  app.put('/api/my-suppliers/:id', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const updates = insertMySupplierSchema.partial().parse(req.body);
+      const supplier = await storage.updateMySupplier(parseInt(req.params.id), (req.user as any).id, updates);
+      res.json(supplier);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update supplier' });
+    }
+  });
+
+  app.delete('/api/my-suppliers/:id', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      await storage.deleteMySupplier(parseInt(req.params.id), (req.user as any).id);
+      res.json({ message: 'Supplier deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete supplier' });
+    }
+  });
+
+  // Products routes
+  app.get('/api/products', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const products = await storage.getProducts((req.user as any).id, limit, offset);
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load products' });
+    }
+  });
+
+  app.get('/api/products/:id', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const product = await storage.getProduct(parseInt(req.params.id), (req.user as any).id);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+      res.json(product);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to load product' });
+    }
+  });
+
+  app.post('/api/products', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const productData = insertProductSchema.parse({
+        ...req.body,
+        userId: (req.user as any).id,
+      });
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to create product' });
+    }
+  });
+
+  app.put('/api/products/:id', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      const updates = insertProductSchema.partial().parse(req.body);
+      const product = await storage.updateProduct(parseInt(req.params.id), (req.user as any).id, updates);
+      res.json(product);
+    } catch (error) {
+      res.status(400).json({ message: 'Failed to update product' });
+    }
+  });
+
+  app.delete('/api/products/:id', requireAuth, async (req: express.Request, res: express.Response) => {
+    try {
+      await storage.deleteProduct(parseInt(req.params.id), (req.user as any).id);
+      res.json({ message: 'Product deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete product' });
+    }
+  });
+
   // Initialize modular permissions system
   app.post('/api/admin/initialize-permissions', requireAdmin, async (req: express.Request, res: express.Response) => {
     try {
