@@ -132,7 +132,7 @@ export const partners = pgTable("partners", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
-  category: text("category").notNull(),
+  categoryId: integer("category_id").notNull().references(() => partnerCategories.id),
   website: text("website"),
   email: text("email"),
   phone: text("phone"),
@@ -429,8 +429,16 @@ export const usersRelations = relations(users, ({ many }) => ({
   reviews: many(reviews),
 }));
 
-export const partnersRelations = relations(partners, ({ many }) => ({
+export const partnersRelations = relations(partners, ({ one, many }) => ({
+  category: one(partnerCategories, {
+    fields: [partners.categoryId],
+    references: [partnerCategories.id],
+  }),
   reviews: many(reviews),
+}));
+
+export const partnerCategoriesRelations = relations(partnerCategories, ({ many }) => ({
+  partners: many(partners),
 }));
 
 export const suppliersRelations = relations(suppliers, ({ many, one }) => ({
