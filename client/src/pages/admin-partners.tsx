@@ -147,13 +147,12 @@ export default function AdminPartners() {
     setFormData({
       name: '',
       description: '',
-      category: '',
+      categoryId: 0,
       website: '',
       phone: '',
       email: '',
-      address: '',
       isVerified: false,
-      exclusiveDiscount: '',
+      discountInfo: '',
       status: 'published'
     });
     setContacts([]);
@@ -207,7 +206,7 @@ export default function AdminPartners() {
   };
 
   const handleSubmit = () => {
-    if (!formData.name.trim() || !formData.category || !formData.description.trim()) {
+    if (!formData.name.trim() || !formData.categoryId || !formData.description.trim()) {
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios.",
@@ -325,14 +324,14 @@ export default function AdminPartners() {
 
                     <div>
                       <Label htmlFor="category">Categoria *</Label>
-                      <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                      <Select value={formData.categoryId.toString()} onValueChange={(value) => setFormData(prev => ({ ...prev, categoryId: parseInt(value) }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma categoria" />
                         </SelectTrigger>
                         <SelectContent>
-                          {PARTNER_CATEGORIES.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category}
+                          {categories.map((category: any) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -394,11 +393,11 @@ export default function AdminPartners() {
                     </div>
 
                     <div>
-                      <Label htmlFor="exclusiveDiscount">Desconto Exclusivo para Alunos</Label>
+                      <Label htmlFor="discountInfo">Desconto Exclusivo para Alunos</Label>
                       <Textarea
-                        id="exclusiveDiscount"
-                        value={formData.exclusiveDiscount}
-                        onChange={(e) => setFormData(prev => ({ ...prev, exclusiveDiscount: e.target.value }))}
+                        id="discountInfo"
+                        value={formData.discountInfo}
+                        onChange={(e) => setFormData(prev => ({ ...prev, discountInfo: e.target.value }))}
                         placeholder="Descreva o benefício oferecido aos alunos..."
                         rows={3}
                       />
@@ -642,7 +641,7 @@ export default function AdminPartners() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{partner.category}</Badge>
+                      <Badge variant="secondary">{partner.category.name}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center">
