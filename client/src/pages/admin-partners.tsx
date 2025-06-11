@@ -269,10 +269,11 @@ export default function AdminPartners() {
   };
 
   const renderStars = (rating: number) => {
+    const safeRating = rating || 0;
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+        className={`h-4 w-4 ${i < Math.floor(safeRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
       />
     ));
   };
@@ -665,7 +666,7 @@ export default function AdminPartners() {
                       <div className="flex items-center justify-center space-x-1">
                         {renderStars(partner.averageRating)}
                         <span className="text-sm text-muted-foreground ml-2">
-                          {partner.averageRating.toFixed(1)} ({partner.reviewCount})
+                          {(partner.averageRating || 0).toFixed(1)} ({partner.reviewCount || 0})
                         </span>
                       </div>
                     </TableCell>

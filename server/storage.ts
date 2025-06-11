@@ -62,7 +62,23 @@ export interface IStorage {
   getPartner(id: number): Promise<Partner | undefined>;
   createPartner(partner: InsertPartner): Promise<Partner>;
   updatePartner(id: number, updates: Partial<Partner>): Promise<Partner>;
+  deletePartner(id: number): Promise<void>;
   searchPartners(query: string, category?: string): Promise<Partner[]>;
+  
+  // Partner contacts
+  getPartnerContacts(partnerId: number): Promise<any[]>;
+  
+  // Partner reviews
+  getPartnerReviews(partnerId: number): Promise<any[]>;
+  createPartnerReview(review: { partnerId: number; userId: number; rating: number; comment: string }): Promise<any>;
+  
+  // Partner comments
+  getPartnerComments(partnerId: number): Promise<any[]>;
+  createPartnerComment(comment: { partnerId: number; userId: number; content: string; parentId?: number | null }): Promise<any>;
+  toggleCommentLike(commentId: number, userId: number): Promise<any>;
+  
+  // Partner files
+  getPartnerFiles(partnerId: number): Promise<any[]>;
 
   // Suppliers
   getSuppliers(limit?: number, offset?: number): Promise<Supplier[]>;
