@@ -18,7 +18,7 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import MaterialTypeForm from "@/components/admin/material-type-form";
-import type { MaterialType, MaterialCategory, SoftwareType, SupplierType, ProductCategory, PartnerCategory } from "@shared/schema";
+import type { MaterialType, MaterialCategory, SoftwareType, SupplierType, ProductCategory, PartnerCategory, AiPromptCategory } from "@shared/schema";
 
 // Common form schemas
 const materialTypeSchema = z.object({
@@ -57,12 +57,20 @@ const partnerCategorySchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+const aiPromptCategorySchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  description: z.string().optional(),
+  color: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
 type MaterialTypeFormData = z.infer<typeof materialTypeSchema>;
 type MaterialCategoryFormData = z.infer<typeof materialCategorySchema>;
 type SoftwareTypeFormData = z.infer<typeof softwareTypeSchema>;
 type SupplierTypeFormData = z.infer<typeof supplierTypeSchema>;
 type ProductCategoryFormData = z.infer<typeof productCategorySchema>;
 type PartnerCategoryFormData = z.infer<typeof partnerCategorySchema>;
+type AiPromptCategoryFormData = z.infer<typeof aiPromptCategorySchema>;
 
 // Helper function to get format type labels
 function getFormatTypeLabel(formatType: string): string {
@@ -401,6 +409,7 @@ export default function AdminCadastros() {
   const supplierTypes = useCrudOperations<SupplierType, SupplierTypeFormData>('/api/supplier-types', supplierTypeSchema, 'tipo de fornecedor');
   const productCategories = useCrudOperations<ProductCategory, ProductCategoryFormData>('/api/product-categories', productCategorySchema, 'categoria de produto');
   const partnerCategories = useCrudOperations<PartnerCategory, PartnerCategoryFormData>('/api/partner-categories', partnerCategorySchema, 'categoria de parceiro');
+  const aiPromptCategories = useCrudOperations<AiPromptCategory, AiPromptCategoryFormData>('/api/admin/ai-prompt-categories', aiPromptCategorySchema, 'categoria de IA');
 
   const getCurrentOperations = () => {
     switch (activeTab) {
@@ -410,6 +419,7 @@ export default function AdminCadastros() {
       case "supplier-types": return supplierTypes;
       case "product-categories": return productCategories;
       case "partner-categories": return partnerCategories;
+      case "ai-prompt-categories": return aiPromptCategories;
       default: return materialTypes;
     }
   };
@@ -576,6 +586,12 @@ export default function AdminCadastros() {
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Categorias de Parceiros
+                  </div>
+                </SelectItem>
+                <SelectItem value="ai-prompt-categories">
+                  <div className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Categorias de IA
                   </div>
                 </SelectItem>
               </SelectContent>
